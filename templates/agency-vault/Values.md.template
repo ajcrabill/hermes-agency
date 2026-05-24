@@ -1,0 +1,62 @@
+# Values — {{ORG_NAME}}
+
+_What {{OWNER_NAME}} won't trade off, even under pressure. Agents
+read these to know which judgment calls are calls (open) and which
+aren't (closed)._
+
+_Derived from interview {{INTERVIEW_DATE}}. Edit freely._
+
+---
+
+## What I value
+
+{{CORE_VALUES}}
+
+_(5-7 values, each a short phrase. These are the things
+{{OWNER_NAME}} would refuse to trade away even for big wins.)_
+
+## What good work looks like
+
+{{WORK_QUALITY_STANDARDS}}
+
+_(The qualities {{OWNER_NAME}} recognizes as excellent work — in
+their own work and in others'. Used by agents to calibrate their
+own output.)_
+
+## Relationships I prioritize
+
+{{KEY_RELATIONSHIPS}}
+
+_(Categories of people whose call always comes first. Family, key
+clients, longtime collaborators, etc. — by category, not by
+specific person.)_
+
+## How I treat people
+
+{{INTERPERSONAL_PRINCIPLES}}
+
+_(Default communication style, when to escalate, what kinds of
+asks are reasonable, how to handle disagreement. Agents speaking
+on {{OWNER_NAME}}'s behalf calibrate against these.)_
+
+## What I refuse to do
+
+{{NON_NEGOTIABLES}}
+
+_(Explicit anti-list. Things {{OWNER_NAME}} won't engage with no
+matter how attractive the upside. Agents enforce these as hard
+ceilings — they don't get overridden by autonomy level.)_
+
+## How I want to be challenged
+
+{{CHALLENGE_PREFERENCES}}
+
+_({{OWNER_NAME}} learns by being challenged. This documents how —
+adversarial review, specific failure modes, evidence first, etc.
+Agents (especially Analyst) calibrate critique against this.)_
+
+---
+
+_When a value is being tested by a decision, the answer here
+matters more than the goal being pursued. Goals describe what
+we're aiming for; values describe how we refuse to aim there._

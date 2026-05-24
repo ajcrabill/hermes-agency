@@ -305,6 +305,142 @@ def cmd_upgrade(_args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_hermes_patches(args: argparse.Namespace) -> int:
+    """Apply / status / list Hermes integration patches."""
+    from _framework.hermes_patches import apply_all, check_status, list_patches
+
+    if args.action == "list":
+        for p in list_patches():
+            print(f"  {p.id}: {p.description}")
+        return 0
+    if args.action == "apply":
+        statuses = apply_all(dry_run=args.dry_run)
+    else:
+        statuses = check_status()
+    for s in statuses:
+        marker = {
+            "applied": "✓", "unapplied": "—",
+            "anchor-missing": "⚠", "target-missing": "?",
+        }.get(s.status, "·")
+        print(f"  {marker} {s.id:30s} [{s.status}]  {s.target_path or '(no target)'}")
+    return 0 if all(s.status in ("applied", "target-missing") for s in statuses) else 1
+
+
+def cmd_cron(args: argparse.Namespace) -> int:
+    """Sync per-profile cron jobs into Hermes' scheduler."""
+    from _framework.cron import list_jobs, sync_cron_jobs
+
+    if args.action == "list":
+        jobs = list_jobs(profile=args.profile)
+        if not jobs:
+            print("(no per-profile jobs.json files found)")
+            return 0
+        for j in jobs:
+            profile = j.get("_profile", "?")
+            sched = j.get("schedule", {})
+            print(f"  {profile:12s} {j.get('name', '?'):30s} {sched}")
+        return 0
+
+    # sync
+    summary = sync_cron_jobs(dry_run=args.dry_run)
+    print(f"Target: {summary['target']}")
+    print(f"  operator jobs preserved: {summary['operator_jobs']}")
+    print(f"  framework jobs before:   {summary['framework_jobs_before']}")
+    print(f"  framework jobs after:    {summary['framework_jobs_after']}")
+    if summary.get("dry_run"):
+        print("  (dry-run — no changes written)")
+    return 0
+
+
+def cmd_state(args: argparse.Namespace) -> int:
+    """Read or append to operational-state.md / conversation-journal.md."""
+    from _framework.state import (
+        append_to_section, read_conversation_journal, read_operational_state,
+    )
+    from _framework.constants import CONVERSATION_JOURNAL_MD, OPERATIONAL_STATE_MD
+
+    path = OPERATIONAL_STATE_MD if args.file == "operational" else CONVERSATION_JOURNAL_MD
+
+    if args.action == "read":
+        text = read_operational_state() if args.file == "operational" else read_conversation_journal()
+        print(text or f"(no content at {path})")
+        return 0
+
+    # append
+    if not args.section:
+        print("--section required for append", file=sys.stderr)
+        return 2
+    body = args.body
+    if not body:
+        print("Reading body from stdin (Ctrl-D to finish):")
+        body = sys.stdin.read().strip()
+    if not body:
+        print("error: no body provided", file=sys.stderr)
+        return 1
+    append_to_section(path, args.section, body, actor="cli")
+    print(f"Appended to '{args.section}' in {path.name}")
+    return 0
+
+
+def cmd_heartbeat(args: argparse.Namespace) -> int:
+    """Emit a heartbeat or query liveness."""
+    from _framework.heartbeats import beat, recent, stale_components
+
+    if args.action == "beat":
+        if not args.component:
+            print("--component required for beat", file=sys.stderr)
+            return 2
+        beat(args.component)
+        print(f"beat: {args.component}")
+        return 0
+
+    if args.action == "stale":
+        stale = stale_components()
+        if not stale:
+            print("All tracked components within expected cadence.")
+            return 0
+        for s in stale:
+            print(f"  ⚠ {s['component']:30s} last seen {s['age_seconds']}s ago "
+                  f"(expected {s['expected_seconds']}s)")
+        return 1
+
+    # list
+    rows = recent(limit=20)
+    if not rows:
+        print("(no heartbeats yet)")
+        return 0
+    for r in rows:
+        print(f"  {r['ts']}  {r['component']}")
+    return 0
+
+
+def cmd_integrations(args: argparse.Namespace) -> int:
+    """Configure optional integrations (currently: google-drive)."""
+    if args.integration == "google-drive":
+        if args.action == "status":
+            from _framework.integrations.google_drive import is_configured
+            if not args.profile:
+                print("--profile required", file=sys.stderr)
+                return 2
+            ok = is_configured(args.profile)
+            state = "configured" if ok else "not configured"
+            print(f"google-drive for profile '{args.profile}': {state}")
+            return 0 if ok else 1
+        if args.action == "setup":
+            if not args.profile or not args.client_secret:
+                print("--profile and --client-secret required", file=sys.stderr)
+                return 2
+            from _framework.integrations.google_drive import setup_interactive
+            try:
+                setup_interactive(args.profile, args.client_secret)
+            except RuntimeError as e:
+                print(f"error: {e}", file=sys.stderr)
+                return 1
+            return 0
+    print(f"unknown integration: {args.integration}", file=sys.stderr)
+    return 2
+
+
 def cmd_panel(args: argparse.Namespace) -> int:
     """Run the read-only control panel."""
     try:
@@ -408,6 +544,47 @@ def build_parser() -> argparse.ArgumentParser:
     p_panel.add_argument("--port", type=int, default=None)
     p_panel.add_argument("--host", default=None)
     p_panel.set_defaults(func=cmd_panel)
+
+    # hermes-patches
+    p_patches = sub.add_parser(
+        "hermes-patches",
+        help="Apply/check the Hermes integration patches (injection, etc.)",
+    )
+    p_patches.add_argument("action", choices=["apply", "status", "list"], default="status", nargs="?")
+    p_patches.add_argument("--dry-run", action="store_true")
+    p_patches.set_defaults(func=cmd_hermes_patches)
+
+    # cron sync
+    p_cron = sub.add_parser("cron", help="Sync per-profile cron jobs into Hermes' scheduler")
+    p_cron.add_argument("action", choices=["sync", "list"], default="list", nargs="?")
+    p_cron.add_argument("--profile", help="Limit to one profile")
+    p_cron.add_argument("--dry-run", action="store_true")
+    p_cron.set_defaults(func=cmd_cron)
+
+    # state-vault
+    p_state = sub.add_parser(
+        "state",
+        help="Read/append operational-state.md and conversation-journal.md",
+    )
+    p_state.add_argument("action", choices=["read", "append"], default="read", nargs="?")
+    p_state.add_argument("--file", choices=["operational", "journal"], default="operational")
+    p_state.add_argument("--section", help="(append) section name")
+    p_state.add_argument("--body", help="(append) body text (stdin if omitted)")
+    p_state.set_defaults(func=cmd_state)
+
+    # heartbeat
+    p_heart = sub.add_parser("heartbeat", help="Emit a heartbeat or query liveness")
+    p_heart.add_argument("action", choices=["beat", "list", "stale"], default="list", nargs="?")
+    p_heart.add_argument("--component", help="(beat) component name")
+    p_heart.set_defaults(func=cmd_heartbeat)
+
+    # integrations
+    p_int = sub.add_parser("integrations", help="Configure optional integrations")
+    p_int.add_argument("integration", choices=["google-drive"])
+    p_int.add_argument("action", choices=["setup", "status"])
+    p_int.add_argument("--profile", help="Profile to configure")
+    p_int.add_argument("--client-secret", help="Path to OAuth client_secret.json")
+    p_int.set_defaults(func=cmd_integrations)
 
     return parser
 

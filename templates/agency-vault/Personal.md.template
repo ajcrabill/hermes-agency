@@ -1,0 +1,73 @@
+# Personal — {{OWNER_NAME}}
+
+_The non-work context the agency needs to be useful. Family,
+health, friends, commitments that aren't work but shape the work.
+Read by CoS for triage; read by anyone scheduling or interrupting._
+
+_This is sensitive. Only agents that genuinely need this context
+load it. Audit checks `personal-md-read` access._
+
+_Derived from interview {{INTERVIEW_DATE}}._
+
+---
+
+## Family
+
+{{FAMILY_CONTEXT}}
+
+_(Spouse / partner, children, parents, siblings as relevant. Names,
+ages where relevant, any standing commitments tied to family time.
+Hard-blocked time and the rules around it.)_
+
+## Health + energy
+
+{{HEALTH_CONTEXT}}
+
+_(Sleep schedule, exercise commitments, energy patterns through the
+day, any medical considerations the agency needs to honor when
+scheduling.)_
+
+## Friends + community
+
+{{FRIENDS_COMMUNITY}}
+
+_(Standing relationships outside work. Friend groups, community
+involvement, religious/spiritual practice, civic obligations.
+Agents respect these as protected time.)_
+
+## Hobbies + restoration
+
+{{HOBBIES_RESTORATION}}
+
+_(What {{OWNER_NAME}} does to restore. The agency should protect
+this time as fiercely as it protects family time. Burnout is the
+slowest goal-killer.)_
+
+## Living context
+
+{{LIVING_CONTEXT}}
+
+_(Home, location, travel patterns, things tied to physical place
+that affect scheduling and availability.)_
+
+## Personal projects
+
+{{PERSONAL_PROJECTS}}
+
+_(Things {{OWNER_NAME}} is working on that are not the agency's
+work but matter to them. The agency doesn't manage these but
+should know they exist when triaging time.)_
+
+## What stays out of work
+
+{{WORK_LIFE_BOUNDARIES}}
+
+_(Explicit boundaries. "Don't schedule work after 7pm." "No work
+on Sundays." "Saturday mornings are for the kids." These are hard
+rules, not preferences.)_
+
+---
+
+_This file is for the agency's benefit, not for sharing. If a
+client asks about {{OWNER_NAME}}'s availability, the answer comes
+from the calendar — not from this file._

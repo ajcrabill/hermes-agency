@@ -135,12 +135,20 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
             on = prompter(f"Enable ingress channel '{ch}'? (y/n)", "n").lower().startswith("y")
             answers.extras[f"ingress.{ch}"] = on
 
+    # Tier 3 runs the deep interview AFTER manifest + base profiles are
+    # provisioned (the interview needs the cos_id to attach voice notes
+    # to its SOUL.md). We mark the flag here and execute after writing.
     if tier >= 3:
         print("\n─── Deep interview (Tier 3) " + "─" * 37)
-        print("Tier 3 captures exemplars and IP for voice calibration.")
-        print("In v0.1 this writes a TODO note to the deployment; the full")
-        print("interactive flow ships in v0.2.")
-        answers.extras["tier3_followup"] = True
+        print("After we provision the deployment, we'll run the deep")
+        print("interview to generate first drafts of:")
+        print("  • Goals.md          (agency-level)")
+        print("  • Values.md")
+        print("  • Personal.md")
+        print("  • Work.md")
+        print("  • Clients.md")
+        print("  • CoS voice refinement (appended to SOUL.md)")
+        answers.extras["run_tier3"] = True
 
     # ── Write deployment skeleton ──────────────────────────────────────
     print("\n─── Writing deployment " + "─" * 44)
@@ -194,6 +202,18 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
             print(f"  ({len(result.warnings)} warnings — review with `agency status -v`)")
     else:
         print(f"  ⚠ {len(result.errors)} error(s) — review with `agency status -v`")
+
+    # ── Tier 3 deep interview (runs after base provisioning) ───────────
+    if answers.extras.get("run_tier3"):
+        from .tier3_interview import run_tier3_interview
+        # Pass interactive prompter only if we're using one ourselves.
+        run_tier3_interview(
+            owner_name=_natural_name(answers.owner),
+            org_name=answers.org_name,
+            cos_id=answers.cos_id,
+            prompter=None,  # interactive default
+            refresh=force,
+        )
 
     print("\n" + "=" * 70)
     print("  Next steps")

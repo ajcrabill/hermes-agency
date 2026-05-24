@@ -1,0 +1,71 @@
+# Goals — {{ORG_NAME}}
+
+_The single most important document the agency reads. Every agent
+loads it; every prioritization decision routes back here._
+
+_Derived from a deep interview with {{OWNER_NAME}} on
+{{INTERVIEW_DATE}}. Edit freely. Re-run `agency init --tier 3
+--refresh-goals` to regenerate from a fresh interview._
+
+---
+
+## The mission
+
+{{MISSION_STATEMENT}}
+
+_(One paragraph. Why does this agency exist? What outcome is the
+work in service of?)_
+
+## The current year's goals
+
+{{ANNUAL_GOALS}}
+
+_(3-7 specific outcomes the agency is working toward in the next
+12 months. Each one names a measurable end state, not a process.)_
+
+## Active strategic projects
+
+{{ACTIVE_PROJECTS}}
+
+_(The 2-5 named initiatives that are getting most of the agency's
+attention right now. Each has a brief description, the current
+phase, and the agent who owns it day-to-day.)_
+
+## What we're NOT working on
+
+{{EXPLICIT_NON_GOALS}}
+
+_(Just as important as the goals. The things the principal has
+explicitly decided are not the agency's job — even when they look
+like they could be. This list protects focus.)_
+
+## How we measure progress
+
+{{PROGRESS_METRICS}}
+
+_(For each annual goal, the leading indicators that say it's on
+track. Lagging outcomes are nice but late; leading indicators are
+what we actually watch.)_
+
+## Decision principles when goals conflict
+
+{{DECISION_PRINCIPLES}}
+
+_(When goal A and goal B both want the next hour, how does
+{{OWNER_NAME}} decide? Document the actual rules of thumb so the
+agents can apply them consistently.)_
+
+## Goal review cadence
+
+- **Weekly:** `weekly-review` skill surfaces progress against active
+  projects and annual goals.
+- **Monthly:** {{OWNER_NAME}} reviews the goals doc itself —
+  reprioritize, retire, add.
+- **Quarterly:** strategic review — are the annual goals still the
+  right ones?
+
+---
+
+_When agents are unsure whether a request belongs to the agency's
+work, the answer is here. When it isn't here, it doesn't get done
+without explicit {{OWNER_NAME}} input._

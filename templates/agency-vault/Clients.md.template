@@ -1,0 +1,74 @@
+# Clients — {{ORG_NAME}}
+
+_Current and recent clients. The relationships that pay the bills
+and the relationships the agency stewards. Read by CoS on every
+inbound; read by KB when evaluating IP alignment; read by BD when
+qualifying new leads (so we don't pitch existing clients)._
+
+_Derived from interview {{INTERVIEW_DATE}}. Update as the roster
+evolves._
+
+---
+
+## Active clients
+
+{{ACTIVE_CLIENTS}}
+
+_(Each one: name, what we're doing for them, who the primary
+contact is, what they're paying (rough — exact in CRM), what they
+expect from us. Sensitive — agents don't quote dollar figures
+outbound.)_
+
+## Recently completed engagements
+
+{{COMPLETED_ENGAGEMENTS}}
+
+_(Last 6-12 months. Useful for case studies, references, and
+knowing when a former client might come back.)_
+
+## Long-standing relationships (not currently engaged)
+
+{{DORMANT_RELATIONSHIPS}}
+
+_(People we've worked with before who aren't current clients but
+matter to the relationship map. BD knows not to "prospect" them as
+strangers.)_
+
+## Standing collaborators (not clients but adjacent)
+
+{{COLLABORATORS}}
+
+_(People + organizations the agency partners with — co-authors,
+sub-contractors, referral sources, peer firms. Agents treat
+inbound from these differently than cold contacts.)_
+
+## Client communication preferences
+
+{{CLIENT_COMM_PATTERNS}}
+
+_(Per-client (or per-category-of-client) communication preferences.
+"Acme always wants weekly Friday updates." "BigCo only wants
+calls, never emails." Calibration data for outbound.)_
+
+## Renewal / billing cadence
+
+{{BILLING_CADENCE}}
+
+_(When clients renew, when invoices go out, when retainers reset.
+CoS uses this to surface "the Acme renewal is in 3 weeks; have we
+done the planning meeting?")_
+
+## Client-specific rules
+
+{{CLIENT_SPECIFIC_RULES}}
+
+_(Things the agency has committed to a specific client — exclusivity
+clauses, content embargoes, scheduling rules, no-fly recipients,
+etc. Hard rules; agents enforce them at the send-guard layer.)_
+
+---
+
+_This file is sensitive. It contains pricing context and
+relationship signal that shouldn't leak. Audit checks
+`clients-md-leak` rule — anything from here appearing in outbound
+copy is a blocking finding._

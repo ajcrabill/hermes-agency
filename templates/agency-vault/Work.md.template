@@ -1,0 +1,84 @@
+# Work — {{ORG_NAME}}
+
+_The work context. What {{OWNER_NAME}} actually does, who they do
+it for, what's currently in flight. The agency's working
+understanding of the business._
+
+_Derived from interview {{INTERVIEW_DATE}}._
+
+---
+
+## What the agency does
+
+{{AGENCY_OFFERINGS}}
+
+_(The services / products {{ORG_NAME}} delivers. Specific. "We
+write code" is too vague; "we build internal data tools for K-12
+school districts" is right.)_
+
+## How we work
+
+{{ENGAGEMENT_MODEL}}
+
+_(The shape of typical engagements. Retainers? Project-based?
+Hourly? What does a normal client interaction look like?)_
+
+## Current projects
+
+{{ACTIVE_PROJECTS}}
+
+_(The named active engagements right now. Each one: client name,
+brief, current phase, who's involved. Updated as projects start
+and end.)_
+
+## Current revenue streams
+
+{{REVENUE_STREAMS}}
+
+_(Where money is coming from. By category, by client, by product.
+Not finance-detailed — just enough that the agency knows what's
+keeping the lights on and where growth might come from.)_
+
+## Standard rates + offerings
+
+{{STANDARD_RATES}}
+
+_(For agents that field inbound inquiries: what does the standard
+package cost, what's included, what's extra. Saves the principal
+from re-quoting basics.)_
+
+## Tools we use
+
+{{TOOL_STACK}}
+
+_(The actual stack the agency operates in. CRM, calendar,
+storage, billing, communication. Helps the agency know where data
+lives + which integrations to honor.)_
+
+## Where the work happens
+
+{{WORK_LOCATIONS}}
+
+_(Home office, co-working, client sites, travel. Affects
+scheduling and availability windows.)_
+
+## Professional networks
+
+{{PROFESSIONAL_NETWORKS}}
+
+_(Communities, associations, ongoing relationships with peers and
+counterparts. The fabric the work is embedded in.)_
+
+## Active learning + growth
+
+{{LEARNING_GROWTH}}
+
+_(What {{OWNER_NAME}} is currently studying, exploring, or
+developing skill in. Helps agents know which inbound is signal
+vs. noise.)_
+
+---
+
+_This file is the canonical "what the work IS." When Goals.md says
+what we're optimizing for and Values.md says what we refuse to do,
+Work.md says what we actually offer when someone asks._

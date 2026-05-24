@@ -40,6 +40,26 @@ FRAMEWORK_VAULT: Path = AGENCY_HOME / "framework-vault"
 MASTER_PLAN_MD: Path = FRAMEWORK_VAULT / "MASTER_PLAN.md"
 DEVELOPMENT_PLAYBOOK_MD: Path = FRAMEWORK_VAULT / "DEVELOPMENT_PLAYBOOK.md"
 
+# Agency-vault — the PRINCIPAL'S context layer (read by agents; owned by operator).
+# Goals.md is the single most important document the agency reads — every
+# prioritization routes back here. Values.md describes the non-negotiables.
+# Personal.md, Work.md, Clients.md provide the situational context CoS uses
+# for every triage decision.
+AGENCY_VAULT: Path = AGENCY_HOME / "agency-vault"
+GOALS_MD: Path = AGENCY_VAULT / "Goals.md"
+VALUES_MD: Path = AGENCY_VAULT / "Values.md"
+PERSONAL_MD: Path = AGENCY_VAULT / "Personal.md"
+WORK_MD: Path = AGENCY_VAULT / "Work.md"
+CLIENTS_MD: Path = AGENCY_VAULT / "Clients.md"
+
+# Operator state files — durable memory across sessions. Hermes' injection
+# reduces dependency on these, but they remain valuable for cross-session
+# continuity (pruned + maintained, they're a clean inbox-to-context channel
+# for whatever Hermes-side conversation didn't preserve).
+STATE_VAULT: Path = AGENCY_HOME / "state-vault"
+OPERATIONAL_STATE_MD: Path = STATE_VAULT / "operational-state.md"
+CONVERSATION_JOURNAL_MD: Path = STATE_VAULT / "conversation-journal.md"
+
 # Profiles tree (per-agent content)
 PROFILES_DIR: Path = AGENCY_HOME / "profiles"
 
@@ -118,6 +138,15 @@ __all__ = [
     "FRAMEWORK_VAULT",
     "MASTER_PLAN_MD",
     "DEVELOPMENT_PLAYBOOK_MD",
+    "AGENCY_VAULT",
+    "GOALS_MD",
+    "VALUES_MD",
+    "PERSONAL_MD",
+    "WORK_MD",
+    "CLIENTS_MD",
+    "STATE_VAULT",
+    "OPERATIONAL_STATE_MD",
+    "CONVERSATION_JOURNAL_MD",
     "PROFILES_DIR",
     "STATE_DIR",
     "KANBAN_DB",

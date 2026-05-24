@@ -13,5 +13,6 @@ this.
 """
 
 from .wizard import run_wizard
+from .tier3_interview import run_tier3_interview
 
-__all__ = ["run_wizard"]
+__all__ = ["run_wizard", "run_tier3_interview"]
