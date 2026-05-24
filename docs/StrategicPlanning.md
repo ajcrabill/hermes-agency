@@ -77,15 +77,28 @@ question becomes a vibes check, and a vibes check can be answered
 ### 1.1 Outcomes (Goals)
 
 Outcomes are results knowable *at the end* of a cycle. They're the
-destination — what the Principal says success looks like for the
-business in 1-5 years.
+destination — what the Principal says success looks like in 1-5
+years.
+
+**Outcomes are not limited to business matters.** HermesAgency is
+built on the belief that all of its team members — biological and
+technological — deserve well-rounded lives. The CoS actively
+encourages the Principal to include at least one non-business
+Outcome: health, family, marriage, friendships, hobbies, faith,
+community, learning, whatever matters to the Principal as a whole
+person. The agency supports the Principal toward those Outcomes
+the same way it supports business Outcomes — by translating them
+into SMART form, layering Interim Goals underneath, and mapping
+skills + scripts that move the needle.
 
 A well-formed Outcome in HermesAgency:
 
-- Is a **SMART statement** about a business result, not a process.
-  ("Revenue from coaching engagements will increase from $180k in
-  January 2025 to $300k by December 2027" — not "Get more clients" or "Work on
-  coaching business.")
+- Is a **SMART statement** about a result the Principal cares
+  about, not a process. ("Revenue from coaching engagements will
+  increase from $180k in January 2025 to $300k by December 2027"
+  is a business Outcome. "Weekly hours of focused exercise will
+  increase from 1 hour in January 2026 to 4 hours by December
+  2027" is a personal Outcome. Both follow the same form.)
 - **Names a measurable end state** that's challenging enough to
   require behavior change.
 - Lasts **12-60 months** (minimum 12, maximum 60; most land
@@ -93,8 +106,9 @@ A well-formed Outcome in HermesAgency:
   every quarter, they aren't outcomes, they're tactical goals
   miscategorized.
 - There are **1-3 of them** (definitely no more than 5). The
-  point of the discipline is forced prioritization. A small
-  business with seven equal priorities has zero priorities.
+  point of the discipline is forced prioritization. The CoS
+  encourages at least one Outcome to come from outside the
+  business — a well-rounded life is itself a strategic priority.
 
 Outcomes go at the top of `Goals.md`. Every other layer in the
 strategic plan exists in service of these.
@@ -326,10 +340,16 @@ honored).
 
 An Outcome should:
 
-- **Reflect a business outcome, not inputs or outputs.** "Revenue
-  from coaching engagements" is an outcome; "hours spent coaching"
-  is an input; "number of prospect calls" is an output. Outcomes
-  are results, not activities.
+- **Reflect a result the Principal cares about, not inputs or
+  outputs.** "Revenue from coaching engagements" is a business
+  outcome; "hours spent coaching" is an input; "number of
+  prospect calls" is an output. The same pattern applies outside
+  the business: "weekly hours of focused exercise" is a personal
+  outcome; "gym sessions attended" is an output measuring
+  participation; "fitness budget" is an input. Outcomes are
+  results, not activities. **Outcomes can be business OR personal**
+  — the CoS actively encourages at least one non-business Outcome
+  per the §1.1 well-rounded-lives commitment.
 - **Be a Goal, not a Vision.** A Vision is the 10-year aspiration
   ("be the trusted authority for X"). An Outcome is the next 1-3
   year SMART step toward it ("Monthly inbound coaching inquiries
@@ -571,10 +591,19 @@ less by reclaiming — is the right design tension.
 
 **Conversation flow during `/agency setup`:**
 
-1. **Listen for vision.** *"Looking ahead one to five years, what
-   would success look like for your business? Tell me what you'd
-   want to be true that isn't true today."* The CoS asks
-   follow-ups until it has enough to translate.
+1. **Listen for vision — business AND non-business.** First:
+   *"Looking ahead one to five years, what would success look like
+   for your business? Tell me what you'd want to be true that
+   isn't true today."* Follow-ups until the CoS has enough to
+   translate. Then — and this matters — the CoS asks for at least
+   one non-business Outcome: *"At HermesAgency, we believe all of
+   our team members deserve well-rounded lives. Is there
+   something outside the business — your health, your family,
+   your marriage, a hobby, your faith — that you'd like the
+   agency to support you on? You don't have to name one if it
+   doesn't feel right, but we'd encourage it."* If the Principal
+   names one, the CoS treats it as an Outcome of equal standing
+   and runs the same SMART translation.
 
 2. **Listen for values.** *"What matters to you about HOW you do
    business — even when it might cost you in the short term?
@@ -1030,9 +1059,13 @@ act on — typically during weekly review.
 increase from $180k in January 2025 to $300k by December 2027.*
 
 **Outcome 2 — Authority positioning:**
-*Monthly inbound coaching inquiries originating from the Principal's
-published content will increase from 1 in January 2026 to 8 by
-December 2027.*
+*Monthly inbound coaching inquiries originating from the
+Principal's published content will increase from 1 in January
+2026 to 8 by December 2027.*
+
+**Outcome 3 — Personal health (the non-business Outcome):**
+*Weekly hours of focused exercise will increase from 1 hour in
+January 2026 to 4 hours by December 2027.*
 
 ### Outputs (Interim Goals under Outcome 1)
 
@@ -1078,6 +1111,32 @@ December 2026.*
   message in Principal's voice.
 - Agent profile: Devon (BD)
 - Cadence: triggered by pipeline-watchdog
+- Status: Green
+
+### Outputs + Inputs under Outcome 3 (the non-business Outcome)
+
+**Interim Goal 3.1 — Calendar protection for exercise blocks:**
+*The percentage of weeks where the Principal has 4+ exercise
+blocks of ≥45 minutes protected on the calendar (not pre-empted
+by client work) will increase from 25% in January 2026 to 90%
+by December 2026.*
+
+**`cos/exercise-block-protector.py`** *(deterministic Initiative
+serving Interim Goal 3.1)*
+- Docstring outcome metric: *"Number of exercise blocks per week
+  defended against double-booking will increase from 1 in
+  January 2026 to 4 by December 2026."*
+- Agent profile: CoS (Loriah)
+- Cadence: runs at every calendar-modify event; weekly digest to
+  the Principal
+- Status: Green
+
+**`cos/weekly-exercise-checkin`** *(agentic Initiative)*
+- Frontmatter outcome metric: *"Weekly check-in surfaces actual
+  exercise hours and asks the Principal one short question about
+  what helped or hindered the week — fires 100% of weeks."*
+- Agent profile: CoS (Loriah)
+- Cadence: weekly (Sunday evening)
 - Status: Green
 
 ### Guardrails

@@ -9,6 +9,92 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.9-spec] — 2026-05-24
+
+**Spec revision: Outcomes can be non-business — well-rounded
+lives are a strategic priority.** Goals aren't limited to business
+matters. The CoS actively encourages the Principal to include at
+least one non-business Outcome — health, family, marriage,
+friendships, hobbies, faith, community, learning, whatever matters
+to them as a whole person. The agency supports those Outcomes
+with the same SMART discipline + Interim Goals + Initiative
+mappings as business Outcomes.
+
+The framework-level commitment: **at HermesAgency, we believe all
+of our team members — biological and technological — deserve
+well-rounded lives.** The interview, the worked example, and the
+public README all reflect that.
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Changed — `docs/StrategicPlanning.md` §1.1 Outcomes
+
+New paragraph after the intro: "Outcomes are not limited to
+business matters. HermesAgency is built on the belief that all
+of its team members — biological and technological — deserve
+well-rounded lives. The CoS actively encourages the Principal to
+include at least one non-business Outcome..." Both example forms
+shown: a business Outcome (coaching revenue) and a personal one
+(weekly exercise hours).
+
+Updated bullet text: "Reflect a result the Principal cares
+about" (was "business result"). Last bullet adds: "The CoS
+encourages at least one Outcome to come from outside the
+business — a well-rounded life is itself a strategic priority."
+
+### Changed — `docs/StrategicPlanning.md` §3.1 Outcome quality criteria
+
+First bullet broadened: "Reflect a result the Principal cares
+about, not inputs or outputs." Examples now show both business
+("Revenue from coaching engagements") and personal ("weekly
+hours of focused exercise"). Adds explicit note:
+"**Outcomes can be business OR personal** — the CoS actively
+encourages at least one non-business Outcome per the §1.1
+well-rounded-lives commitment."
+
+### Changed — `docs/StrategicPlanning.md` §3.5 step 1
+
+"Listen for vision" expanded to include the non-business prompt.
+After the business-vision question, the CoS asks:
+
+> *"At HermesAgency, we believe all of our team members deserve
+> well-rounded lives. Is there something outside the business —
+> your health, your family, your marriage, a hobby, your faith —
+> that you'd like the agency to support you on? You don't have
+> to name one if it doesn't feel right, but we'd encourage it."*
+
+If the Principal names one, the CoS treats it as an Outcome of
+equal standing and runs the same SMART translation.
+
+### Added — `docs/StrategicPlanning.md` §8 worked example
+
+New **Outcome 3 — Personal health (the non-business Outcome)**:
+*"Weekly hours of focused exercise will increase from 1 hour in
+January 2026 to 4 hours by December 2027."* Plus a supporting
+Interim Goal (calendar protection for exercise blocks) and two
+Initiatives (`cos/exercise-block-protector.py` deterministic,
+`cos/weekly-exercise-checkin` agentic) showing how the same
+strategic structure applies to a personal Outcome.
+
+### Changed — `README.md`
+
+Strategic-planning paragraph closes with: "**Goals don't have to
+be business-only**: HermesAgency is built on the belief that all
+of our team members — biological and technological — deserve
+well-rounded lives, so the CoS actively encourages the Principal
+to include at least one non-business Outcome (health, family,
+marriage, hobbies, faith, whatever matters)."
+
+### Spec header
+
+Bumped v0.22.8-spec → v0.22.9-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.8-spec] — 2026-05-24
 
 **Spec revision: the Principal's privilege + 12-60 month Outcome
