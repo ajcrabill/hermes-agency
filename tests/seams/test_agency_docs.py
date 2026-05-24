@@ -14,7 +14,7 @@ Verifies the v0.22.4-spec aim-vs-brake split is implementation-true:
 
 from __future__ import annotations
 
-import os
+import sys
 from pathlib import Path
 
 import pytest
@@ -22,15 +22,22 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def isolated_agency_home(tmp_path, monkeypatch):
-    """Point AGENCY_HOME at a tmp dir so this test is hermetic."""
+    """Point AGENCY_HOME at a tmp dir so this test is hermetic.
+
+    Uses the same pattern as the conftest `tmp_agency` fixture: set
+    the env var BEFORE the framework modules are imported, and purge
+    any cached `_framework.*` modules from sys.modules so the next
+    import picks up the new path.
+    """
     monkeypatch.setenv("AGENCY_HOME", str(tmp_path))
-    # constants.py reads AGENCY_HOME at import time; force re-import
-    import importlib
-    import _framework.constants
-    importlib.reload(_framework.constants)
-    import _framework.agency_docs.loader
-    importlib.reload(_framework.agency_docs.loader)
+    # See conftest.py::tmp_agency for why HERMES_AGENCY_STATE is also set.
+    monkeypatch.setenv("HERMES_AGENCY_STATE", str(tmp_path / "_state"))
+    for mod in [m for m in list(sys.modules) if m.startswith("_framework")]:
+        del sys.modules[mod]
     yield
+    # Teardown: purge again so the NEXT test starts clean
+    for mod in [m for m in list(sys.modules) if m.startswith("_framework")]:
+        del sys.modules[mod]
 
 
 def _write(path: Path, body: str) -> None:

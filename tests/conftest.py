@@ -31,6 +31,13 @@ def tmp_agency(monkeypatch, tmp_path) -> Path:
     (agency / "framework-vault").mkdir()
     monkeypatch.setenv("AGENCY_HOME", str(agency))
 
+    # v0.20-spec state-collapse: _resolve_state_root() prefers
+    # ~/.hermes/agency-state/ when ~/.hermes exists. To keep tests
+    # hermetic regardless of whether the developer's machine has a
+    # real ~/.hermes/, point HERMES_AGENCY_STATE at the legacy
+    # location under our tmp AGENCY_HOME.
+    monkeypatch.setenv("HERMES_AGENCY_STATE", str(agency / "_state"))
+
     # The constants module caches the path at import time. Tests that
     # want the override to take effect must import (or reimport) the
     # framework modules AFTER this fixture has run.

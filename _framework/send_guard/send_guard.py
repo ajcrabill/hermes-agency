@@ -164,8 +164,22 @@ def evaluate(
     candidate: SendCandidate,
     access_list: AccessList | None = None,
 ) -> SendGuardDecision:
-    """Run the candidate through the three layers. First DENY wins; else
-    if any HOLD signals, return HOLD; else ALLOW."""
+    """Run the candidate through the four layers. First DENY wins; else
+    if any HOLD signals, return HOLD; else ALLOW.
+
+    Layer order:
+        L1 access list (whitelist / greylist / blacklist)
+        L2 hard ceilings (manifest invariants)
+        L3 hard-rule validators (registered validators)
+        L4 Guardrails.md awareness (v0.23+)
+
+    L4 loads Guardrails.md and notes its presence in the decision
+    record so the audit / Sentinel can verify the send-guard
+    actually saw the Principal's declared lines. The semantic
+    check against Guardrail content (does this message look like
+    it would violate a prohibition?) is LLM-driven and ships in
+    a follow-up release; for now the integration is structural.
+    """
     decision = SendGuardDecision(verdict=Verdict.ALLOW)
 
     if access_list is None:
@@ -231,7 +245,32 @@ def evaluate(
 
     if grey and decision.verdict != Verdict.HOLD:
         decision.verdict = Verdict.HOLD
-        decision.reasons.append(f"greylist recipient(s): {grey} — holding for owner review")
+        decision.reasons.append(f"greylist recipient(s): {grey} — holding for Principal review")
+
+    # ── Layer 4: Interim Guardrails awareness (v0.23+) ─────────────────
+    # Per v0.22.4-spec aim/brake split, send-guard reads Guardrails.md
+    # at outbound-mail pre_tool_call time. Guardrails themselves are
+    # value statements (not SMART, not measurable); the SMART layer
+    # is the Interim Guardrails underneath. Semantic checking (does
+    # this message body advance / threaten a specific Interim Guardrail
+    # metric?) is LLM-driven and ships in a follow-up release; for
+    # now we load the structure and record that the send-guard saw it,
+    # so the audit can verify the integration is wired correctly.
+    try:
+        from _framework.guardrails_loader import load_guardrails_parsed
+        parsed = load_guardrails_parsed()
+        if parsed:
+            interim_count = sum(
+                len(g.get("interim_guardrails", []))
+                for g in parsed.get("guardrails", [])
+            )
+            decision.reasons.append(
+                f"guardrails-loaded: {interim_count} Interim Guardrail(s) "
+                f"in scope under {len(parsed.get('guardrails', []))} "
+                f"Guardrail(s) (structural check only — semantic v0.23+)"
+            )
+    except ImportError:
+        pass  # loader unavailable; not a send-guard failure
 
     if decision.verdict == Verdict.ALLOW:
         decision.reasons.append("clean")

@@ -171,6 +171,94 @@ def playbook_audit() -> dict[str, Any]:
     return {"blocking": n_block, "warnings": n_warn}
 
 
+def guardrails_watch() -> dict[str, Any]:
+    """At session boundaries (on_session_start / on_session_end):
+    load Guardrails.md and report on the **Interim Guardrails** —
+    the SMART, objectively-measurable layer beneath each Guardrail.
+
+    Sentinel is the architectural watchdog (per v0.22.4-spec); the
+    Guardrails.md file is the content it watches against. **The
+    Guardrails themselves are value statements and not directly
+    measurable** — what Sentinel observes is the Interim Guardrails
+    (SMART metrics with start/end dates and start/end points). If
+    the Interim Guardrails are within parameter, we infer the
+    Guardrail is being honored. If an Interim Guardrail drifts,
+    the Guardrail is at risk.
+
+    This function doesn't enforce — it observes and emits events
+    for the Principal to review.
+
+    Returns a summary: how many Interim Guardrails are tracked
+    (Guardrail counts are reported but are not the measured layer).
+    """
+    try:
+        from _framework.guardrails_loader import load_guardrails_parsed
+    except ImportError as e:
+        _emit("guardrails_watch_skipped", actor="sentinel", severity="warn",
+              payload={"reason": f"loader unavailable: {e}"})
+        return {"skipped": True}
+
+    parsed = load_guardrails_parsed()
+    if parsed is None:
+        # No Guardrails.md yet — emit info-level so the audit
+        # 'agency-context-injection' rule has signal but Sentinel
+        # itself doesn't escalate.
+        _emit("guardrails_watch_no_doc", actor="sentinel", severity="info",
+              payload={"hint": "Guardrails.md not present"})
+        return {"interim_guardrails_tracked": 0}
+
+    guardrails = parsed.get("guardrails", [])
+    # Roll up Interim Guardrails — the measurable layer. The
+    # Guardrails themselves are value statements; we just count
+    # them for context.
+    interim_count = sum(
+        len(g.get("interim_guardrails", [])) for g in guardrails
+    )
+    interim_without_initiatives = sum(
+        1
+        for g in guardrails
+        for ig in g.get("interim_guardrails", [])
+        if not ig.get("initiative_refs")
+    )
+
+    _emit(
+        "guardrails_watch_ran",
+        actor="sentinel",
+        severity="info",
+        payload={
+            "guardrails_in_scope": len(guardrails),
+            "interim_guardrails_tracked": interim_count,
+            "interim_without_initiatives": interim_without_initiatives,
+            "note": (
+                "Guardrails are value statements (not measurable); "
+                "monitoring works on Interim Guardrails — SMART metrics "
+                "under each Guardrail. If Interim Guardrails are within "
+                "parameter, the Guardrail is inferred honored."
+            ),
+        },
+    )
+
+    # An Interim Guardrail without resourced Initiatives is a
+    # warning sign: nothing is producing the artifact that would
+    # move the metric.
+    if interim_without_initiatives:
+        _emit(
+            "interim_guardrail_unresourced",
+            actor="sentinel",
+            severity="warn",
+            payload={
+                "count": interim_without_initiatives,
+                "hint": "Some Interim Guardrails have no skill/script Initiatives attached.",
+            },
+        )
+
+    return {
+        "guardrails_in_scope": len(guardrails),
+        "interim_guardrails_tracked": interim_count,
+        "interim_without_initiatives": interim_without_initiatives,
+    }
+
+
 __all__ = [
     "learning_monitor",
     "drift_monitor",
@@ -178,4 +266,5 @@ __all__ = [
     "event_rollup",
     "compliance_report",
     "playbook_audit",
+    "guardrails_watch",
 ]
