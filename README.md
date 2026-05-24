@@ -6,7 +6,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes engine](https://img.shields.io/badge/plugin%20for-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
 
-HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](https://github.com/NousResearch/hermes-agent) powerful Hermes agentic engine. Designed for and by small-business owners, HermesAgency pulls together the suite of capabilities every small business wants and needs but typically can't afford. It's where the powerful, always-working aspects of *technological intelligences* (the agents) collaborate with the ingenuity and creativity of *biological intelligences* (the humans). Together, with a **7-part continuous learning framework** designed from the ground up to rapidly expand the agents' understanding of the human's goals and values, HermesAgency gives business leaders access to the advantages of companies many times their size and revenue — without sacrificing the privacy and ownership of your data and intellectual property, and without getting locked into big-tech ecosystems.
+HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](https://github.com/NousResearch/hermes-agent) powerful Hermes agentic engine. Designed for and by small-business owners, HermesAgency pulls together the suite of capabilities every small business wants and needs but typically can't afford. It's where the powerful, always-working aspects of *technological intelligences* (the agents) collaborate with the ingenuity and creativity of *biological intelligences* (the humans). Together, with a **7-part continuous learning framework** designed from the ground up to rapidly expand the agents' understanding of the human's goals and values, HermesAgency gives business leaders access to the advantages of companies many times their size and revenue — without sacrificing the privacy and ownership of your data and intellectual property, and without getting locked into big-tech ecosystems. The owner's declared goals and values (in `Goals.md`, `Values.md`, and the other agency-level context docs) are always part of the background the agency operates in — present every turn, never the foreground, never absent.
 
 > By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal AI chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
 
@@ -26,23 +26,25 @@ A small-business owner wears every hat. HermesAgency runs a team of agents that 
 - **Draft email and writing in your voice** — learns from samples of your prior writing; subsequent drafts sound like *you*, not like a chatbot
 - **Triage your inbox** — separates what actually needs your attention from what doesn't, with a daily summary instead of constant interruption
 - **Turn voice memos into written drafts** — record a voice note while driving; get back a polished blog post, client email, or memo ready to edit
-- **Publish a weekly industry newsletter** — pulls from the sources you read anyway and assembles a newsletter you can ship in minutes
-- **Catch embarrassing send-mistakes before they leave** — every outbound message passes a guard that flags the wrong-recipient, wrong-attachment, wrong-tone errors that cost you credibility
+- **Track conversations you've started and need to follow up on** — the agency keeps a thread-aware view of who you're waiting on and who's waiting on you, so deals don't die in silence
 
 ### Run your operations
 
 - **Manage your calendar end-to-end** — finds time, batches similar meetings, avoids double-booking, and flags conflicts before they bite
 - **Keep tasks moving across your team** — kanban with explicit dependencies; you see what's blocked, what's late, and what's actually shipping
 - **Surface emails that still need a reply** — nothing falls off the bottom of the inbox because it scrolled out of view
+- **Stay on top of invoices, expenses, and late-paying clients** — the agency tracks money in, money out, and the receivables you've been meaning to chase
 - **Keep your operational documentation current** — when something changes, the agents update the relevant docs so you stop running into stale process notes
 - **Notify you only when a human is actually needed** — push alerts are rare and meaningful, not constant noise
 
 ### Plan your next quarter
 
-- **Coach you toward SMART goals you'll actually measure** — interactive Q&A that turns vague intentions into goals with metrics attached
+The agency operates with your declared goals and values always part of its background context. Update `Goals.md`, and the work shifts to track.
+
+- **Coach you toward SMART goals you'll actually measure** — interactive Q&A that turns vague intentions into goals with metrics attached, then writes them to `Goals.md`
 - **Compare your calendar to your stated goals** — see where your time is leaking and where the gap is between what you say matters and how you spent the week
 - **Three concrete actions every week** — weekly brainstorm proposing specific moves based on what's happening in your business *right now*, not generic advice
-- **Track progress against goals with real observations** — not vanity metrics; the agency logs what actually moved and what didn't
+- **Track progress with real observations** — not vanity metrics; the agency logs what actually moved and what didn't, tied back to the goals you've declared
 
 ---
 
@@ -102,7 +104,7 @@ is the runtime. You run it via `hermes` (interactive), `hermes chat`, or
 `hermes run <skill>`. HermesAgency is a **plugin** that makes Hermes more
 reliable in 7 specific ways:
 
-1. **Supervised learning loop** — captures every correction you give, propagates it to every relevant skill across the agency, and tells you when the loop breaks (so you stop repeating yourself)
+1. **Supervised learning loop** — captures every correction you give, propagates it to every relevant skill across the agency, and tells you when the loop breaks (so you stop repeating yourself). Your declared goals and values (in `Goals.md`, `Values.md`, and the other agency-level context docs) are always part of the background context the agency operates in — never the foreground, never absent
 2. **Autonomy ladder (L1–L5)** — agents earn more independence over time, gated on track record + structural compliance + learning fidelity
 3. **Verifier** — every skill completion runs through testable criteria before counting as done
 4. **System Sentinel** — read-only observer; alarms when something drifts, never firefights

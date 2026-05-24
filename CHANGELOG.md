@@ -9,6 +9,93 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.1-spec] — 2026-05-24
+
+**Spec revision: Goals.md (and the other agency-level context docs)
+are always part of the background.** Pure spec + README clarification
+— no code change. Makes explicit what was implicit: the 7-step
+learning loop operates *with* the owner's declared goals and values
+always present in the operating context, never the foreground, never
+absent. The goals aren't the lens everything routes through; they're
+the atmospheric pressure the agency works inside. Spec-only revision;
+does not advance the 9th-version milestone counter.
+
+### Changed — spec §1.1 (the seven-step learning loop)
+
+The 7 steps themselves are unchanged. Added a closing paragraph
+naming the agency-level context docs (Goals.md, Values.md,
+Personal.md, Work.md, Clients.md, per-profile SOUL.md) as the
+always-loaded background. The framing makes it clear the agency
+never operates in a vacuum without becoming a goal-attribution
+audit system layered over the learning loop.
+
+### Added — §1.1.1 "Implementation state (context-injection)"
+
+A short, honest section. As of v0.22, the round-trip infrastructure
+for agency context docs exists separately from the learning code.
+v0.23 adds an audit rule to confirm the always-loaded context block
+actually includes the agency-level docs at skill-load time, plus an
+optional `--goal <key>` flag on `/agency capture` for owners who
+want to attach a specific goal to a correction.
+
+### Changed — §1 promise, §1.7 systems table, §2.2 spine diagram
+
+Each gets a light touch acknowledging the always-present context
+docs:
+- §1 promise: closing sentence names Goals.md, Values.md, etc. as
+  "always part of the background the agency operates in — present
+  every turn, not foreground, but never absent."
+- §1.7 row 1: notes that the agency-level context docs are part of
+  the always-loaded background alongside rule injection.
+- §2.2 spine paragraph: notes that the context docs accompany rule
+  injection at every skill load.
+
+The 7 steps themselves, the systems table structure, and the spine
+diagram are unchanged.
+
+### Added — v0.23 closure-plan entry in §13.7
+
+Scoped acceptance for the always-loaded agency-context audit:
+- Audit rule (`agency-context-injection`) confirms agency-level docs
+  are reachable from skill-load context.
+- `/agency capture --goal <key>` flag for owners who want to attach
+  a goal to a correction (optional, not required).
+- Small prompt-injection format consistency change.
+
+This is much smaller than a goal-attribution system layered over
+the learning loop — it just verifies the always-present-background
+claim is testable.
+
+### README
+
+Intro paragraph: closing sentence acknowledging Goals.md, Values.md
+and the other context docs are "always part of the background the
+agency operates in — present every turn, never the foreground,
+never absent."
+
+"Plan your next quarter" task-list section adds a one-line preamble
+naming the always-present-context idea (light, not heavy).
+
+System-1 description gets one trailing sentence about the
+always-present context docs.
+
+### README task-list adjustments (separate from goal-anchoring)
+
+Per AJ's review:
+- Dropped "weekly industry newsletter" bullet (not universally
+  appealing); replaced with "Track conversations you've started
+  and need to follow up on" (broader small-business pain).
+- Dropped "Catch embarrassing send-mistakes" bullet (too
+  negative-toned for marketing copy).
+- Added "Stay on top of invoices, expenses, and late-paying
+  clients" to the "Run your operations" category to surface the
+  finance subsystem.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.0] — 2026-05-24
 
 **PyPI publication + entry-point install** (v0.05 of the 9th

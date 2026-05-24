@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.1-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -188,7 +188,10 @@ the human's goals and values, HermesAgency gives business leaders
 access to the advantages of companies many times their size and
 revenue — without sacrificing the privacy and ownership of their
 data and intellectual property, and without getting locked into
-big-tech ecosystems.
+big-tech ecosystems. The owner's declared goals (in `Goals.md`)
+and broader context (`Values.md`, `Personal.md`, `Work.md`,
+`Clients.md`) are always part of the background the agency
+operates in — present every turn, not foreground, but never absent.
 
 **The one-line operational promise:** every correction the owner
 gives is captured, tagged, propagated to every relevant agent across
@@ -227,6 +230,39 @@ for every owner correction:
 
 Break any link and the owner is back to re-teaching. Every architectural
 choice in §2-§12 serves the integrity of this chain.
+
+**The learning loop never operates in a vacuum.** The owner's
+agency-level context documents — `Goals.md` (the SMART goals
+the small business owner has declared), `Values.md`, `Personal.md`,
+`Work.md`, `Clients.md`, and per-profile `SOUL.md` — are always
+part of the operating background. Skills see them every turn,
+alongside the injected rules. The learning loop refines *how the
+agency operates*; the context docs declare *what the agency is
+operating in service of*. Goals.md specifically holds the
+owner's currently-pursued objectives, so it's never absent from
+the context the agency reasons in — even when a particular
+correction is purely stylistic.
+
+#### 1.1.1 Implementation state (context-injection)
+
+As of v0.22, the 7-step chain exists as code (`_framework/learning/`)
+and the agency-level context docs round-trip through
+`_framework/goals/`, `_framework/agency_docs/`, and the per-profile
+SOUL/standards loaders. The remaining work to make "Goals.md is
+always in the background context" implementation-true is small:
+
+- Ensure the always-injected context block includes Goals.md
+  alongside the other agency-level docs (Values, Personal, Work,
+  Clients) at every skill load. The mechanism exists; the wiring
+  audit is a v0.23 item.
+- Optional: at capture time, let the owner attach which goal(s)
+  the correction relates to. Not required — most corrections are
+  stylistic and don't need an explicit goal-tag — but useful for
+  later "which corrections served which goal" inspection.
+
+The goal-anchoring is therefore lightweight: Goals.md is part of
+the context the agency always operates in, not a separate
+attribution system layered over the learning loop.
 
 ### 1.2 Why this is the differentiator
 
@@ -435,7 +471,7 @@ The exhaustive list of what HermesAgency adds to Hermes:
 
 | # | System | Hook into Hermes |
 |---|---|---|
-| 1 | Supervised learning loop | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn |
+| 1 | Supervised learning loop | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the agency-level context docs (Goals.md, Values.md, Personal.md, Work.md, Clients.md) are part of the always-loaded background |
 | 2 | Autonomy ladder (L1–L5) | Plugin's `pre_tool_call` hook consults `_framework.autonomy` and blocks tool calls the skill lacks authority for |
 | 3 | Verifier (per-skill criteria) | Plugin's `post_tool_call` hook records completions; v0.18 adds `transform_tool_result` to enforce verifier criteria |
 | 4 | System Sentinel (read-only) | Plugin's `on_session_start` / `on_session_end` hooks record session events; Sentinel reads from there + Hermes' own state |
@@ -571,7 +607,9 @@ composes around it:
 ```
 
 Every agent loads applicable learning rules at skill-load time
-(§3.3). Every consequential action passes through the autonomy gate
+(§3.3), with the agency-level context docs (Goals.md, Values.md,
+Personal.md, Work.md, Clients.md) always present as background.
+Every consequential action passes through the autonomy gate
 (§4.2). Every completion runs through the verifier (§6.1). Sentinel
 watches the loop's health and fires alerts when it breaks (§5.3).
 
@@ -2044,6 +2082,28 @@ filesystem convention), with all state living in `~/.hermes/`
 `hermes` (not a bash wizard). Skills-standard conformance (v0.21)
 is the remaining alignment work. The structural drift from
 v0.1 → v0.16 is fully repaid.
+
+**v0.23.0 — Always-loaded agency-context audit**
+
+§1.1 names the agency-level context docs (Goals.md, Values.md,
+Personal.md, Work.md, Clients.md) as always present in the operating
+background. v0.23 confirms this in code:
+
+- Audit rule (`agency-context-injection`) walks every active profile
+  and verifies the agency-level docs are reachable from the
+  skill-load context. Missing or unreadable docs surface as audit
+  findings.
+- `/agency capture` gains an optional `--goal <key>` repeatable
+  flag for owners who want to attach a specific goal to a
+  correction. Not required — most corrections are stylistic — but
+  available when the link matters.
+- A small change to the prompt-injection block format ensures the
+  "current context" docs render consistently across skills, so the
+  agent always reasons in the same context background.
+
+Acceptance: `agency audit` flags any profile whose agency-context
+docs aren't reachable; the §1.1 claim ("Goals.md is always part of
+the operating background") is testable, not aspirational.
 
 ---
 
