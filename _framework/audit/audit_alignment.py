@@ -212,12 +212,15 @@ def audit_deployment(strict: bool = False) -> AuditReport:
             report.findings.extend(sub.findings)
             report.rules_run |= sub.rules_run
 
-    # Always run framework-integrity rules
+    # Always run framework-integrity rules + deployment-scope rules.
+    # Deployment-scope rules look at deployment-wide concerns
+    # (Goals.md presence, cross-profile alignment, etc.) — not
+    # per-skill or per-profile.
     invariants = load_invariants()
     always_block = set(invariants.get("always_block_rules", []))
     warn = set(invariants.get("warn_rules", []))
     for code, rule in _RULES.items():
-        if rule.scope != "framework":
+        if rule.scope not in ("framework", "deployment"):
             continue
         if strict and code not in always_block:
             continue
@@ -789,6 +792,310 @@ def _looks_executable(script: Path) -> bool:
     except Exception:
         return False
     return "if __name__" in text or "def main" in text
+
+
+# ── Strategic-alignment rules (v0.23.3) ──────────────────────────────────
+#
+# These six rules implement the v0.22.12-spec Thread B + Thread C
+# strategic-alignment checks. All produce findings only — never
+# mutations to the vault filesystem (test in test_audit_alignment).
+#
+# Important per StrategicPlanning.md §3.4 + the v0.23.1 design point:
+# Guardrails themselves are value statements (not measurable). The
+# SMART-measurable layer is Interim Guardrails. Audit rules that
+# touch the Guardrails side check Interim Guardrails, not Guardrails.
+
+
+# Valid SKILL.md status colors (StrategicPlanning §5).
+_VALID_STATUS_COLORS = frozenset({
+    "blue",    # complete
+    "green",   # on track
+    "yellow",  # some slippage
+    "red",     # off track without significant change
+    "gray",    # not started
+})
+
+
+@_rule("unaligned-skills", category=3, scope="skill")
+def _check_unaligned_skills(skill: str, profile: str, **_) -> list[AuditFinding]:
+    """Strategic skills (those declaring `interim_goal` in
+    frontmatter) must declare a complete alignment story: every
+    such skill needs `outcome`, `outcome_metric`,
+    `alignment_argument`, and a valid `status`. Missing → finding.
+
+    Skills WITHOUT `interim_goal` are utility work and skip this
+    check.
+    """
+    try:
+        from _framework.skills_meta import parse_skill_frontmatter
+    except ImportError:
+        return []
+    path, _ = _read_skill_md(skill, profile)
+    if not path.exists():
+        return []
+
+    fm = parse_skill_frontmatter(path)
+    if not fm.get("interim_goal"):
+        # Not a strategic skill; this rule doesn't apply.
+        return []
+
+    findings: list[AuditFinding] = []
+    required_for_strategic = (
+        "outcome",
+        "outcome_metric",
+        "alignment_argument",
+        "status",
+    )
+    for key in required_for_strategic:
+        if not fm.get(key):
+            findings.append(AuditFinding(
+                code="unaligned-skills", category=3, level="warn",
+                message=f"strategic skill missing required frontmatter key: `{key}`",
+                location=f"{profile}:{skill}",
+                hint=(
+                    f"SKILL.md declares `interim_goal: {fm['interim_goal']}` "
+                    "so this is a strategic skill; complete the alignment "
+                    "story per StrategicPlanning.md §5."
+                ),
+            ))
+
+    status = str(fm.get("status", "")).lower().strip()
+    if status and status not in _VALID_STATUS_COLORS:
+        findings.append(AuditFinding(
+            code="unaligned-skills", category=3, level="warn",
+            message=f"invalid status '{status}'; must be one of {sorted(_VALID_STATUS_COLORS)}",
+            location=f"{profile}:{skill}",
+            hint="Use the StrategicPlanning §5 taxonomy: blue / green / yellow / red / gray.",
+        ))
+
+    return findings
+
+
+@_rule("unaligned-initiatives", category=3, scope="skill")
+def _check_unaligned_initiatives(skill: str, profile: str, **_) -> list[AuditFinding]:
+    """Inverse of unaligned-skills, oriented from the strategic
+    plan: every skill/script that participates in the strategic
+    plan must have a Interim Goal parent named in its frontmatter.
+
+    For v0.23.3 this overlaps with `unaligned-skills`; the
+    finer-grained cross-reference check (does that Interim Goal
+    actually exist in Goals.md?) lands in v0.23.4 once the
+    three-layer Goals.md parser is in place.
+    """
+    try:
+        from _framework.skills_meta import parse_skill_frontmatter
+    except ImportError:
+        return []
+    path, _ = _read_skill_md(skill, profile)
+    if not path.exists():
+        return []
+
+    fm = parse_skill_frontmatter(path)
+    # If the skill names an outcome but no interim_goal, that's an
+    # incomplete chain. (Strategic structure: skill → interim_goal
+    # → outcome. Skipping the middle layer is the misalignment.)
+    if fm.get("outcome") and not fm.get("interim_goal"):
+        return [AuditFinding(
+            code="unaligned-initiatives", category=3, level="warn",
+            message="declares `outcome` but no `interim_goal`",
+            location=f"{profile}:{skill}",
+            hint=(
+                "Strategic skills connect to Outcomes through Interim "
+                "Goals. Add an `interim_goal: G<#.#>` frontmatter key, "
+                "or drop the `outcome` declaration if this is utility work."
+            ),
+        )]
+    return []
+
+
+@_rule("unaligned-interim-goals", category=3, scope="deployment")
+def _check_unaligned_interim_goals(**_) -> list[AuditFinding]:
+    """Interim Goals in Goals.md should each have an
+    alignment_argument naming the Outcome they serve. v0.23.4
+    will read this from the three-layer Goals.md parser; for v0.23.3
+    we emit a placeholder finding when Goals.md is absent (so a
+    deployment without Goals.md gets visibility into the gap).
+    """
+    try:
+        from _framework.constants import GOALS_MD
+    except ImportError:
+        return []
+
+    if not GOALS_MD.exists():
+        return [AuditFinding(
+            code="unaligned-interim-goals", category=3, level="warn",
+            message="Goals.md not present; cannot verify Interim Goal alignment",
+            location=str(GOALS_MD),
+            hint=(
+                "Run `/agency setup clean` (or migrate from v7) to "
+                "populate Goals.md. See StrategicPlanning.md §3.3 for "
+                "Interim Goal quality criteria."
+            ),
+        )]
+    return []
+
+
+@_rule("stale-skill-status", category=3, scope="skill")
+def _check_stale_skill_status(skill: str, profile: str, **_) -> list[AuditFinding]:
+    """Strategic skills must keep their `status` fresh. v0.23.3
+    can't yet check mtime against a per-skill declared cadence
+    (that's v0.23.6+), but we can detect persistent Red/Yellow:
+    a strategic plan that has been Yellow or Red for an extended
+    period is supposed to pivot, not just sit on the color.
+
+    For now: flag any strategic skill whose status is Red or Yellow
+    AND whose SKILL.md file mtime is more than 4 weeks old. The
+    inference: if the status hasn't been updated in 4+ weeks, but
+    is still Yellow/Red, the Principal hasn't acted on the signal.
+    """
+    try:
+        from _framework.skills_meta import parse_skill_frontmatter
+    except ImportError:
+        return []
+    path, _ = _read_skill_md(skill, profile)
+    if not path.exists():
+        return []
+
+    fm = parse_skill_frontmatter(path)
+    if not fm.get("interim_goal"):
+        return []
+
+    status = str(fm.get("status", "")).lower().strip()
+    if status not in ("red", "yellow"):
+        return []
+
+    # Check mtime: 4 weeks = 28 days = 2_419_200 seconds
+    import time
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        return []
+    age_seconds = time.time() - mtime
+    four_weeks_seconds = 28 * 24 * 3600
+    if age_seconds < four_weeks_seconds:
+        return []
+
+    return [AuditFinding(
+        code="stale-skill-status", category=3, level="warn",
+        message=(
+            f"status `{status}` unchanged for {int(age_seconds // 86400)} days; "
+            "strategic plans pivot when a status persists"
+        ),
+        location=f"{profile}:{skill}",
+        hint=(
+            "Either the skill's situation has actually changed (update "
+            "the status), or the Initiative needs to be re-scoped or "
+            "retired. Persistent Red/Yellow without action is itself a "
+            "signal — surface it during the weekly health check."
+        ),
+    )]
+
+
+@_rule("abandoned-outcome", category=3, scope="deployment")
+def _check_abandoned_outcome(**_) -> list[AuditFinding]:
+    """Outcomes that no strategic skill/script declares an
+    alignment to.
+
+    v0.23.3 implementation is limited: we scan all SKILL.md files
+    across all profiles, collect their declared `outcome` values,
+    and emit an info-only finding listing the unique Outcomes
+    that are covered. v0.23.4 (when the three-layer Goals.md
+    parser ships) compares this against the actual list of
+    Outcomes in Goals.md and surfaces the abandoned ones.
+    """
+    try:
+        from _framework.skills_meta import parse_skill_frontmatter
+    except ImportError:
+        return []
+
+    covered: set[str] = set()
+    if PROFILES_DIR.exists():
+        for prof_dir in PROFILES_DIR.iterdir():
+            if not prof_dir.is_dir():
+                continue
+            skills_dir = prof_dir / "skills"
+            if not skills_dir.exists():
+                continue
+            for skill_file in skills_dir.rglob("*.md"):
+                if skill_file.name in ("README.md",):
+                    continue
+                fm = parse_skill_frontmatter(skill_file)
+                outcome = fm.get("outcome")
+                if outcome:
+                    covered.add(str(outcome))
+
+    if not covered:
+        return [AuditFinding(
+            code="abandoned-outcome", category=3, level="info",
+            message="no skills declare an `outcome` — strategic plan input layer is empty",
+            location="deployment",
+            hint=(
+                "Either no Outcomes are declared in Goals.md, or no skills "
+                "have been tagged with `outcome:` frontmatter yet. The "
+                "strategic plan needs skills (and scripts) participating "
+                "in it; otherwise the plan has no input layer."
+            ),
+        )]
+    return []
+
+
+@_rule("agency-context-injection", category=3, scope="deployment")
+def _check_agency_context_injection(**_) -> list[AuditFinding]:
+    """Verify the agency-level aim docs are reachable from the
+    skill-load context. Per spec §1.1: Goals.md, Personal.md,
+    Work.md, Clients.md, per-profile SOUL.md.
+
+    Guardrails.md is intentionally NOT checked here — it's loaded
+    by the enforcement layer (Sentinel, send-guard, audit), not
+    the always-on context. A separate finding flags its absence
+    only if it's also missing.
+    """
+    try:
+        from _framework.constants import (
+            GOALS_MD,
+            PERSONAL_MD,
+            WORK_MD,
+            CLIENTS_MD,
+            GUARDRAILS_MD,
+            VALUES_MD,
+        )
+    except ImportError:
+        return []
+
+    findings: list[AuditFinding] = []
+    aim_docs = [
+        ("Goals.md", GOALS_MD),
+        ("Personal.md", PERSONAL_MD),
+        ("Work.md", WORK_MD),
+        ("Clients.md", CLIENTS_MD),
+    ]
+    for name, path in aim_docs:
+        if not path.exists():
+            findings.append(AuditFinding(
+                code="agency-context-injection", category=3, level="warn",
+                message=f"agency aim doc missing: {name}",
+                location=str(path),
+                hint=(
+                    f"The §1.1 always-loaded background relies on {name} "
+                    "being present. Run `/agency setup clean` to create "
+                    "the missing files."
+                ),
+            ))
+
+    # Guardrails.md (or legacy Values.md) for the enforcement layer
+    if not GUARDRAILS_MD.exists() and not VALUES_MD.exists():
+        findings.append(AuditFinding(
+            code="agency-context-injection", category=3, level="warn",
+            message="Guardrails.md missing — enforcement layer has no Guardrails to check",
+            location=str(GUARDRAILS_MD),
+            hint=(
+                "Guardrails.md feeds Sentinel + send-guard + audit. "
+                "Without it, Interim Guardrails aren't being monitored. "
+                "Run `/agency setup clean` GUARDRAILS step."
+            ),
+        ))
+
+    return findings
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────
