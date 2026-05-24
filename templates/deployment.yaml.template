@@ -15,7 +15,7 @@ deployment:
   org_name:          "{{ORG_NAME}}"                # display name (e.g. "Jane Doe Consulting")
   primary_email:     "{{PRIMARY_EMAIL}}"           # owner's working address
   timezone:          "{{TIMEZONE}}"                # IANA tz (e.g. "America/Chicago")
-  framework_version: "0.1.0"                       # framework-version.lock pins this
+  framework_version: "{{FRAMEWORK_VERSION}}"       # set by `agency init`; framework-version.lock pins this
 
 # ── Active profiles ──────────────────────────────────────────────────────
 # Required roles: chief-of-staff, knowledge-base, system-sentinel.

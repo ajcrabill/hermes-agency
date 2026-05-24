@@ -9,6 +9,65 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.12.2] — 2026-05-24
+
+Four more UX/security patches from AJ's live install on esblaptop-m4.
+
+### Fixed — wizard hardcoded `framework_version: "0.1.0"`
+
+`_framework/ops/init/wizard.py` and `templates/deployment.yaml.template`
+both hardcoded "0.1.0" into the generated manifest, regardless of
+the actual framework version. This caused `agency status` to flag
+the deployment as version-mismatched against a 0.12.x framework.
+Now reads `_framework.__version__` at write-time and writes the
+real version. `framework-version.lock` likewise.
+
+### Fixed — wizard accepted raw API keys into credential field
+
+The credential-reference prompt explained "keychain:NAME or
+env:VAR" but didn't validate the input. AJ pasted his DeepSeek
+API key directly; the wizard saved it inline into
+`deployment.yaml::credentials.deepseek` where it sat in a
+world-readable file.
+
+Now: `_looks_like_raw_secret()` detects common API-key shapes
+(sk-*, pk-*, xoxb-*, ghp_*, AIza*, AKIA*, plus a high-entropy
+fallback for 32+-char alphanumeric strings) and re-prompts with
+guidance. The wizard now also auto-creates `~/.agency/.env`
+(chmod 600) with a stub so users have somewhere to paste the
+raw key the env: ref will read from.
+
+### Fixed — `agency events --tail N` ergonomics
+
+`--tail` was `action='store_true'`. `agency events --tail 10`
+errored "unrecognized arguments: 10". Now `--tail` uses
+`nargs='?'` so all three shapes work:
+
+  - `agency events`           — one-shot recent feed
+  - `agency events --tail`    — stream new events for --duration
+  - `agency events --tail 10` — stream, with rows-per-fetch
+                                capped at 10
+
+### Fixed — case-inconsistent profile IDs
+
+The wizard prompted "System Sentinel profile id" (capital S in
+the role name) with default `sentinel` (lowercase). AJ saw the
+capitalized role and pressed Enter expecting `Sentinel`; got
+`sentinel`. Meanwhile he typed `Loriah` and `Esby` capitalized,
+ending up with a deployment that mixed `profiles/Loriah` and
+`profiles/sentinel`.
+
+Now the wizard adapts the lowercase defaults to match the case
+style of the FIRST profile id the user types (`Loriah` →
+`Sentinel`, `loriah` → `sentinel`). A tip about the convention
+prints before the first prompt. If the final IDs still mix
+case, the wizard warns at end with the rename commands.
+
+### Tests
+
+- 198 tests passing; new helpers unit-smoke-tested.
+- `agency audit --self`: clean.
+
 ## [0.12.1] — 2026-05-24
 
 UX patch from the first real install (AJ on esblaptop-m4).

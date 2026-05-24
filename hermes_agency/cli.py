@@ -546,18 +546,37 @@ def cmd_demote(args: argparse.Namespace) -> int:
 
 
 def cmd_events(args: argparse.Namespace) -> int:
-    """Recent events feed (or --tail to stream)."""
+    """Recent events feed.
+
+    args.tail can be:
+      False  → one-shot view of recent events
+      True   → stream new events for --duration seconds
+      <int>  → stream new events AND cap rows per fetch at that integer
+               (covers `agency events --tail 10` ergonomics)
+    """
     from _framework.sentinel import recent_events
     import time as _time
 
-    if args.tail:
+    tail = args.tail
+    # Parse --tail N where N came in as a string from nargs='?'
+    tail_limit: int | None = None
+    if isinstance(tail, str):
+        try:
+            tail_limit = int(tail)
+            tail = True
+        except ValueError:
+            print(f"error: --tail value '{tail}' is not an integer", file=sys.stderr)
+            return 2
+
+    if tail:
+        effective_limit = tail_limit if tail_limit is not None else args.limit
         # Simple polling tail: print new rows every 2s for `args.duration`
         # seconds (or until interrupted).
         seen_ids: set[int] = set()
         deadline = _time.time() + (args.duration or 60)
         try:
             while _time.time() < deadline:
-                rows = recent_events(limit=args.limit, minutes=args.minutes)
+                rows = recent_events(limit=effective_limit, minutes=args.minutes)
                 for r in reversed(rows):
                     rid = int(r["id"])
                     if rid in seen_ids:
@@ -1011,11 +1030,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_demote.set_defaults(func=cmd_demote)
 
     # events
-    p_events = sub.add_parser("events", help="Recent events feed (or --tail to stream)")
-    p_events.add_argument("--tail", action="store_true", help="Stream new events as they arrive")
-    p_events.add_argument("--duration", type=int, default=60, help="Tail mode: stop after N seconds (default 60)")
-    p_events.add_argument("--limit", type=int, default=50, help="Max rows per fetch (default 50)")
-    p_events.add_argument("--minutes", type=int, default=60, help="Lookback window in minutes (default 60)")
+    p_events = sub.add_parser(
+        "events",
+        help="Recent events feed. `--tail` to stream; `--tail N` to stream + cap rows.",
+    )
+    # --tail can be: absent (one-shot), --tail (stream), --tail N (stream with limit N)
+    p_events.add_argument(
+        "--tail", nargs="?", const=True, default=False,
+        help="Stream new events as they arrive. Pass an integer (e.g. --tail 20) "
+             "to also cap rows per fetch.",
+    )
+    p_events.add_argument("--duration", type=int, default=60,
+                          help="Tail mode: stop after N seconds (default 60)")
+    p_events.add_argument("--limit", type=int, default=50,
+                          help="Max rows per fetch (default 50)")
+    p_events.add_argument("--minutes", type=int, default=60,
+                          help="Lookback window in minutes (default 60)")
     p_events.add_argument("--kind", help="Filter by event kind")
     p_events.add_argument("--actor", help="Filter by actor")
     p_events.set_defaults(func=cmd_events)
