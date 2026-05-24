@@ -1,9 +1,9 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.9-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.10-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
-**Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
+**Author:** AJ Crabill — Technological Intelligence Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
 
 ---
@@ -13,7 +13,7 @@
 This is the build + design specification for **HermesAgency** — a
 continuously-learning, multi-agent plugin for [NousResearch's Hermes
 Agent](https://github.com/NousResearch/hermes-agent), built for
-small businesses whose Principal doesn't want to re-teach their AI ten times.
+small businesses whose Principal doesn't want to re-teach their agents ten times.
 
 The spec was written before code so the architecture could be reviewed,
 revised, and locked before any building. AJ is the first customer; his
@@ -29,7 +29,7 @@ architecture changes.
 
 ### Architectural arc (read this first if you're new)
 
-HermesAgency is the 9th version of a personal AI chief-of-staff
+HermesAgency is the 9th version of a personal chief-of-staff
 project. The 9-version lineage (with hardware, model, and runtime
 transitions per version) is in §0.5. The arc within v9 — the
 current architectural foundation — is:
@@ -67,7 +67,7 @@ current architectural foundation — is:
 
 ### 0.5 Lineage — this is the 9th version
 
-HermesAgency is the 9th major version of a personal AI chief-of-staff
+HermesAgency is the 9th major version of a personal chief-of-staff
 project that's been running, breaking, and getting rewritten on and
 off for years. Each rewrite kept the same ambition — *"a chief-of-
 staff who actually learns my preferences and earns autonomy on them"*
@@ -138,6 +138,10 @@ in new prose; v0.23 sweeps any remaining historical drift in code.
 | The collection of all agent profiles | **the agency** (lowercase) | Most tasks touch more than one agent; "the agency" is the default referent |
 | The specific agent that owns strategic planning | **the CoS** / **Chief of Staff** | Strategic planning is a single-agent endeavor — all agents are implicated, but only the CoS owns it |
 | The agent profile that owns a skill/script | **agent profile** (or **responsible profile**) | Distinct from the Principal — refers to the agent role |
+| The full collection of intelligences working in the business | **team members** | Includes both biological and technological intelligences; default referent when the distinction doesn't matter |
+| Humans on the team | **biological intelligences** (or **humans**, when expressly relevant) | The Principal is one; any human collaborators / employees are others |
+| Agents on the team | **technological intelligences** (or **agents**, when expressly relevant) | The CoS, BD, KB, Writing, Finance, AnalystJudge, Sentinel, etc. are all technological intelligences |
+| ⚠️ **NOT used** | ~~AI~~ / ~~artificial intelligence~~ | We don't use "AI" for the technological intelligences. The phrase "AI assistant," "AI tool," "AI chief-of-staff" etc. has too much consumer-grade baggage and obscures the framework's point that the agents are *team members*, not "AI tools." |
 
 §16 historical change-log entries retain the older terminology
 that was in use at the time — those describe what was said in
@@ -339,7 +343,7 @@ attribution system layered over the learning loop.
 
 ### 1.2 Why this is the differentiator
 
-Most "AI assistant" tools forget context between sessions, remember
+Most consumer-grade technological-intelligence tools forget context between sessions, remember
 within a session but not across them, or remember statically but can't
 be corrected without manual prompt-engineering. The combination —
 **explicit correction → cross-skill propagation → autonomy gated on
@@ -482,8 +486,9 @@ HermesAgency stands on three pillars:
 
 ### 1.6 Why this matters now — the big-tech contrast
 
-Every large platform is rolling out the same feature set: AI
-assistants, multi-agent workflows, persistent memory, learning
+Every large platform is rolling out the same feature set:
+technological-intelligence assistants, multi-agent workflows,
+persistent memory, learning
 from corrections, integrated calendaring and email. The capability
 that distinguishes small-business work from large-enterprise work
 is collapsing — fast. **A small business without these tools is at
@@ -534,7 +539,7 @@ The architectural commitments that make this true:
   never copies them anywhere.
 
 The competitive thesis is straightforward: **the small business
-that masters their own AI agency wins.** HermesAgency is the path
+that masters their own agency wins.** HermesAgency is the path
 that doesn't require trading ownership of their IP for the
 capability.
 

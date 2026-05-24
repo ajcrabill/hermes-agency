@@ -9,6 +9,79 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.10-spec] — 2026-05-24
+
+**Spec revision: drop "AI" terminology — biological vs.
+technological intelligences.** HermesAgency doesn't use "AI" for
+the technological intelligences. The phrase "AI assistant," "AI
+tool," "AI chief-of-staff" carries too much consumer-grade
+baggage and obscures the framework's point that the agents are
+**team members**, not "AI tools."
+
+Standard terms (extended in spec §0):
+
+- **Team members** — generic; includes both biological and
+  technological intelligences. Default referent when the
+  distinction doesn't matter.
+- **Biological intelligences** (or **humans**, when expressly
+  relevant) — the Principal is one; any human collaborators are
+  others.
+- **Technological intelligences** (or **agents**, when expressly
+  relevant) — the CoS, BD, KB, Writing, Finance, AnalystJudge,
+  Sentinel, etc.
+- ⚠️ **NOT used**: "AI" / "artificial intelligence."
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Changed — spec §0 "Standard terminology" table
+
+Three new rows added codifying team members / biological
+intelligences / technological intelligences, plus an explicit
+"NOT used: AI" row with the architectural reasoning.
+
+### Changed — narrative sweep across all three live docs
+
+- **Author byline** (spec §0 header, README, StrategicPlanning.md
+  About): "AI Developer for Good Ancestor" →
+  "Technological Intelligence Developer for Good Ancestor"
+- **Lineage description**: "personal AI chief-of-staff project"
+  → "personal chief-of-staff project" (the chief-of-staff
+  context already implies the technological-intelligence form)
+- **Spec §1 intro line 16**: "doesn't want to re-teach their AI
+  ten times" → "doesn't want to re-teach their agents ten times"
+- **Spec §1.2 differentiator**: 'Most "AI assistant" tools forget
+  context...' → "Most consumer-grade technological-intelligence
+  tools forget context..."
+- **Spec §1.6 + README big-tech contrast**: "AI assistants,
+  multi-agent workflows, persistent memory..." →
+  "technological-intelligence assistants, multi-agent workflows,
+  persistent memory..."
+- **Spec §1.7 + README competitive thesis**: "the small business
+  that masters their own AI agency wins" → "the small business
+  that masters their own agency wins" (the "AI" qualifier was
+  redundant — HermesAgency already establishes "the agency" as
+  the standardized term)
+- **StrategicPlanning.md §6.4** + **§11 summary**: same
+  consumer-grade-tool / technological-intelligence-assistant
+  swaps
+
+### Preserved — §16 historical change-log entries
+
+Line 3028 in §16 still reads "(AI assistants, multi-agent
+workflows...)" — preserved verbatim per the precedent that §16
+describes what past spec text said, not what current spec text
+should say.
+
+### Spec header
+
+Bumped v0.22.9-spec → v0.22.10-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.9-spec] — 2026-05-24
 
 **Spec revision: Outcomes can be non-business — well-rounded

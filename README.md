@@ -10,7 +10,7 @@ HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](ht
 
 HermesAgency uses a **three-layer strategic-planning model** (Outcomes → Interim Goals → Initiatives, all SMART) to organize the agency's support of the Principal — where **agentic Initiatives are skills** (LLM-driven, in SKILL.md) and **deterministic Initiatives are scripts** (code-driven). The strategic plan's input layer is *literally* HermesAgency's existing catalog of skills and scripts; the alignment metadata lives in their frontmatter. Every layer is testable on its own cadence: the 7-step learning loop tests inputs continuously (*"are we implementing the strategies?"*); the weekly health check tests inputs against interim goals (*"are we deploying resources wisely?"*); the quarterly review tests interim goals against outcomes (*"do we have the right strategies to get the results the Principal wants?"*). The daily work and the long-term direction are structurally connected, not just culturally linked. **Goals don't have to be business-only**: HermesAgency is built on the belief that all of our team members — biological and technological — deserve well-rounded lives, so the CoS actively encourages the Principal to include at least one non-business Outcome (health, family, marriage, hobbies, faith, whatever matters). See [`docs/StrategicPlanning.md`](./docs/StrategicPlanning.md).
 
-> By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal AI chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
+> By [AJ Crabill](https://ajcrabill.com) — Technological Intelligence Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
 
 ## What HermesAgency does for you
 
@@ -52,7 +52,7 @@ The agency operates with your declared goals and values always part of its backg
 
 ## Why this exists
 
-Every large platform is rolling out the same feature set: AI assistants, multi-agent workflows, persistent memory, learning from corrections, integrated calendaring and email. The capability gap that used to favor enterprises is collapsing — fast. **A small business without these tools is at a real disadvantage against competitors that have them.**
+Every large platform is rolling out the same feature set: technological-intelligence assistants, multi-agent workflows, persistent memory, learning from corrections, integrated calendaring and email. The capability gap that used to favor enterprises is collapsing — fast. **A small business without these tools is at a real disadvantage against competitors that have them.**
 
 But the big-platform versions of these features come at a price:
 
@@ -67,7 +67,7 @@ HermesAgency gives small businesses the same capabilities — **continuous learn
 - **MIT-licensed, open source.** Full code visibility. No SaaS pricing curve. No telemetry. No phone-home.
 - **Your IP stays yours.** Corrections, learning rules, vault documents, drafts — all in your filesystem, under paths you control. The framework reads from them but never copies them anywhere.
 
-The competitive thesis is straightforward: **the small business that masters their own AI agency wins.** HermesAgency is the path that doesn't require trading ownership of your IP for the capability.
+The competitive thesis is straightforward: **the small business that masters their own agency wins.** HermesAgency is the path that doesn't require trading ownership of your IP for the capability.
 
 ---
 

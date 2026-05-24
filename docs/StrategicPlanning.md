@@ -865,7 +865,7 @@ replace or re-scope the Interim Goals.
 
 ### 6.4 Why nested testability is load-bearing
 
-Most "AI assistant" tools operate at the input layer only, without
+Most consumer-grade technological-intelligence tools operate at the input layer only, without
 any structural connection to outputs or outcomes. They make the
 work go faster, but provide no answer to "is this work moving the
 right metric?" Most strategic-planning tools operate at the outcome
@@ -1330,7 +1330,7 @@ context, so every skill firing happens with awareness of where it
 sits in the layered structure. That discipline — structural,
 testable at three cadences, never absent from the operating
 context — is what makes HermesAgency a strategic operations layer
-rather than just another AI assistant.
+rather than just another technological-intelligence assistant.
 
 ---
 
@@ -1338,7 +1338,7 @@ rather than just another AI assistant.
 
 **Version:** 1.0 (2026-05-24)
 **Companion to:** [`HERMES_AGENCY_SPEC.md`](./HERMES_AGENCY_SPEC.md) §1.1
-**Author:** AJ Crabill — AI Developer for [Good Ancestor](https://www.GoodAncestor.com)
+**Author:** AJ Crabill — Technological Intelligence Developer for [Good Ancestor](https://www.GoodAncestor.com)
 
 > *Adapted from a public-sector strategic-planning framework AJ has
 > taught in school-systems work, with the governance-vs-management
