@@ -133,38 +133,57 @@ A well-formed Output (Interim Goal) in HermesAgency:
 Outputs are also entries in `Goals.md`, nested under the Outcome
 they predict.
 
-### 1.3 Inputs (Initiatives)
+### 1.3 Inputs (Initiatives = Skills + Scripts)
 
 Inputs are the resources and strategies knowable *at the beginning*
-of a cycle — what the agency actually *does*. In HermesAgency, an
-Initiative is a structured set of skills + scripts owned by one
-profile, executed over a defined horizon, in service of a specific
-Interim Goal.
+of a cycle — what the agency actually *does*. In HermesAgency
+terminology:
 
-**What qualifies as an Initiative** (six tests, all must pass):
+- An **agentic Initiative** is a **Skill** — an LLM-driven piece
+  of work declared in a `SKILL.md` file, owned by a profile,
+  fired on a schedule or in response to triggers.
+- A **deterministic Initiative** is a **Script** — a code-driven
+  piece of work (`.py` / `.sh`), owned by a profile, run on a
+  schedule.
 
-1. **SMART objective** — the Initiative's outcome metric is SMART.
-2. **One owner** — one profile (or the owner themselves) is
-   accountable.
-3. **Real time investment** — the owner spends at least ~4 hours
-   per week leading the Initiative. (For agent-owned Initiatives,
-   the analog: the profile has the skills/scripts on a real cadence
-   that produces ~4 hrs/week of actual movement, not paper movement.)
-4. **Uses real resources** — time, talent, treasure. An Initiative
-   that exists on paper but has no resources assigned isn't an
-   Initiative, it's a hope.
-5. **Current state → future state** — the Initiative is intended
-   to move something from where it is to where it should be.
-6. **Owner has authority** — the Initiative owner has authority
-   over ~80% of the inputs (skills, scripts, schedules, drafts)
-   that contribute to the Interim Goal.
+There's no separate "Initiative" object that wraps skills and
+scripts. **The Initiative IS the skill or the script.** The
+strategic-planning concept just names the role a skill or script
+plays *in the strategic plan*: the input layer that produces
+the outputs that drive the outcomes.
 
-If a "thing in your plan" fails any of these tests, **it's not an
-Initiative, it's a hope**. Hopes don't belong in the strategic plan;
-they belong in the journal or the brainstorm doc. The plan is for
-Initiatives.
+**What qualifies as a strategic Initiative** (six tests, all must
+pass — these are what make a skill or script part of the
+strategic plan vs. ad-hoc utility work):
 
-Each Initiative gets a **Playbook page** (see §4 below).
+1. **SMART objective** — the skill's / script's purpose
+   (declared in its SKILL.md frontmatter or docstring) is SMART.
+2. **One owner** — one profile is accountable for the skill /
+   script.
+3. **Real cadence** — the skill / script fires on a meaningful
+   schedule (continuous, daily, weekly) producing actual output —
+   not running paper-loops that produce nothing. (The analog of
+   the "≥4 hours per week of leadership time" test from the
+   source framework: for agents, "leadership time" is scheduled
+   firings × meaningful per-firing output.)
+4. **Uses real resources** — model tokens, integration credits,
+   the owner's review attention. An Initiative that exists in a
+   plan but has no resources assigned isn't an Initiative, it's
+   a hope.
+5. **Current state → future state** — the skill / script
+   produces an artifact that changes something in the world.
+6. **Owner has authority** — the profile owns the skill / script
+   and the firing-cadence configuration.
+
+If a skill or script fails any of these tests, **it's not a
+strategic Initiative** — it might still exist as a utility (one-off,
+exploratory, debug) but it doesn't belong in the strategic plan's
+input layer.
+
+Each strategic skill / script's SKILL.md (or script docstring)
+IS the **Playbook page** — see §4. No separate `Initiatives/`
+directory is needed; the alignment metadata lives in the skill
+or script file itself.
 
 ### 1.4 Alignment is math, not opinion
 
@@ -267,63 +286,79 @@ doc is the content; Sentinel is the mechanism.
 
 ---
 
-## 3. What makes something an Initiative (full definition)
+## 3. What makes a skill/script a strategic Initiative
 
-An Initiative is any set of:
+A strategic Initiative is any skill or script:
 
-1. **inputs/strategies** (skills + scripts in HermesAgency terms)
-2. whose **objective is SMART**,
-3. that is intended to move a business function from a **current
+1. whose **purpose** (declared in SKILL.md frontmatter / script
+   docstring) **is SMART**,
+2. that is intended to move a business function from a **current
    state to a future state**,
-4. using **business resources** (time, talent, treasure),
-5. that has **one individual person (or one profile) as the owner**,
-6. and where the **owner spends at least ~4 hours per week** bringing
-   leadership directly to the Initiative.
+3. that uses **business resources** (model tokens, integration
+   credits, the owner's review attention, scheduler slots),
+4. that has **one profile** as the owner,
+5. and that **fires on a meaningful cadence** producing actual
+   output — continuous, daily, weekly — not paper-loops that
+   produce nothing.
 
-A **Goal-aligned Initiative** is any Initiative that:
+A **Goal-aligned Initiative** is any strategic skill/script that:
 
 - has a correlation ≥0.5 with an Interim Goal, AND
-- is influenceable by the owner / staff (the owner has authority
-  over ~80% of the inputs that contribute to the Interim Goal).
+- is influenceable by the owner profile (the profile has
+  authority over ~80% of the configuration that determines
+  firing behavior).
 
-If either of those is missing, the work might still be valuable —
-but it doesn't belong in *this* strategic plan.
+A skill/script can exist in HermesAgency *without* being a
+strategic Initiative — utility skills (one-off helpers), debug
+scripts, experimental work. These don't appear in the strategic
+plan. If a skill/script *should* be a strategic Initiative but
+isn't (no alignment metadata, no Interim Goal parent), the
+audit's `unaligned-skills` rule (§6.5) flags it for review.
 
 ---
 
-## 4. The Initiative Playbook page
+## 4. The Initiative Playbook page — IS the SKILL.md / script docstring
 
 Steps 1-3 (declare Outcomes, Outputs, Inputs) are **must-haves**
-for a strategic plan. Step 4 — writing a full Playbook page per
-Initiative — is a **good-to-have**. It bolsters operational
-alignment, but Playbook pages need to be revised frequently to
-address real conditions, so they're operational documents, not
-plan documents.
+for a strategic plan. Step 4 — writing a Playbook page per
+strategic Initiative — is captured in the artifact the skill or
+script already needs: its `SKILL.md` (for agentic Initiatives) or
+its module-level docstring (for deterministic Initiatives).
 
-A Playbook page in HermesAgency captures, per Initiative:
+The strategic-planning fields go in the existing skill/script
+frontmatter and body — no separate `Initiatives/` directory or
+duplicate document. The SKILL.md / script docstring captures:
 
-| Field | What it answers |
-|---|---|
-| Outcome # & title | Which Outcome does this Initiative serve? |
-| Interim Goal # & title | Which Interim Goal does this Initiative serve? |
-| Initiative title | Short name. |
-| Initiative description | One paragraph in plain language. |
-| Outcome metric | The lag measure — SMART statement that at the end of the Initiative says whether it succeeded. Format: *"X will increase from W% on date Y to Z% by date W."* |
-| Problem description | What problem is this Initiative trying to solve? What evidence supports that solving this problem will move the Interim Goal? |
-| Solution description | What's the proposed solution? What evidence supports that this solution will solve the problem? |
-| Owner | The one profile (or person) accountable. |
-| FTE-equivalent | How much agent + human time is committed per week? In HermesAgency this is measured in scheduled skill firings + estimated human review hours. |
-| Budgetary impact | What's the cost? Where does the gap (if any) live? |
-| Interdependent contributors | What other Initiatives, profiles, or external dependencies make-or-break this one? |
-| Output metrics | The mid-cycle indicators that say the Initiative is having the desired effect. Often the hardest to define — they do double duty (implementation quality + outcome-prediction). |
-| Input metrics | The effort measures — what skills are firing, on what cadence, against what triggers. *Don't over-instrument these* — the cost of measuring inputs frequently outweighs the value, since the people/agents collecting input data are often the ones doing the work. |
-| Status | Standardized color: **Blue** (complete), **Green** (on track), **Yellow** (some slippage), **Red** (off track without significant change), **Gray** (not started). |
+| Field | Frontmatter key (proposed) | What it answers |
+|---|---|---|
+| Outcome # & title | `outcome: O1` | Which Outcome does this serve? |
+| Interim Goal # & title | `interim_goal: G1.1` | Which Interim Goal does this serve? |
+| Title | (skill / script name) | Short name. |
+| Description | (SKILL.md body / docstring) | One paragraph in plain language. |
+| Outcome metric | `outcome_metric: ...` | The SMART lag measure for this skill/script's contribution. *"X will increase from W% on date Y to Z% by date W."* |
+| Problem description | (body section) | What problem; what evidence supports that solving it will move the Interim Goal. |
+| Solution description | (body section) | What's the proposed approach; what evidence supports it will solve the problem. |
+| Owner | `owner_profile: devon` | The one profile accountable. |
+| Resource cost | `resource_cost: ...` | Model tokens / week, integration credits / week, owner review hours / week. |
+| Interdependent contributors | `depends_on: [...]` | Other skills/scripts/profiles this one needs. |
+| Output metrics | `output_metrics: ...` | Mid-cycle indicators of effect. |
+| Input metrics | `input_metrics: ...` | Effort measures — firing cadence, trigger counts. *Don't over-instrument*. |
+| Status | `status: green` | Standardized color: **blue** (complete), **green** (on track), **yellow** (slipping), **red** (off track), **gray** (not started). |
+| Correlation argument | `alignment_argument: ...` | Why this skill/script is predicted to move the Interim Goal (≥0.5 correlation, or a defensible leading-indicator argument). |
 
-Playbook pages live in `Initiatives/<initiative-slug>.md` under the
-agency vault. HermesAgency's audit (§7) checks that every active
-Initiative has a current Playbook page; that the page has all
-fields filled; and that the status field has been updated within
-the cadence the Initiative declares (usually weekly or biweekly).
+The audit (§6.5) checks:
+
+- Every strategic skill/script's frontmatter has `outcome` +
+  `interim_goal` + `outcome_metric` + `status`.
+- Every active skill/script's status field has been updated
+  within the cadence it declares.
+- The strategic plan's Goals.md lists every active strategic
+  Initiative (no orphans).
+
+This collapses the Playbook page concept into the work that
+already needs to happen — every skill/script *already* has a
+SKILL.md or docstring. Strategic planning just adds a few
+frontmatter fields and structural alignment metadata.
 
 ---
 
@@ -452,10 +487,10 @@ the three questions at any time and get a data-grounded answer.
 Goals.md
 ├── Outcome 1 (SMART, 1-3yr)
 │   ├── Interim Goal 1.1 (SMART, 6-12mo)
-│   │   ├── Initiative 1.1.a → see Initiatives/init-1-1-a.md
-│   │   └── Initiative 1.1.b → see Initiatives/init-1-1-b.md
+│   │   ├── skill: devon/lookalike-prospect-builder  (agentic Initiative)
+│   │   └── script: devon/pipeline-watchdog.py       (deterministic Initiative)
 │   └── Interim Goal 1.2 (SMART, 6-12mo)
-│       └── Initiative 1.2.a → see Initiatives/init-1-2-a.md
+│       └── skill: devon/potential-clients-nudger
 ├── Outcome 2 (SMART, 1-3yr)
 │   └── ...
 └── Outcome 3 (SMART, 1-3yr)
@@ -463,10 +498,17 @@ Goals.md
 
 Guardrails.md
 ├── Guardrail 1 (prohibition statement)
-│   └── Interim Guardrail 1.1 (SMART) → Initiatives ...
+│   └── Interim Guardrail 1.1 (SMART)
+│       └── skill: cos/values-fit-screen-prepper     (agentic Initiative)
 └── Guardrail 2
     └── ...
 ```
+
+The references at the leaf level point at *existing* skill SKILL.md
+files and script files — not at separate "Initiative" docs. The
+SKILL.md (or script docstring) carries the alignment metadata in
+its frontmatter (`outcome`, `interim_goal`, `outcome_metric`,
+`status`, etc.) — see §4.
 
 The structure isn't decorative — it's load-bearing. When an agent
 fires a skill, it can ask: *which Initiative is this work in
@@ -498,22 +540,34 @@ live context the agency operates inside every minute; the brake is
 a live check the watchdog layer runs at session boundaries and at
 every outbound send.
 
-### 6.3 Skills and scripts as the input layer
+### 6.3 Skills and scripts ARE the input layer
 
-Every skill and script in HermesAgency belongs (or should belong)
-to an Initiative. The mapping happens explicitly:
+Skills are agentic Initiatives. Scripts are deterministic
+Initiatives. There's no separate "Initiative" wrapper concept —
+the strategic plan's input layer is **literally** the agency's
+existing catalog of skills and scripts. The mapping is direct:
 
-- A profile's skill catalog declares which Initiative each skill
-  serves (via frontmatter metadata: `initiative: init-1-1-a`).
-- A profile's cron schedule (`scheduler.db`) declares the rhythm
-  on which each Initiative's skills fire.
+- A skill's SKILL.md frontmatter declares the Interim Goal it
+  serves (`interim_goal: G1.1`), its outcome metric, its status,
+  and its alignment argument.
+- A script's module docstring (or sidecar metadata file) declares
+  the same.
+- The profile's cron schedule (`scheduler.db`) declares the
+  rhythm on which each strategic skill/script fires.
 - The verifier's per-skill criteria (§6) include "did this firing
-  produce the kind of artifact that moves Interim Goal 1.1?"
+  produce the kind of artifact that moves Interim Goal G1.1?"
 
-This is what gives the alignment math something to chew on. A skill
-that fires regularly but produces nothing that moves any Interim
-Goal is, by definition, unaligned — and the audit flags it for
-retirement or re-purposing.
+This is what gives the alignment math something to chew on. A
+strategic skill/script that fires regularly but produces nothing
+that moves any Interim Goal is, by definition, unaligned — and
+the audit flags it for retirement or re-purposing.
+
+Not every skill or script needs to be strategic. A profile can
+own utility skills (debug helpers, one-off exploratory work)
+that aren't part of the strategic plan. The audit distinguishes:
+strategic skills (with alignment metadata) get checked against
+the plan; non-strategic skills get checked only against their own
+verifier criteria.
 
 ### 6.4 Weekly testability cadence
 
@@ -541,16 +595,19 @@ self-congratulation.
 HermesAgency's audit subsystem (§7 of the spec) checks for
 strategic-plan alignment at every layer:
 
-- **`unaligned-skills`** — skills that fire but don't declare an
-  Initiative they serve.
-- **`unaligned-initiatives`** — Initiatives without a clear
-  Interim Goal parent.
+- **`unaligned-skills`** — skills that declare themselves
+  strategic (frontmatter has `interim_goal: ...`) but the named
+  Interim Goal doesn't exist in Goals.md, or the alignment
+  argument is missing.
+- **`unaligned-initiatives`** — strategic skills/scripts without
+  a clear Interim Goal parent in Goals.md or Guardrails.md.
 - **`unaligned-interim-goals`** — Interim Goals whose alignment
   argument to an Outcome is missing or weak.
-- **`stale-playbook`** — Initiatives whose Playbook page hasn't
-  been updated in too long.
-- **`abandoned-outcome`** — Outcomes that no Initiatives are
-  serving.
+- **`stale-skill-status`** — strategic skills/scripts whose
+  `status` frontmatter field hasn't been updated within the
+  declared cadence.
+- **`abandoned-outcome`** — Outcomes that no strategic
+  skill/script declares an alignment to.
 
 These don't auto-fix anything. They produce findings the owner can
 act on — typically during weekly review.
@@ -582,25 +639,37 @@ from 5 in January 2026 to 9 by December 2026.*
 *Average revenue per coaching engagement will increase from $3,000
 per month in Q1 2026 to $3,500 per month by Q4 2026.*
 
-### Inputs (Initiatives under Interim Goal 1.1)
+### Inputs (skills/scripts under Interim Goal 1.1)
 
-**Initiative 1.1.a — Existing-client commonality analysis:**
-*The number of "look-alike" prospects identified by analyzing the
-common traits of existing satisfied clients will increase from 0
-in February 2026 to 50 by April 2026.*
-- Owner: BD agent (Devon profile)
-- Skills: `existing-client-commonality-analyzer`, `lookalike-prospect-builder`
-- Cadence: weekly run, owner reviews biweekly
+**`devon/existing-client-commonality-analyzer`** *(agentic Initiative)*
+- Frontmatter outcome metric: *"The number of 'look-alike' prospects
+  identified by analyzing the common traits of existing satisfied
+  clients will increase from 0 in February 2026 to 50 by April 2026."*
+- Owner profile: Devon (BD)
+- Cadence: weekly firing, owner reviews biweekly
 - Status: Green
 
-**Initiative 1.1.b — Slow-burn pipeline nurture:**
-*The percentage of "someday-maybe" leads receiving a timely nudge
-(within 30 days of their stated check-back date) will increase
-from 20% in March 2026 to 90% by June 2026.*
-- Owner: BD agent (Devon profile)
-- Skills: `potential-clients-nudger`, `pipeline-watchdog`
+**`devon/lookalike-prospect-builder`** *(agentic Initiative)*
+- Frontmatter outcome metric: *"50 look-alike prospects identified
+  per quarter, sourced from the commonality analyzer's output."*
+- Owner profile: Devon (BD)
+- Cadence: weekly firing
+- Status: Green
+
+**`devon/pipeline-watchdog.py`** *(deterministic Initiative)*
+- Docstring outcome metric: *"100% of 'someday-maybe' leads
+  receiving a timely nudge within 30 days of their stated
+  check-back date, measured monthly."*
+- Owner profile: Devon (BD)
 - Cadence: daily run, owner reviews weekly digest
 - Status: Yellow (nudge rate at 70% in week 6)
+
+**`devon/potential-clients-nudger`** *(agentic Initiative)*
+- Companion to pipeline-watchdog.py — drafts the actual nudge
+  message in owner's voice.
+- Owner profile: Devon (BD)
+- Cadence: triggered by pipeline-watchdog
+- Status: Green
 
 ### Guardrails
 
@@ -613,13 +682,13 @@ work would be a poor fit with the owner's published values.*
 documented values-fit screen before contracting will be 100%,
 measured monthly.*
 
-**Initiative 1.1.x — Values-fit pre-engagement screen:**
-*A documented values-fit screen will be applied to 100% of new
-prospect conversations before a contract is offered, starting
-March 1 2026.*
-- Owner: Owner (manual screen review, agent-prepared draft)
-- Skills: `values-fit-screen-prepper`
-- Cadence: per-prospect
+**`cos/values-fit-screen-prepper`** *(agentic Initiative serving
+Interim Guardrail 1.1)*
+- Frontmatter outcome metric: *"100% of new prospect conversations
+  produce a documented values-fit screen draft for the owner to
+  review before a contract is offered, starting March 1 2026."*
+- Owner profile: CoS (Loriah)
+- Cadence: per-prospect (triggered)
 - Status: Blue
 
 ---
@@ -649,17 +718,23 @@ final. The point is the planning, not the plan.
 Or, as one general put it: *"I find plans to be worthless, planning
 to be indispensable."*
 
-### How do I know if something is an Initiative or just a hope?
+### How do I know if a skill/script is a strategic Initiative or just utility work?
 
-Run the six tests in §1.3. If a "thing in your plan" has no
-SMART objective, no clear owner, no resources, no real time
-investment, and no plausible owner-authority — it's a hope. Hopes
-belong in the brainstorm doc, not the plan.
+Run the six tests in §1.3 against the skill or script. If it has
+a SMART purpose, a clear owner profile, real resources, a
+meaningful cadence, and the right authority — it's a strategic
+Initiative and belongs in the plan. If it doesn't, it's either
+utility work (legitimate but not strategic) or a hope (an
+aspiration without resourcing).
 
-A common failure mode: someone calls something an "initiative" but
-it's actually "an aspiration we wish were happening." HermesAgency's
-audit catches this — Initiatives without Playbook pages get flagged,
-and Playbook pages with empty required fields don't pass review.
+A common failure mode: someone declares a skill is "for marketing"
+but it has no SMART purpose, no firing cadence, no metric, no
+alignment argument. HermesAgency's audit catches this — strategic
+skills/scripts (those declaring an `interim_goal` in frontmatter)
+are checked for completeness; if required fields are empty, the
+`unaligned-initiatives` rule fires. Skills/scripts that don't
+declare an `interim_goal` are treated as utility work and audited
+against their own verifier criteria only.
 
 ### How do I know if an Interim Goal is aligned to an Outcome?
 
@@ -746,12 +821,14 @@ restructuring.
 | Artifact | File / location |
 |---|---|
 | Framework doc (this file) | `docs/StrategicPlanning.md` |
-| Outcomes + Interim Goals + Initiative refs | `Goals.md` (vault root) |
-| Guardrails + Interim Guardrails + Initiative refs | `Guardrails.md` (vault root) |
-| Per-Initiative Playbook pages | `Initiatives/<slug>.md` (vault subdirectory) |
-| Always-loaded context wiring | spec §1.1 |
-| Strategic-plan health check | weekly CoS skill (see §5.4 above) |
-| Audit rules for strategic alignment | spec §7 / audit rules: `unaligned-skills`, `unaligned-initiatives`, `unaligned-interim-goals`, `stale-playbook`, `abandoned-outcome` |
+| Outcomes + Interim Goals + skill/script refs | `Goals.md` (vault root) |
+| Guardrails + Interim Guardrails + skill/script refs | `Guardrails.md` (vault root) |
+| Agentic Initiatives (Playbook = SKILL.md) | `~/.hermes/agency-state/profiles/<profile>/skills/<skill>/SKILL.md` |
+| Deterministic Initiatives (Playbook = script docstring) | `~/.hermes/agency-state/profiles/<profile>/scripts/<script>.py` |
+| Always-loaded context wiring (Goals only) | spec §1.1 |
+| Enforcement-layer wiring (Guardrails) | spec §1.7 rows 4, 6, 7 (Sentinel + AnalystJudge + send-guard) |
+| Strategic-plan health check | weekly CoS skill (see §6.4 above) |
+| Audit rules for strategic alignment | spec §7 / audit rules: `unaligned-skills`, `unaligned-initiatives`, `unaligned-interim-goals`, `stale-skill-status`, `abandoned-outcome` |
 | Setup interview (initial plan capture) | `/agency setup` interview, the GOALS step (v0.23+: restructured as three-layer prompts) |
 
 ---
@@ -762,12 +839,13 @@ A HermesAgency strategic plan has three layers, all SMART:
 **1-3 Outcomes** at the top (where the business is headed),
 **1-3 Interim Goals per Outcome** in the middle (the mid-cycle
 metrics that predict outcome accomplishment), and **1-5 Initiatives
-per Interim Goal** at the bottom (the actual sets of skills +
-scripts that produce the outputs). A parallel structure of
-**Guardrails → Interim Guardrails → Guardrail-aligned Initiatives**
+per Interim Goal** at the bottom — where **agentic Initiatives are
+skills** (LLM-driven, declared in SKILL.md) and **deterministic
+Initiatives are scripts** (code-driven). A parallel structure of
+**Guardrails → Interim Guardrails → Guardrail-aligned skills/scripts**
 captures the non-negotiables. Alignment between layers is math, not
 opinion — ≥0.6 correlation between Interim Goal and Outcome, ≥0.5
-between Initiative and Interim Goal.
+between Initiative (skill/script) and Interim Goal.
 
 The three layers have **three matching testability layers**, each
 on a different cadence:

@@ -1,8 +1,11 @@
 # Goals — {{ORG_NAME}}
 
 _Strategic plan, layer 1 (Outcomes) + layer 2 (Interim Goals).
-Layer 3 (Initiatives) live as Playbook pages in `Initiatives/`.
-See [`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md)
+Layer 3 (Initiatives) ARE the agency's skills and scripts —
+agentic Initiatives are skills (SKILL.md), deterministic
+Initiatives are scripts (.py / .sh). Each strategic skill/script
+carries its alignment metadata in its own frontmatter. See
+[`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md)
 for the framework._
 
 _Derived from a deep interview with {{OWNER_NAME}} on
@@ -42,16 +45,16 @@ underneath._
 
 {{INTERIM_1_1_STATEMENT}}
 
-Initiatives serving Interim Goal 1.1:
-- {{INITIATIVE_1_1_A}} → see `Initiatives/{{INIT_1_1_A_SLUG}}.md`
-- {{INITIATIVE_1_1_B}} → see `Initiatives/{{INIT_1_1_B_SLUG}}.md`
+Initiatives (skills + scripts) serving Interim Goal 1.1:
+- skill: `{{PROFILE_1_1_A}}/{{SKILL_1_1_A}}` *(agentic)*
+- script: `{{PROFILE_1_1_B}}/{{SCRIPT_1_1_B}}.py` *(deterministic)*
 
 **Interim Goal 1.2 — {{INTERIM_1_2_TITLE}}**
 
 {{INTERIM_1_2_STATEMENT}}
 
-Initiatives serving Interim Goal 1.2:
-- {{INITIATIVE_1_2_A}} → see `Initiatives/{{INIT_1_2_A_SLUG}}.md`
+Initiatives (skills + scripts) serving Interim Goal 1.2:
+- skill: `{{PROFILE_1_2_A}}/{{SKILL_1_2_A}}` *(agentic)*
 
 ### Outcome 2 — {{OUTCOME_2_TITLE}}
 
@@ -63,8 +66,8 @@ Initiatives serving Interim Goal 1.2:
 
 {{INTERIM_2_1_STATEMENT}}
 
-Initiatives serving Interim Goal 2.1:
-- {{INITIATIVE_2_1_A}} → see `Initiatives/{{INIT_2_1_A_SLUG}}.md`
+Initiatives (skills + scripts) serving Interim Goal 2.1:
+- skill: `{{PROFILE_2_1_A}}/{{SKILL_2_1_A}}` *(agentic)*
 
 ---
 

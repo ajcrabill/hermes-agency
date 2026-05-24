@@ -71,8 +71,8 @@ being honored in practice._
 
 {{INTERIM_GR_1_1_STATEMENT}}
 
-Initiatives serving Interim Guardrail 1.1:
-- {{GR_INITIATIVE_1_1_A}} → see `Initiatives/{{GR_INIT_1_1_A_SLUG}}.md`
+Initiatives (skills + scripts) serving Interim Guardrail 1.1:
+- skill: `{{GR_PROFILE_1_1_A}}/{{GR_SKILL_1_1_A}}` *(agentic)*
 
 ### Guardrail 2 — {{GUARDRAIL_2_TITLE}}
 
@@ -84,8 +84,8 @@ Initiatives serving Interim Guardrail 1.1:
 
 {{INTERIM_GR_2_1_STATEMENT}}
 
-Initiatives serving Interim Guardrail 2.1:
-- {{GR_INITIATIVE_2_1_A}} → see `Initiatives/{{GR_INIT_2_1_A_SLUG}}.md`
+Initiatives (skills + scripts) serving Interim Guardrail 2.1:
+- skill: `{{GR_PROFILE_2_1_A}}/{{GR_SKILL_2_1_A}}` *(agentic)*
 
 ### Guardrail 3 — {{GUARDRAIL_3_TITLE}}
 
@@ -97,8 +97,8 @@ Initiatives serving Interim Guardrail 2.1:
 
 {{INTERIM_GR_3_1_STATEMENT}}
 
-Initiatives serving Interim Guardrail 3.1:
-- {{GR_INITIATIVE_3_1_A}} → see `Initiatives/{{GR_INIT_3_1_A_SLUG}}.md`
+Initiatives (skills + scripts) serving Interim Guardrail 3.1:
+- skill: `{{GR_PROFILE_3_1_A}}/{{GR_SKILL_3_1_A}}` *(agentic)*
 
 ---
 

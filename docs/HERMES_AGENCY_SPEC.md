@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.4-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.5-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -260,9 +260,13 @@ framework):
   outcomes, 1-3 year horizon).
 - **Layer 2 — Interim Goals** — mid-cycle SMART indicators that
   predict outcome accomplishment.
-- **Layer 3 — Initiatives** — the actual sets of skills + scripts
-  (owned by profiles or by the owner) that produce the outputs.
-  Each Initiative has a Playbook page in `Initiatives/<slug>.md`.
+- **Layer 3 — Initiatives ARE skills and scripts.** Agentic
+  Initiatives are skills (SKILL.md). Deterministic Initiatives are
+  scripts (.py / .sh). There's no separate Initiative artifact —
+  the SKILL.md / script docstring carries the alignment metadata
+  (Outcome ref, Interim Goal ref, outcome metric, status,
+  correlation argument) in frontmatter. Goals.md references
+  strategic skills/scripts by their `profile/name` path.
 
 This is what "Goals.md is part of the operating background" means
 operationally: every turn, the agency reasons inside a structured
@@ -2193,31 +2197,43 @@ confirms §1.1's claim and ships the file-name change:
   existed but didn't read a Guardrails doc. v0.23 connects them.
 
 *B. Three-layer strategic-planning structure* — gives the agency the
-load-bearing scaffolding the strategic-planning doc describes:
+load-bearing scaffolding the strategic-planning doc describes,
+**without introducing a separate "Initiative" artifact**:
 
-- `Goals.md.template` and the new `Guardrails.md.template` carry
-  the three-layer structure (Outcomes / Interim Goals / Initiative
-  refs, and the parallel Guardrail structure).
-- New vault subdirectory `Initiatives/` holds one Playbook page
-  per Initiative (template covers all fields from
-  StrategicPlanning.md §4).
+- `Goals.md.template` and `Guardrails.md.template` carry the
+  three-layer structure (Outcomes / Interim Goals / strategic
+  skill+script references, and the parallel Guardrail structure).
+  Leaf references point at `profile/skill-name` (for agentic
+  Initiatives) or `profile/script-name.py` (for deterministic
+  Initiatives).
+- **No new vault subdirectory.** Initiatives ARE skills and
+  scripts — they already live under
+  `~/.hermes/agency-state/profiles/<profile>/skills/` and
+  `.../scripts/`. The strategic-planning metadata goes in the
+  existing SKILL.md frontmatter (new optional keys: `outcome`,
+  `interim_goal`, `outcome_metric`, `status`, `alignment_argument`,
+  `output_metrics`, `input_metrics`) or script docstring.
 - The `/agency setup` clean-install interview restructures the
   GOALS step into three sub-prompts that walk the owner through
   Outcomes first, then Interim Goals under each, then proposed
-  Initiative mappings to existing skills/scripts. The CoS proposes
-  drafts at each layer; the owner accepts/edits.
+  skill+script mappings drawn from the active profiles' existing
+  catalogs. The CoS proposes drafts at each layer; the owner
+  accepts/edits.
 - Audit rules (new):
-  - `unaligned-skills` — skills that fire but don't declare an
-    Initiative they serve.
-  - `unaligned-initiatives` — Initiatives without a clear Interim
-    Goal parent.
+  - `unaligned-skills` — strategic skills/scripts (those declaring
+    an `interim_goal` in frontmatter) whose named Interim Goal
+    doesn't exist in Goals.md, or whose alignment argument is
+    missing.
+  - `unaligned-initiatives` — strategic skills/scripts without a
+    clear Interim Goal parent.
   - `unaligned-interim-goals` — Interim Goals whose alignment
     argument to an Outcome is missing or weak.
-  - `stale-playbook` — Initiatives whose Playbook page hasn't been
-    updated in too long.
-  - `abandoned-outcome` — Outcomes that no Initiatives are serving.
+  - `stale-skill-status` — strategic skills/scripts whose status
+    frontmatter field hasn't been updated within declared cadence.
+  - `abandoned-outcome` — Outcomes that no strategic skill/script
+    declares an alignment to.
 - Weekly CoS skill: strategic-plan health check (per
-  StrategicPlanning.md §5.4) surfaces drift at any layer and
+  StrategicPlanning.md §6.4) surfaces drift at any layer and
   proposes pivots.
 
 Acceptance:

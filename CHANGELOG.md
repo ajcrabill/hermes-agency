@@ -9,6 +9,108 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.5-spec] — 2026-05-24
+
+**Spec revision: Initiatives ARE skills and scripts.** Collapses
+the "Initiative" concept into HermesAgency's existing structure:
+
+- **Agentic Initiative = Skill** (LLM-driven, in `SKILL.md`)
+- **Deterministic Initiative = Script** (code-driven, in `.py` / `.sh`)
+
+No separate Initiative artifact, no `Initiatives/` subdirectory,
+no duplicate Playbook page document. The Initiative's strategic-
+planning metadata (Outcome ref, Interim Goal ref, outcome metric,
+status, alignment argument, output/input metrics) lives in the
+existing SKILL.md frontmatter or script docstring. The strategic
+plan's input layer is *literally* the agency's existing catalog
+of skills and scripts.
+
+This collapse was implicit in the previous spec revisions
+(StrategicPlanning.md §5.3 already said "skills are agentic
+initiatives") but the doc still talked about Playbook pages as
+separate artifacts and the v0.23 plan still called for an
+`Initiatives/` subdirectory. v0.22.5 unifies the framing.
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Changed — `docs/StrategicPlanning.md`
+
+- §1.3 (Inputs) renamed "Inputs (Initiatives = Skills + Scripts)";
+  explicit table: agentic Initiative = Skill, deterministic
+  Initiative = Script. The six tests for "strategic Initiative"
+  now read as criteria for what makes a skill/script *strategic*
+  (vs. ad-hoc utility work).
+- §3 renamed "What makes a skill/script a strategic Initiative."
+  Distinguishes strategic skills/scripts (have alignment metadata,
+  in the plan) from utility skills/scripts (legitimate but not
+  strategic).
+- §4 renamed "The Initiative Playbook page — IS the SKILL.md /
+  script docstring." Maps the Playbook fields to proposed SKILL.md
+  frontmatter keys: `outcome`, `interim_goal`, `outcome_metric`,
+  `owner_profile`, `status`, `alignment_argument`, etc.
+- §6.1 structure block updated — leaf refs point at `profile/skill`
+  or `profile/script.py`, not at `Initiatives/<slug>.md`.
+- §6.3 retitled "Skills and scripts ARE the input layer."
+- §6.5 audit-rule list updated: `stale-playbook` → `stale-skill-status`
+  (since there's no separate Playbook artifact).
+- §7 worked example rewritten with real skill/script references
+  (e.g., `devon/lookalike-prospect-builder` *(agentic Initiative)*,
+  `devon/pipeline-watchdog.py` *(deterministic Initiative)*).
+- §8 "Initiative or just a hope?" common question reframed as
+  "strategic Initiative or just utility work?"
+- §9 "Where this lives" table — `Initiatives/<slug>.md` row
+  replaced with rows pointing at the existing
+  `profiles/<profile>/skills/<skill>/SKILL.md` and `scripts/<name>.py`
+  paths.
+- §10 summary updated to name the skill/script = Initiative
+  mapping.
+
+### Changed — `Goals.md.template` and `Guardrails.md.template`
+
+Leaf references at the Interim Goal / Interim Guardrail level now
+point at `profile/skill` or `profile/script.py` instead of
+`Initiatives/<slug>.md`. The header note clarifies that
+"Initiatives ARE the agency's skills and scripts."
+
+### Changed — spec §1.1
+
+Layer-3 description updated to explicitly state: "Initiatives ARE
+skills and scripts. There's no separate Initiative artifact —
+the SKILL.md / script docstring carries the alignment metadata
+(Outcome ref, Interim Goal ref, outcome metric, status,
+correlation argument) in frontmatter."
+
+### Changed — spec §13.7 v0.23 plan (Thread B)
+
+- Removed: "New vault subdirectory `Initiatives/` holds one
+  Playbook page per Initiative."
+- Added: "**No new vault subdirectory.** Initiatives ARE skills
+  and scripts — they already live under
+  `~/.hermes/agency-state/profiles/<profile>/skills/` and
+  `.../scripts/`. The strategic-planning metadata goes in the
+  existing SKILL.md frontmatter (new optional keys: `outcome`,
+  `interim_goal`, `outcome_metric`, `status`, `alignment_argument`,
+  `output_metrics`, `input_metrics`) or script docstring."
+- Audit rules: `stale-playbook` renamed to `stale-skill-status`.
+
+### Changed — README
+
+"Plan your next quarter" preamble paragraph now mentions: "agentic
+Initiatives are skills (LLM-driven, in SKILL.md) and deterministic
+Initiatives are scripts (code-driven). The strategic plan's input
+layer is *literally* HermesAgency's existing catalog of skills and
+scripts."
+
+### Spec header
+
+Bumped v0.22.4-spec → v0.22.5-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.4-spec] — 2026-05-24
 
 **Spec revision: Goals are aim, Guardrails are brake.** Sharpens
