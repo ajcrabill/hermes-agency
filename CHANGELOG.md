@@ -9,6 +9,67 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.12-spec] — 2026-05-24
+
+**Spec revision: §13.7 v0.23 plan now Thread A+B+C.** The cross-doc
+audit identified eight StrategicPlanning.md commitments the
+original Threads A+B didn't cover. v0.22.12-spec adds Thread C
+with all eight as explicit v0.23 deliverables, plus matching
+acceptance criteria.
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Added — `§13.7 v0.23 Thread C` (8 new requirements)
+
+1. **Alignment math thresholds wired into the audit** (≥0.6
+   Interim↔Outcome, ≥0.5 Initiative↔Interim, or
+   leading-indicator argument when historical data is missing).
+2. **8th-grade conversation register + silent SMART math
+   translation** — the LLM-driven interview's *how*. Prompt
+   loads StrategicPlanning.md §3 + §7.1 as context; system
+   message instructs CoS on language register and the
+   widget-translation pattern.
+3. **Ongoing-refinement loop with layer-1 approval gating** —
+   `goals-revision-proposal` skill that proposes Goals/Guardrails
+   refinements + files them as kanban tasks for Principal
+   approval. Post-setup, the strategic plan isn't frozen.
+4. **Audit findings-only semantics** — all six new audit rules
+   produce findings, never mutations. Verified by a test that
+   asserts no vault filesystem writes during audit runs.
+5. **SKILL.md `status:` color taxonomy semantics** —
+   Blue/Green/Yellow/Red/Gray with explicit meanings. The
+   `stale-skill-status` rule also flags Red/Yellow that has
+   persisted 4+ weeks unchanged (strategic plans pivot).
+6. **Quarterly top-tier strategic-review mechanism** — new
+   `strategic-review-prep` CoS skill fires once per quarter,
+   assembles the data, produces a review packet for the
+   Principal. The review is Principal-driven; the skill just
+   produces the data.
+7. **Explicit non-business Outcome prompt** — the interview
+   MUST ask the well-rounded-lives question after the
+   business-vision question.
+8. **Guardrails-side interview prompt content** — the GUARDRAILS
+   step's specific questions and follow-ups, part of the
+   StrategicPlanning.md §3 context the interview loads.
+
+### Added — eight matching acceptance criteria
+
+Each new thread item has a corresponding acceptance test added
+to the v0.23 release gate (lines after the Thread C list).
+
+### Spec header
+
+Bumped v0.22.11-spec → v0.22.12-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
+**Next step:** start v0.23 code work. The spec is now complete;
+the implementation can target it directly.
+
 ## [0.22.11-spec] — 2026-05-24
 
 **Spec revision: cleanup pass after the v0.22.1–v0.22.10 sweep.**

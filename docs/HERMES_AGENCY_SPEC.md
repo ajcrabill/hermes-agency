@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.11-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.12-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — Technological Intelligence Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -2292,19 +2292,113 @@ load-bearing scaffolding the strategic-planning doc describes,
   StrategicPlanning.md §7.4) surfaces drift at any layer and
   proposes pivots.
 
+*C. Eight requirements added in v0.22.12-spec* — these are
+StrategicPlanning.md commitments that the original Threads A+B
+didn't explicitly cover:
+
+1. **Alignment math thresholds wired into the audit.** Per
+   StrategicPlanning.md §1.4, Interim Goal ↔ Outcome alignment
+   requires ≥0.6 correlation (or a defensible leading-indicator
+   argument); Initiative ↔ Interim Goal requires ≥0.5. v0.23
+   audit rules `unaligned-interim-goals` and
+   `unaligned-initiatives` must check these thresholds (or
+   flag absence-of-evidence when historical data is missing).
+2. **8th-grade conversation register + silent SMART math
+   translation.** The setup interview is LLM-driven per Thread
+   B; this is the *how*. Prompt loads `StrategicPlanning.md §3
+   + §7.1` as context; system message instructs CoS to default
+   to 8th-grade reading level, never expose framework
+   terminology to the Principal, do the SMART math silently
+   (the widget-translation pattern from §3.5 step 3), and
+   present rough drafts in plain language for the Principal's
+   approval. Without this, the v0.22.6/v0.22.8-spec interview
+   principles are unimplementable.
+3. **Ongoing-refinement loop with layer-1 approval gating.**
+   Post-setup, daily implementation + supervised-learning-loop
+   corrections + weekly-health-check findings all propose
+   refinements to `Goals.md` / `Guardrails.md`. Layer-1
+   refinements (Outcomes / Guardrails themselves) require
+   Principal approval before being written; layer-2 / layer-3
+   refinements (Interims + Initiative mappings) are CoS's
+   working drafts and refresh continuously. Implementation:
+   a `goals-revision-proposal` skill that produces a draft +
+   files a kanban task for the Principal when a layer-1 change
+   is proposed.
+4. **Audit findings-only semantics.** All six new audit rules
+   (Thread B) produce findings, never mutations. Explicit
+   acceptance: the audit run never writes to any `.md` file in
+   the vault. Verified by a test that runs the audit against
+   a known-bad deployment and asserts no mutations to the vault
+   filesystem.
+5. **SKILL.md `status:` color taxonomy semantics.** Blue =
+   complete; Green = on track; Yellow = some slippage; Red =
+   off track without significant change; Gray = not started.
+   The Principal or the responsible agent profile writes the
+   value; the `stale-skill-status` audit rule flags any
+   strategic skill/script whose status hasn't been updated
+   within the cadence the SKILL.md declares (default: weekly).
+   Audit also flags Red/Yellow that has persisted unchanged
+   for 4+ weeks (the strategic plan is supposed to *pivot* in
+   that situation, not just sit on the color).
+6. **Quarterly top-tier strategic review mechanism.** Per
+   StrategicPlanning.md §6.3, the top-tier test ("are these
+   the right Outcomes?") runs quarterly. v0.23 adds a scheduled
+   `strategic-review-prep` CoS skill that fires once per quarter
+   (default: first Monday of Jan/Apr/Jul/Oct), assembles the
+   prior-quarter health-check data + audit findings + firings
+   summary, and produces a review packet for the Principal.
+   The review itself is owner-driven (a meeting with the CoS);
+   the skill just produces the data.
+7. **Explicit non-business Outcome prompt in the interview.**
+   Per StrategicPlanning.md §3.5 step 1, after the
+   business-vision question the CoS *must* ask the
+   well-rounded-lives question: *"At HermesAgency, we believe
+   all of our team members deserve well-rounded lives. Is there
+   something outside the business — your health, your family,
+   your marriage, a hobby, your faith — that you'd like the
+   agency to support you on?"* If the Principal declines,
+   that's fine; the *asking* is the requirement.
+8. **Guardrails-side interview prompt content.** The
+   GUARDRAILS step (renamed from VALUES) asks the Principal
+   about lines they won't cross. CoS translates each named
+   value into a prohibition statement Guardrail + 1-3 SMART
+   Interim Guardrails. The prompt content (the specific
+   questions and follow-ups) is part of the StrategicPlanning.md
+   §3 + §7.1 context the interview loads.
+
 Acceptance:
 
-1. `agency audit` flags profiles whose agency-context docs aren't
-   reachable; the §1.1 claim is testable.
-2. A fresh `/agency setup clean` walks the Principal through the
-   three-layer interview and produces a structured Goals.md +
-   Guardrails.md + 1-2 starter Playbook pages.
-3. The audit's strategic-alignment rules produce non-zero findings
-   on a deployment with active skills and an incomplete plan
-   (this is the *normal* state — the audit's job is to show the
-   gap so the Principal can close it).
-4. The weekly strategic-plan health check fires and produces a
-   short pivot-proposal summary.
+1. `agency audit` flags profiles whose agency-context docs
+   aren't reachable; the §1.1 claim is testable.
+2. A fresh `/agency setup clean` walks the Principal through
+   the LLM-driven three-layer interview at 8th-grade register,
+   asks the non-business-Outcome question, presents the
+   rough-draft `Goals.md` + `Guardrails.md` for Principal
+   approval, and writes `.configured` only after approval.
+3. The audit's six new strategic-alignment rules
+   (`unaligned-skills`, `unaligned-initiatives`,
+   `unaligned-interim-goals`, `stale-skill-status`,
+   `abandoned-outcome`, `agency-context-injection`) produce
+   findings on a deployment with incomplete plans — and
+   produce *zero* mutations on any vault file (audit
+   findings-only semantics).
+4. The weekly strategic-plan health check fires and produces
+   a short pivot-proposal summary.
+5. The quarterly `strategic-review-prep` skill fires on its
+   schedule and produces a review packet for the Principal.
+6. The `goals-revision-proposal` flow proposes a layer-1
+   refinement, files it as a kanban task for the Principal,
+   and writes nothing to `Goals.md` / `Guardrails.md` until
+   the Principal approves.
+7. SKILL.md `status:` values use the Blue/Green/Yellow/Red/Gray
+   taxonomy; `stale-skill-status` flags any strategic
+   skill/script whose status hasn't been updated within its
+   declared cadence, and flags Red/Yellow that has persisted
+   4+ weeks unchanged.
+8. The setup interview's `goal_keys` data plumbing works
+   end-to-end: `/agency capture "..." --goal G1.1` writes a
+   learning rule with that goal-key attached; the rule is
+   later visible in the audit's goal-attribution rate metric.
 
 ---
 
