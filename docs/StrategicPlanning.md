@@ -1340,8 +1340,10 @@ rather than just another technological-intelligence assistant.
 **Companion to:** [`HERMES_AGENCY_SPEC.md`](./HERMES_AGENCY_SPEC.md) §1.1
 **Author:** AJ Crabill — Technological Intelligence Developer for [Good Ancestor](https://www.GoodAncestor.com)
 
-> *Adapted from a public-sector strategic-planning framework AJ has
-> taught in school-systems work, with the governance-vs-management
-> distinctions stripped out (not relevant in a one-Principal business).
-> The core three-layer alignment model — and the discipline of
-> requiring every layer to be SMART — is preserved.*
+> *Adapted from a strategic-planning framework AJ has taught and
+> deployed for over a decade, it is repurposed here to define the
+> cooperation layer that allows technological intelligences and
+> biological intelligences to collaborate effectively in an
+> agentic-first organizational environment. It relies on a core
+> three-layer alignment model — and the discipline of requiring
+> every layer to be SMART.*

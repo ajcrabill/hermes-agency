@@ -6,12 +6,6 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes engine](https://img.shields.io/badge/plugin%20for-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
 
-HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](https://github.com/NousResearch/hermes-agent) powerful Hermes agentic engine. Designed for small businesses — for and by Principals who run them — HermesAgency pulls together the suite of capabilities every small business wants and needs but typically can't afford. It's where the powerful, always-working aspects of *technological intelligences* (the agents) collaborate with the ingenuity and creativity of *biological intelligences* (the humans). Together, with a **7-part continuous learning framework** designed from the ground up to rapidly expand the agents' understanding of the Principal's goals and values, HermesAgency gives small businesses access to the advantages of companies many times their size and revenue — without sacrificing the privacy and ownership of your data and intellectual property, and without getting locked into big-tech ecosystems. The Principal's declared goals (in `Goals.md` and the other operational context docs) are always part of the background the agency operates in — present every turn, never the foreground, never absent. The Principal's declared values (in `Guardrails.md`) are loaded into the enforcement layer — Sentinel, the audit, and the send-guard — so the agency is **aimed by Goals and checked by Guardrails**, not constrained by Guardrails on every turn.
-
-HermesAgency uses a **three-layer strategic-planning model** (Outcomes → Interim Goals → Initiatives, all SMART) to organize the agency's support of the Principal — where **agentic Initiatives are skills** (LLM-driven, in SKILL.md) and **deterministic Initiatives are scripts** (code-driven). The strategic plan's input layer is *literally* HermesAgency's existing catalog of skills and scripts; the alignment metadata lives in their frontmatter. Every layer is testable on its own cadence: the 7-step learning loop tests inputs continuously (*"are we implementing the strategies?"*); the weekly health check tests inputs against interim goals (*"are we deploying resources wisely?"*); the quarterly review tests interim goals against outcomes (*"do we have the right strategies to get the results the Principal wants?"*). The daily work and the long-term direction are structurally connected, not just culturally linked. **Goals don't have to be business-only**: HermesAgency is built on the belief that all of our team members — biological and technological — deserve well-rounded lives, so the CoS actively encourages the Principal to include at least one non-business Outcome (health, family, marriage, hobbies, faith, whatever matters). See [`docs/StrategicPlanning.md`](./docs/StrategicPlanning.md).
-
-> By [AJ Crabill](https://ajcrabill.com) — Technological Intelligence Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
-
 ## What HermesAgency does for you
 
 The Principal of a small business wears every hat. HermesAgency runs a team of agents that quietly takes the most repetitive, easily-lost, and easily-dropped work off your plate — without you having to surrender your data, your relationships, or your judgment. Here's a sample of what your agency can do:
@@ -270,6 +264,14 @@ Detail in [`docs/ROLES.md`](docs/ROLES.md). Adding new roles (e.g. `FinanceAgent
 
 ---
 
+## Deeper Dive
+
+HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](https://github.com/NousResearch/hermes-agent) powerful Hermes agentic engine. Designed for small businesses — for and by Principals who run them — HermesAgency pulls together the suite of capabilities every small business wants and needs but typically can't afford. It's where the powerful, always-working aspects of *technological intelligences* (the agents) collaborate with the ingenuity and creativity of *biological intelligences* (the humans). Together, with a **7-part continuous learning framework** designed from the ground up to rapidly expand the agents' understanding of the Principal's goals and values, HermesAgency gives small businesses access to the advantages of companies many times their size and revenue — without sacrificing the privacy and ownership of your data and intellectual property, and without getting locked into big-tech ecosystems. The Principal's declared goals (in `Goals.md` and the other operational context docs) are always part of the background the agency operates in — present every turn, never the foreground, never absent. The Principal's declared values (in `Guardrails.md`) are loaded into the enforcement layer — Sentinel, the audit, and the send-guard — so the agency is **aimed by Goals and checked by Guardrails**, not constrained by Guardrails on every turn.
+
+HermesAgency uses a **three-layer strategic-planning model** (Outcomes → Interim Goals → Initiatives, all SMART) to organize the agency's support of the Principal — where **agentic Initiatives are skills** (LLM-driven, in SKILL.md) and **deterministic Initiatives are scripts** (code-driven). The strategic plan's input layer is *literally* HermesAgency's existing catalog of skills and scripts; the alignment metadata lives in their frontmatter. Every layer is testable on its own cadence: the 7-step learning loop tests inputs continuously (*"are we implementing the strategies?"*); the weekly health check tests inputs against interim goals (*"are we deploying resources wisely?"*); the quarterly review tests interim goals against outcomes (*"do we have the right strategies to get the results the Principal wants?"*). The daily work and the long-term direction are structurally connected, not just culturally linked. **Goals don't have to be business-only**: HermesAgency is built on the belief that all of our team members — biological and technological — deserve well-rounded lives, so the CoS actively encourages the Principal to include at least one non-business Outcome (health, family, marriage, hobbies, faith, whatever matters). See [`docs/StrategicPlanning.md`](./docs/StrategicPlanning.md).
+
+---
+
 ## Status
 
 **v0.1 is under active development.** This README and the contents of this repo evolve as the build progresses. The build target is the acceptance bar in §12.1 of `HERMES_AGENCY_V0.1_SPEC.md`.
@@ -293,3 +295,9 @@ HermesAgency builds on:
 - [dCoS](https://github.com/ajcrabill/dCoS) — early thinking on the deep-interview setup pattern
 
 Patterns from both are explicitly credited in `docs/ARCHITECTURE.md` Appendix A.
+
+---
+
+## About the author
+
+By [AJ Crabill](https://ajcrabill.com) — Technological Intelligence Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
