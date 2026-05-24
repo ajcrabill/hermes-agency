@@ -1,0 +1,61 @@
+#!/usr/bin/env python3
+# {{HEADER_COMMENT}}
+"""
+{{SCRIPT_NAME}} — {{ONE_SENTENCE_PURPOSE}}
+
+Cron cadence: {{CRON_CADENCE}}
+Profile: {{PROFILE_ID}}
+
+Reads:  {{INPUTS_READ}}
+Writes: {{OUTPUTS_WRITTEN}}
+Emits events: {{EVENTS_EMITTED}}
+
+Audit checks against this script:
+  - script-no-shebang        (this line has #!/usr/bin/env python3)
+  - script-no-error-handling (try/except below)
+  - script-secrets-inline    (no inline API keys — Keychain only)
+"""
+
+from __future__ import annotations
+
+import argparse
+import sys
+from datetime import datetime, timezone
+
+from _framework.sentinel import append_event
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="{{ONE_SENTENCE_PURPOSE}}")
+    parser.add_argument("--dry-run", action="store_true", help="Print actions; mutate nothing.")
+    args = parser.parse_args(argv)
+
+    try:
+        result = do_work(dry_run=args.dry_run)
+    except Exception as e:
+        # Emit an event so Sentinel sees the failure and the operator
+        # gets a kanban alert; then re-raise so the cron records exit=1.
+        append_event(
+            kind="{{SCRIPT_NAME}}_failed",
+            actor="{{PROFILE_ID}}",
+            severity="critical",
+            payload={"error": f"{type(e).__name__}: {e}"},
+        )
+        raise
+
+    append_event(
+        kind="{{SCRIPT_NAME}}_ran",
+        actor="{{PROFILE_ID}}",
+        severity="info",
+        payload=result,
+    )
+    return 0
+
+
+def do_work(dry_run: bool = False) -> dict:
+    """Replace with the actual work. Return a summary dict."""
+    return {"ts": datetime.now(timezone.utc).isoformat(), "dry_run": dry_run}
+
+
+if __name__ == "__main__":
+    sys.exit(main())

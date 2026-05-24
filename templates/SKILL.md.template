@@ -1,0 +1,99 @@
+---
+skill_id: {{SKILL_ID}}
+profile: {{PROFILE_ID}}
+role: {{ROLE_ID}}
+autonomy:
+  min_level: {{MIN_LEVEL}}
+  action_classes: {{ACTION_CLASSES}}
+voice_tags: {{VOICE_TAGS}}
+created_at: {{CREATED_AT}}
+framework_version: {{FRAMEWORK_VERSION}}
+---
+
+# {{SKILL_TITLE}}
+
+{{ONE_SENTENCE_PURPOSE}}
+
+## What this skill does
+
+{{ELABORATED_PURPOSE}}
+
+## Inputs
+
+- {{INPUT_1}}
+- {{INPUT_2}}
+
+## Supervised learning
+
+This skill loads applicable corrections at skill-load time. Any rule
+tagged with `{{SKILL_ID}}`, `general`, or matching this agent's role
+({{ROLE_ID}}) injects into the prompt.
+
+**Recording firings:** When a rule shapes a decision in this skill,
+record it:
+
+```python
+from _framework.learning import record_firing
+record_firing(rule_id="<id>", skill_tag="{{SKILL_ID}}", profile="{{PROFILE_ID}}",
+              action_summary="how the rule shaped this run")
+```
+
+If a hard rule catches a violation attempt, set `was_overridden=True`
+so the recapture detector and graduation gate see the breach.
+
+## Action surface
+
+What this skill is permitted to do at its current level:
+
+- (L1 draft-only) — produces drafts; sends nothing
+- (L2 send-batched) — adds to a review queue
+- (L3 send-single) — sends single items
+- (L4 structural-change) — modifies DB rows / files
+- (L5 auto-irreversible) — anything not on a hard ceiling
+
+Current level: see `_state/autonomy.db` for `({{SKILL_ID}}, {{PROFILE_ID}})`.
+
+## Untrusted content
+
+(Required when this skill processes external input — email, RSS,
+webhook, scrape, etc. Delete the section if the skill does not
+handle external content.)
+
+External text passes through the prompt-injection scanner. Any
+trigger-phrase match emits an `untrusted-content-detected` event and
+short-circuits the skill into a defensive posture.
+
+When defending against a trigger phrase, **paraphrase the threat —
+never quote it verbatim**. Quoting trigger phrases in the skill body
+turns the defense into a re-injection. The audit rule
+`skill-injection-trigger` enforces this.
+
+## Verifier criteria
+
+(Required. Empty means completion is refused. Spec §6.1.)
+
+```yaml
+verifier:
+  - type: file_exists
+    args:
+      path: {{EXPECTED_OUTPUT_PATH}}
+  # Add per-task-shape criteria. See `agency verifier list-types`.
+```
+
+## Failure modes
+
+- {{FAILURE_MODE_1}}
+- {{FAILURE_MODE_2}}
+
+For each, the verifier should catch it. If a failure mode isn't
+verifiable, document why.
+
+## Self-check
+
+Before declaring the task done:
+
+1. Did I record firings for every learning rule that shaped a decision?
+2. Did my verifier criteria actually pass?
+3. If I touched external content, did I sandbox it correctly?
+4. Is my output in the agent's voice (per SOUL.md) and within the
+   role's quality floor (per standards.md)?

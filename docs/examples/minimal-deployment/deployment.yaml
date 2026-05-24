@@ -1,0 +1,69 @@
+# Minimal HermesAgency deployment example.
+#
+# Real values for every field; meant to be copied into ~/.agency/ and
+# tweaked. Confirms what a fully-resolved manifest looks like — the
+# template in templates/deployment.yaml.template has placeholders;
+# this one has plausible defaults.
+#
+# `agency manifest-validate docs/examples/minimal-deployment/deployment.yaml`
+# should report no errors.
+
+deployment:
+  owner:             example-owner
+  org_name:          "Example Solo Consultancy"
+  primary_email:     owner@example.com
+  timezone:          America/Chicago
+  framework_version: "0.1.0"
+
+profiles:
+
+  - id:            cos
+    role:          chief-of-staff
+    persona_file:  identities/chief-of-staff.md
+    email:         agency@example.com
+    starter_skills:
+      - owner-channels-ingress
+      - draft-composer
+      - send-orchestrator
+      - kanban-orchestrator
+      - calendar-manager
+
+  - id:            kb
+    role:          knowledge-base
+    persona_file:  identities/knowledge-base.md
+    email:         null
+    starter_skills:
+      - ip-curator
+      - ip-alignment-check
+      - kanban-verdict-publisher
+
+  - id:            sentinel
+    role:          system-sentinel
+    persona_file:  identities/system-sentinel.md
+    email:         null
+    starter_skills:
+      - learning-monitor
+      - heartbeat-watch
+      - event-rollup
+
+defaults:
+  model:    qwen2.5-coder:7b
+  provider: ollama
+  base_url: http://localhost:11434/v1
+  fallback_providers:
+    - provider: openrouter
+      model:    "meta-llama/llama-3.3-70b-instruct"
+      base_url: https://openrouter.ai/api/v1
+
+credentials:
+  ollama:     "env:OLLAMA_API_KEY"
+  openrouter: "keychain:openrouter-key"
+
+email_access_file: profiles/cos/scripts/learning-system/email-access.md
+
+ingress:
+  email:     true
+  chat_tab:  true
+  signal:    false
+  slack:     false
+  openwebui: false
