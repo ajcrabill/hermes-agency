@@ -181,7 +181,7 @@ exploratory, debug) but it doesn't belong in the strategic plan's
 input layer.
 
 Each strategic skill / script's SKILL.md (or script docstring)
-IS the **Playbook page** — see §4. No separate `Initiatives/`
+IS the **Playbook page** — see §5. No separate `Initiatives/`
 directory is needed; the alignment metadata lives in the skill
 or script file itself.
 
@@ -286,7 +286,251 @@ doc is the content; Sentinel is the mechanism.
 
 ---
 
-## 3. What makes a skill/script a strategic Initiative
+## 3. Quality criteria — what good Outcomes, Guardrails, and Interims look like
+
+This section is mostly for the CoS to use during the `/agency
+setup` interview when generating rough-draft `Goals.md` and
+`Guardrails.md` documents. The framework is forgiving — Outcomes
+and Interim Goals can be refined later — but the rough draft is
+much more useful if it follows these construction rules.
+
+The acronym in play throughout is **SMART**:
+
+- **S**pecific — names a precise subject (a customer segment, a
+  revenue stream, a particular operational metric), not a generic
+  category.
+- **M**easurable — names the measurement instrument (the survey,
+  the dashboard, the financial report) and the unit (percentage,
+  count, dollars).
+- **A**ttainable — the distance between start and end is doable
+  given the time and resources available.
+- **R**esults-focused — names an outcome, not an input or a
+  process.
+- **T**ime-bound — has a start date and an end date in
+  month/year form.
+
+Quick reference: **Outcomes and Interim Goals are SMART;
+Guardrails are NOT SMART** (they're prohibition statements about
+values); **Interim Guardrails are SMART** (they're the measurable
+mid-cycle proxies that say a Guardrail is being honored).
+
+### 3.1 Quality criteria for Outcomes (top-level Goals)
+
+An Outcome should:
+
+- **Reflect a business outcome, not inputs or outputs.** "Revenue
+  from coaching engagements" is an outcome; "hours spent coaching"
+  is an input; "number of prospect calls" is an output. Outcomes
+  are results, not activities.
+- **Be a Goal, not a Vision.** A Vision is the 10-year aspiration
+  ("be the trusted authority for X"). An Outcome is the next 1-3
+  year step toward it ("get inbound coaching inquiries from 4 per
+  quarter to 24 per quarter"). If the statement reads as
+  "perfection at scale," it's a Vision; pull it back.
+- **Be SMART** (all five letters).
+- **Have a starting date AND an ending date** in month/year form.
+  Not just "by Q4 2027" — pick the month.
+- **Have a starting point AND an ending point** in measurable
+  units. Not "increase" — "increase from W on date Y to Z by
+  date W."
+- **Span 1-3 years.** Shorter than that is a tactical goal; longer
+  is a vision. For the source framework (school systems) the range
+  is 3-5 years; small businesses usually need a faster feedback
+  loop, so 1-3 years fits better.
+- **Be attainable** given the time and resources committed. A
+  Goal too aspirational to be funded becomes a hope; pull it back
+  until it's challenging-but-doable.
+- **Be one of no more than five.** Three or fewer is typical and
+  better. The discipline is forced prioritization — five "top
+  priorities" means zero priorities.
+- **Be informed by listening + data.** The owner should have
+  collected feedback from relevant stakeholders (clients, peer
+  business owners, a coach, the financial picture) and looked at
+  baseline data before naming the Outcome. The CoS surfaces both
+  during the interview.
+- **Describe a specific subject, not "everyone."** "Coaching
+  engagement revenue from existing clients" is specific; "all
+  revenue" is generic. Specific subjects are easier to measure
+  and easier to move.
+
+Anti-patterns to flag during the interview:
+
+- *"More clients"* — not measurable, not time-bound, no
+  starting/ending point.
+- *"Be the leading voice in X"* — that's a Vision, not a Goal.
+  Ask: "Over the next 18 months, what would tell us we're on
+  the way there?"
+- *"100% client satisfaction"* — set at perfection; that's a
+  Vision-shaped Goal. Pull it back to a measurable next step.
+- *"Improve coaching skills"* — that's an input/process, not a
+  business outcome.
+
+### 3.2 Quality criteria for Guardrails
+
+A Guardrail should:
+
+- **Reflect a value of the owner, not a want, need, or strategy.**
+  "Honesty" is a value; "send better emails" is a strategy.
+  Guardrails capture the *values* expressed as enforceable
+  prohibitions.
+- **Be a prohibition statement.** "The business will NOT do X."
+  Phrasing matters: "the business will not pursue clients whose
+  work the owner would be embarrassed to publish" is a clean
+  Guardrail; "the business should pursue ethical clients" is a
+  permission/aspiration, not a prohibition.
+- **Avoid tricky double-negative or weak language.** Phrases like
+  *"shall not fail to..."* or *"shall not operate without..."*
+  invert the prohibition and create implementation ambiguity.
+  State the line cleanly.
+- **Cover behavior the business might genuinely be tempted to
+  cross.** A Guardrail no one would think of violating is dead
+  weight. The good Guardrails name the temptations the owner
+  knows they have ("would I trade integrity for the big retainer?
+  No — write that down").
+- **Be one of no more than five.** Three or fewer is typical.
+  Same prioritization discipline as Outcomes.
+- **NOT be SMART.** Guardrails are prohibition statements about
+  values, which aren't measurable. The measurability lives in the
+  **Interim Guardrails** that sit underneath each Guardrail (see
+  §3.4). The Guardrail itself is qualitative — "we will not X" —
+  and stable for 1-3 years.
+
+Anti-patterns to flag during the interview:
+
+- *"We value quality"* — that's a value statement, not a
+  Guardrail. Push for: "We will not ship work that hasn't passed
+  a quality check."
+- *"We will deliver excellent service"* — permission framing,
+  not prohibition. Push for: "We will not deliver work that
+  doesn't meet the documented service standard."
+- *"We will be honest"* — too vague. Push for a specific
+  prohibition: "We will not publish, send, or sign content that
+  misrepresents what the owner knows."
+
+### 3.3 Quality criteria for Interim Goals (the leading indicators)
+
+Interim Goals are SMART, and they have additional technical and
+operational criteria beyond the Outcome's SMART criteria.
+
+**Technical criteria** — what makes an Interim Goal *structurally*
+correct:
+
+- **SMART**, with all the same requirements as Outcomes (starting
+  point + ending point + starting date + ending date + specific
+  measurement + specific subject).
+- **A leading indicator, not lagging.** The Interim Goal should
+  move *before* the Outcome does. Revenue is a lagging indicator;
+  number of qualified prospects in the pipeline is a leading
+  indicator that predicts revenue.
+- **A mid-cycle output**, not an input. An *input* is a resource
+  or strategy knowable at the start of a cycle ("I will send 10
+  emails per week"). An *output* is a result knowable during the
+  cycle ("10% of recipients book a call"). Interim Goals are
+  outputs.
+- **A late output**, not an early output. An *early* output
+  measures participation ("80% of prospects opened the email").
+  A *late* output measures implementation quality ("80% of
+  prospects who opened the email scheduled a follow-up call").
+  Implementation-quality outputs are more predictive.
+- **Has a defensible correlation with the Outcome.** The standard
+  is ≥0.6 correlation when historical data exists; for a young
+  business, a leading-indicator argument from sector knowledge or
+  research is acceptable as a starting point. Revisit when 6-12
+  months of data exist.
+- **Is one of 1-3 per Outcome.** Three is the textbook target;
+  for a one-owner business, 1-2 well-chosen Interim Goals are
+  often plenty.
+
+**Operational criteria** — what makes an Interim Goal *usable*:
+
+- **If all the Interim Goals are accomplished, the Outcome is
+  likely accomplished.** If the math doesn't add up — you can hit
+  every Interim Goal and the Outcome can still miss — your Interim
+  Goals are picking the wrong things.
+- **The owner has ≥80% authority over what drives the metric.**
+  An Interim Goal that depends on external actors the owner can't
+  influence (the economy, a partner's behavior, a regulatory
+  change) is too fragile. Pick something the agency can move.
+- **Data is updatable multiple times per year**, ideally monthly
+  or weekly.
+- **Data can be monitored within 30-60 days of when it's
+  collected.** Latency longer than that defeats the point of an
+  Interim Goal (which exists to enable mid-cycle pivots).
+- **The data source is reliable.** Highly variable or
+  noise-prone metrics make false signals.
+- **Considers unintended consequences.** A metric that incentivizes
+  the wrong behavior (Goodhart's Law — "when a measure becomes a
+  target, it ceases to be a good measure") needs a counterweight
+  or a different metric.
+- **Has only one data set per metric**, not multiple. Mixing data
+  sources creates ambiguity.
+- **Is predictive both upward and downward.** If the metric
+  improves, the Outcome should also improve; if the metric
+  declines, the Outcome should also decline. Asymmetric metrics
+  hide problems.
+- **Is the data the owner actually uses for decisions.** A metric
+  that exists only on the dashboard but never informs a real
+  choice is decorative.
+- **Has explicit implementation behind it.** Some skill or script
+  has to actually be producing the work that moves the metric.
+  Interim Goals without resourced Initiatives behind them are
+  hopes.
+
+Anti-patterns to flag during the interview:
+
+- *"Number of hours worked on X"* — that's an input, not an
+  output.
+- *"Number of emails sent"* — that's an early output
+  (participation), not a late output (quality).
+- *"Revenue"* under a 6-month Interim Goal — revenue is lagging;
+  the Interim Goal should be something that *predicts* the
+  revenue change before it shows up.
+
+### 3.4 Quality criteria for Interim Guardrails
+
+Interim Guardrails follow the same SMART + technical + operational
+criteria as Interim Goals (above), with two differences:
+
+- **Alignment to the Guardrail is a "reasonableness" check, not
+  correlation math.** Because the Guardrail itself isn't SMART (it's
+  a prohibition statement, not a metric), there's no correlation
+  to compute between Interim Guardrail and Guardrail. The right
+  question is: *"Would a reasonable third party agree that this
+  Interim Guardrail is a defensible interpretation of the
+  Guardrail?"* If yes, alignment passes. If a reasonable person
+  would say "that's a stretch," either the Interim Guardrail needs
+  refinement or the Guardrail needs to be re-stated more clearly.
+- **The metric measures *honoring* the prohibition, not avoiding
+  it.** "100% of prospects screened against the values-fit screen
+  before contracting" is a positive measure of honoring the
+  Guardrail. "Zero contracts signed with prospects who failed the
+  screen" is also valid but harder to verify (you can't prove the
+  absence). When possible, prefer positive measures.
+
+### 3.5 How the CoS uses this section in the setup interview
+
+During the `/agency setup clean` interview, the CoS:
+
+1. Asks the owner for their first-pass Outcomes, Guardrails, and
+   ideas about Interim Goals.
+2. **Runs each candidate through the criteria above**, flagging
+   missing pieces (no end date, no measurement instrument named,
+   too aspirational, etc.) and proposing edits in real time.
+3. Drafts the `Goals.md` and `Guardrails.md` files with the
+   refined versions, plus comments naming any criterion that's
+   weak or still unresolved (so the owner can revisit during
+   weekly review).
+4. Suggests skill/script candidates for the Initiative layer
+   based on the owner's existing profile catalog.
+
+The point isn't to make the rough draft perfect — the framework
+is iterative and assumes weekly + quarterly revision. The point is
+to make the rough draft *good enough* that the strategic plan can
+start guiding the agency's behavior from day one.
+
+---
+
+## 4. What makes a skill/script a strategic Initiative
 
 A strategic Initiative is any skill or script:
 
@@ -313,11 +557,11 @@ strategic Initiative — utility skills (one-off helpers), debug
 scripts, experimental work. These don't appear in the strategic
 plan. If a skill/script *should* be a strategic Initiative but
 isn't (no alignment metadata, no Interim Goal parent), the
-audit's `unaligned-skills` rule (§6.5) flags it for review.
+audit's `unaligned-skills` rule (§7.5) flags it for review.
 
 ---
 
-## 4. The Initiative Playbook page — IS the SKILL.md / script docstring
+## 5. The Initiative Playbook page — IS the SKILL.md / script docstring
 
 Steps 1-3 (declare Outcomes, Outputs, Inputs) are **must-haves**
 for a strategic plan. Step 4 — writing a Playbook page per
@@ -346,7 +590,7 @@ duplicate document. The SKILL.md / script docstring captures:
 | Status | `status: green` | Standardized color: **blue** (complete), **green** (on track), **yellow** (slipping), **red** (off track), **gray** (not started). |
 | Correlation argument | `alignment_argument: ...` | Why this skill/script is predicted to move the Interim Goal (≥0.5 correlation, or a defensible leading-indicator argument). |
 
-The audit (§6.5) checks:
+The audit (§7.5) checks:
 
 - Every strategic skill/script's frontmatter has `outcome` +
   `interim_goal` + `outcome_metric` + `status`.
@@ -362,7 +606,7 @@ frontmatter fields and structural alignment metadata.
 
 ---
 
-## 5. Three nested testability layers
+## 6. Three nested testability layers
 
 The three-layer strategic-planning model has a matching set of
 **three testability layers** — each layer answering a different
@@ -382,7 +626,7 @@ trustworthy data if the layer below it is passing — there's no
 point asking "are these resources deployed wisely?" if the strategies
 those resources fund aren't actually being implemented.
 
-### 5.1 Input-layer testability — the 7-step learning loop
+### 6.1 Input-layer testability — the 7-step learning loop
 
 **The 7-step learning loop is the input-layer testability
 mechanism.** Every correction the owner gives, every rule the
@@ -407,10 +651,10 @@ implementation-broken — and the higher-level tests (are inputs
 moving outputs? are outputs moving outcomes?) would produce
 misleading data because the actual implementation never happened.
 
-### 5.2 Mid-tier testability — inputs against interim goals
+### 6.2 Mid-tier testability — inputs against interim goals
 
 Once a week (default cadence), the strategic-plan health check
-(§6.4) asks the next question: *are the implemented strategies (the
+(§7.4) asks the next question: *are the implemented strategies (the
 Initiatives we actually ran) moving the Interim Goal metrics they
 were supposed to move?*
 
@@ -428,7 +672,7 @@ weekly check tests it against fresh data. Two failure modes:
 This is the *"are we deploying resources wisely?"* question. Even
 when implementation is solid, the resources may be aimed wrong.
 
-### 5.3 Top-tier testability — interim goals against outcomes
+### 6.3 Top-tier testability — interim goals against outcomes
 
 Quarterly (or at a cadence appropriate to the Outcome horizon),
 the strategic review runs the highest-level test: *are the Interim
@@ -447,7 +691,7 @@ That's not a failure of execution; it's a failure of the
 strategic-planning theory. The fix is at the planning layer:
 replace or re-scope the Interim Goals.
 
-### 5.4 Why nested testability is load-bearing
+### 6.4 Why nested testability is load-bearing
 
 Most "AI assistant" tools operate at the input layer only, without
 any structural connection to outputs or outcomes. They make the
@@ -479,9 +723,9 @@ the three questions at any time and get a data-grounded answer.
 
 ---
 
-## 6. How HermesAgency operationalizes this
+## 7. How HermesAgency operationalizes this
 
-### 6.1 `Goals.md` and `Guardrails.md` as three-layer documents
+### 7.1 `Goals.md` and `Guardrails.md` as three-layer documents
 
 ```
 Goals.md
@@ -508,7 +752,7 @@ The references at the leaf level point at *existing* skill SKILL.md
 files and script files — not at separate "Initiative" docs. The
 SKILL.md (or script docstring) carries the alignment metadata in
 its frontmatter (`outcome`, `interim_goal`, `outcome_metric`,
-`status`, etc.) — see §4.
+`status`, etc.) — see §5.
 
 The structure isn't decorative — it's load-bearing. When an agent
 fires a skill, it can ask: *which Initiative is this work in
@@ -518,7 +762,7 @@ When it doesn't, that's a signal: either the work is misaligned,
 or the strategic plan is missing the layer that would make the
 work make sense.
 
-### 6.2 Always-loaded context — Goals only, not Guardrails
+### 7.2 Always-loaded context — Goals only, not Guardrails
 
 Per spec §1.1, **`Goals.md` is part of the always-loaded
 background** at every skill load, alongside `Personal.md`,
@@ -540,7 +784,7 @@ live context the agency operates inside every minute; the brake is
 a live check the watchdog layer runs at session boundaries and at
 every outbound send.
 
-### 6.3 Skills and scripts ARE the input layer
+### 7.3 Skills and scripts ARE the input layer
 
 Skills are agentic Initiatives. Scripts are deterministic
 Initiatives. There's no separate "Initiative" wrapper concept —
@@ -569,7 +813,7 @@ strategic skills (with alignment metadata) get checked against
 the plan; non-strategic skills get checked only against their own
 verifier criteria.
 
-### 6.4 Weekly testability cadence
+### 7.4 Weekly testability cadence
 
 Once a week (default; configurable), the CoS agent runs the
 strategic-plan health check:
@@ -590,7 +834,7 @@ two things that have drifted, name what's drifted, propose a
 pivot.** The strategic plan is a tool for pivoting, not a tool for
 self-congratulation.
 
-### 6.5 The audit
+### 7.5 The audit
 
 HermesAgency's audit subsystem (§7 of the spec) checks for
 strategic-plan alignment at every layer:
@@ -614,7 +858,7 @@ act on — typically during weekly review.
 
 ---
 
-## 7. A worked example (small business)
+## 8. A worked example (small business)
 
 > *Format only. Real plans require local listening and real data.*
 
@@ -693,7 +937,7 @@ Interim Guardrail 1.1)*
 
 ---
 
-## 8. Common questions
+## 9. Common questions
 
 ### How often should the strategic plan be updated?
 
@@ -816,7 +1060,7 @@ restructuring.
 
 ---
 
-## 9. Where this lives in HermesAgency
+## 10. Where this lives in HermesAgency
 
 | Artifact | File / location |
 |---|---|
@@ -827,13 +1071,13 @@ restructuring.
 | Deterministic Initiatives (Playbook = script docstring) | `~/.hermes/agency-state/profiles/<profile>/scripts/<script>.py` |
 | Always-loaded context wiring (Goals only) | spec §1.1 |
 | Enforcement-layer wiring (Guardrails) | spec §1.7 rows 4, 6, 7 (Sentinel + AnalystJudge + send-guard) |
-| Strategic-plan health check | weekly CoS skill (see §6.4 above) |
+| Strategic-plan health check | weekly CoS skill (see §7.4 above) |
 | Audit rules for strategic alignment | spec §7 / audit rules: `unaligned-skills`, `unaligned-initiatives`, `unaligned-interim-goals`, `stale-skill-status`, `abandoned-outcome` |
 | Setup interview (initial plan capture) | `/agency setup` interview, the GOALS step (v0.23+: restructured as three-layer prompts) |
 
 ---
 
-## 10. The single-paragraph summary
+## 11. The single-paragraph summary
 
 A HermesAgency strategic plan has three layers, all SMART:
 **1-3 Outcomes** at the top (where the business is headed),
