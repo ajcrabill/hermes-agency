@@ -36,6 +36,12 @@ from .v7_full import (
     discover_v7_admin_dir,
     V7FullMigrationResult,
 )
+from .state_collapse import (
+    plan_state_collapse,
+    apply_state_collapse,
+    StateCollapsePlan,
+    StateCollapseResult,
+)
 
 __all__ = [
     "plan_v7_learning_migration",
@@ -46,4 +52,8 @@ __all__ = [
     "migrate_v7_full",
     "discover_v7_admin_dir",
     "V7FullMigrationResult",
+    "plan_state_collapse",
+    "apply_state_collapse",
+    "StateCollapsePlan",
+    "StateCollapseResult",
 ]

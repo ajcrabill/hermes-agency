@@ -515,6 +515,83 @@ def cmd_chat(args: argparse.Namespace) -> int:
     return repl(profile=profile, role=role, voice_tags=voice_tags, skill_tag=skill_tag)
 
 
+def cmd_state_location(_args: argparse.Namespace) -> int:
+    """Report where HermesAgency state currently lives.
+
+    v0.20 moved state from `~/.agency/_state/` to
+    `~/.hermes/agency-state/`. This command tells the operator which
+    location the running framework resolves to, plus whether a
+    pre-v0.20 legacy state directory still exists alongside.
+    """
+    import os
+    from _framework.constants import STATE_DIR, HEALTH_DIR
+
+    print(f"HermesAgency {__version__} state locations:")
+    print()
+    print(f"  state dir:  {STATE_DIR}")
+    print(f"  health dir: {HEALTH_DIR}")
+
+    # Detect resolution path
+    if os.environ.get("HERMES_AGENCY_STATE"):
+        print(f"  resolved via: $HERMES_AGENCY_STATE env var")
+    elif "agency-state" in str(STATE_DIR):
+        print(f"  resolved via: v0.20+ default (~/.hermes/agency-state/)")
+    else:
+        print(f"  resolved via: legacy default (~/.agency/_state/)")
+        print()
+        print("  ⚠ This deployment uses the pre-v0.20 state location.")
+        print("    Run `agency migrate-state plan` to see what would move,")
+        print("    then `agency migrate-state apply` to collapse state to")
+        print("    `~/.hermes/agency-state/`.")
+        return 0
+
+    # Detect legacy data lingering after a migration
+    legacy_state = Path.home() / ".agency" / "_state"
+    if legacy_state.exists() and any(legacy_state.iterdir()):
+        print()
+        print(f"  ⚠ Legacy state directory still has files: {legacy_state}")
+        print(f"    Run `agency migrate-state apply` to move them, or remove")
+        print(f"    the directory manually if you're sure they're stale.")
+    return 0
+
+
+def cmd_migrate_state(args: argparse.Namespace) -> int:
+    """Run the v0.20 state-collapse migration.
+
+    Moves state files from `~/.agency/_state/` + `~/.agency/_health/`
+    into `~/.hermes/agency-state/` + `~/.hermes/agency-state/_health/`.
+    Idempotent. Re-running after success is a no-op.
+    """
+    from _framework.migration import plan_state_collapse, apply_state_collapse
+
+    plan = plan_state_collapse()
+    print(plan.summary())
+
+    if args.action == "plan":
+        print()
+        print("Plan only. Re-run with `apply` to perform the move:")
+        print("    agency migrate-state apply")
+        return 0
+
+    if plan.already_migrated or plan.nothing_to_migrate:
+        return 0
+
+    if not args.yes:
+        print()
+        try:
+            ans = input("Proceed? [y/N]: ").strip().lower()
+        except EOFError:
+            ans = ""
+        if not ans.startswith("y"):
+            print("Aborted.")
+            return 1
+
+    result = apply_state_collapse(plan)
+    print()
+    print(result.summary())
+    return 0 if result.success else 2
+
+
 def cmd_reset(args: argparse.Namespace) -> int:
     """Wipe deployment state for a clean re-init.
 
@@ -1336,6 +1413,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_chat.set_defaults(func=cmd_chat)
 
     # reset — wipe state for a clean re-init
+    # state-location — report where state lives (v0.20+)
+    p_state_loc = sub.add_parser(
+        "state-location",
+        help="Report where HermesAgency state currently lives + whether legacy data is present",
+    )
+    p_state_loc.set_defaults(func=cmd_state_location)
+
+    # migrate-state — v0.20 state-collapse migration
+    p_migrate_state = sub.add_parser(
+        "migrate-state",
+        help="Collapse v0.19-and-earlier state at ~/.agency/_state/ into "
+             "v0.20+ location at ~/.hermes/agency-state/",
+    )
+    p_migrate_state.add_argument(
+        "action", choices=["plan", "apply"], default="plan", nargs="?",
+        help="plan (preview what moves) or apply (perform the move)",
+    )
+    p_migrate_state.add_argument(
+        "-y", "--yes", action="store_true",
+        help="Skip the confirmation prompt on apply",
+    )
+    p_migrate_state.set_defaults(func=cmd_migrate_state)
+
     p_reset = sub.add_parser(
         "reset",
         help="Wipe ~/.agency (and optionally ~/.hermes etc.) for a clean re-init",

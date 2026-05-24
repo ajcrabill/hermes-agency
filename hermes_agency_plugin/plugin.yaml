@@ -1,5 +1,5 @@
 name: hermes-agency
-version: "0.19.1"
+version: "0.20.0"
 description: "Multi-agent framework built as a plugin to NousResearch's Hermes agentic engine. Designed for and by small-business owners. Where technological intelligences (the agents) collaborate with biological intelligences (the humans) through a 7-part continuous learning framework that rapidly expands the agents' understanding of the human's goals and values. Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control."
 author: "AJ Crabill — AI Developer for Good Ancestor (www.GoodAncestor.com)"
 hooks:

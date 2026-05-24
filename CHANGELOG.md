@@ -9,6 +9,102 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.20.0] — 2026-05-24
+
+**Parallel-state collapse.** Agency state moves from
+`~/.agency/_state/` → `~/.hermes/agency-state/`, so HermesAgency
+no longer owns a separate state world (per spec §13.7 v0.20 plan,
+v0.10 of the 9th version).
+
+### Changed — state resolution
+
+`STATE_DIR` and `HEALTH_DIR` in `_framework/constants.py` now
+resolve via three signals in priority order:
+
+1. `$HERMES_AGENCY_STATE` env var (explicit operator override)
+2. `~/.hermes/agency-state/` (v0.20+ default, when `~/.hermes/`
+   exists)
+3. `$AGENCY_HOME/_state/` (legacy fallback for pre-v0.20 installs)
+
+Fresh installs land at the v0.20+ location automatically. Existing
+pre-v0.20 deployments continue working at their legacy location
+until the operator runs `agency migrate-state`.
+
+### Added — `_framework/migration/state_collapse.py`
+
+The one-shot migration module:
+
+- `plan_state_collapse() → StateCollapsePlan` — inspects filesystem
+  and reports which files would move. Detects three cases:
+  - `already_migrated` (v0.20+ location has files, legacy is empty)
+  - `nothing_to_migrate` (neither location populated — fresh install)
+  - Files to move (legacy populated, v0.20+ empty or partial)
+- `apply_state_collapse(plan) → StateCollapseResult` — performs the
+  move. Atomic per-file. On collision, prefers the legacy version
+  (operator's existing data). Writes a tombstone at
+  `~/.agency/_state.MIGRATED-TO-v0.20` so future audits know the
+  migration ran. Idempotent — re-running after success is a no-op.
+
+### Added — `agency state-location` CLI command
+
+Reports which state location the running framework resolves to,
+plus a warning if legacy state is still present after migration:
+
+```
+agency state-location
+HermesAgency 0.20.0 state locations:
+
+  state dir:  /Users/<you>/.hermes/agency-state
+  health dir: /Users/<you>/.hermes/agency-state/_health
+  resolved via: v0.20+ default (~/.hermes/agency-state/)
+```
+
+### Added — `agency migrate-state` CLI command
+
+Drives the state-collapse migration:
+
+```
+agency migrate-state plan         # preview what would move
+agency migrate-state apply        # perform the move (with confirmation)
+agency migrate-state apply -y     # skip confirmation
+```
+
+### Tests
+
+- New `tests/seams/test_state_collapse.py` — 7 tests:
+  - Fresh install (no legacy) — `nothing_to_migrate`
+  - Legacy populated — plan lists files
+  - v0.20+ populated, legacy empty — `already_migrated`
+  - End-to-end apply (3 files including health) → moved + tombstone
+  - Idempotency (second apply is no-op)
+  - Constants resolve to v0.20+ location when `~/.hermes/agency-state/`
+    exists
+  - Explicit `$HERMES_AGENCY_STATE` override wins
+- 242 passing total (was 235).
+- `agency audit --self`: clean.
+
+### What's NOT in v0.20
+
+Two pieces from the original v0.20 plan are deferred to subsequent
+releases as their own focused work:
+
+- **Directory rename** (`_framework/<x>/` → `hermes_agency_plugin/<x>/`)
+  is cosmetic relative to the user-visible state-collapse and would
+  touch every file via import-path updates. Deferred to v0.23
+  (post-PyPI) when it can be a deliberate single-commit refactor with
+  full import-path audit.
+- **Profile registration via `ctx.register_agent`** needs research
+  into Hermes' agent-registration API surface; deferred to v0.21
+  alongside the agentskills.io conformance work where the
+  registration shape will become clearer.
+
+The closure plan is now:
+
+  v0.21 — Profile registration + agentskills.io conformance
+  v0.22 — PyPI publication + entry-point install
+  v0.23 — Directory rename `_framework/` → `hermes_agency_plugin/<x>/`
+          (final cosmetic alignment)
+
 ## [0.19.0] — 2026-05-24
 
 `/agency setup` becomes a real interactive interview inside Hermes

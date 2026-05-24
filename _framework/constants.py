@@ -31,6 +31,54 @@ DASHBOARD_PLUGINS_DIR: Path = FRAMEWORK_ROOT / "dashboard-plugins"
 # Operator can override via env var; default is ~/.agency.
 AGENCY_HOME: Path = Path(os.environ.get("AGENCY_HOME", Path.home() / ".agency")).expanduser()
 
+# ── State location — v0.20+ collapse to ~/.hermes/agency-state/ ───────────
+# Through v0.19, all agency state lived under ~/.agency/_state/ and
+# ~/.agency/_health/. v0.20 collapses these next to Hermes' own state
+# at ~/.hermes/agency-state/ so the framework owns no separate state
+# world. Resolution order:
+#
+#   1. $HERMES_AGENCY_STATE env var (explicit operator override)
+#   2. ~/.hermes/agency-state/      (v0.20+ default, when ~/.hermes/ exists)
+#   3. $AGENCY_HOME/_state/          (legacy fallback for pre-v0.20 installs)
+#
+# `agency migrate-state` moves a pre-v0.20 deployment's state files
+# into the v0.20+ location. Audit rule `state-in-legacy-location`
+# warns if both locations exist (operator should migrate).
+def _resolve_state_root() -> Path:
+    override = os.environ.get("HERMES_AGENCY_STATE", "").strip()
+    if override:
+        return Path(override).expanduser()
+    hermes_home_default = Path.home() / ".hermes"
+    if hermes_home_default.exists() or os.environ.get("HERMES_HOME"):
+        hermes_home = Path(os.environ.get("HERMES_HOME", hermes_home_default)).expanduser()
+        # If the new location already exists, prefer it
+        new_state = hermes_home / "agency-state"
+        if new_state.exists():
+            return new_state
+        # If the LEGACY location exists, use that (don't auto-migrate)
+        legacy = AGENCY_HOME / "_state"
+        if legacy.exists():
+            return legacy
+        # Neither exists — fresh install. Prefer v0.20+ default.
+        return new_state
+    return AGENCY_HOME / "_state"
+
+
+_STATE_ROOT: Path = _resolve_state_root()
+
+
+def _resolve_health_root() -> Path:
+    """Health dir parallels state dir. Either:
+      ~/.hermes/agency-state/_health/    (v0.20+)
+      ~/.agency/_health/                  (legacy)
+    """
+    if _STATE_ROOT.parent.name == "agency-state" or _STATE_ROOT.name == "agency-state":
+        # v0.20+ shape
+        return _STATE_ROOT.parent / "agency-state" / "_health" \
+            if _STATE_ROOT.name != "agency-state" else _STATE_ROOT / "_health"
+    return AGENCY_HOME / "_health"
+
+
 # Manifest + version pin
 DEPLOYMENT_YAML: Path = AGENCY_HOME / "deployment.yaml"
 FRAMEWORK_VERSION_LOCK: Path = AGENCY_HOME / "framework-version.lock"
@@ -64,7 +112,11 @@ CONVERSATION_JOURNAL_MD: Path = STATE_VAULT / "conversation-journal.md"
 PROFILES_DIR: Path = AGENCY_HOME / "profiles"
 
 # Cross-profile state (shared databases)
-STATE_DIR: Path = AGENCY_HOME / "_state"
+# STATE_DIR resolves via _resolve_state_root():
+#   - $HERMES_AGENCY_STATE (operator override)
+#   - ~/.hermes/agency-state/ (v0.20+ default)
+#   - $AGENCY_HOME/_state/ (legacy fallback)
+STATE_DIR: Path = _STATE_ROOT
 KANBAN_DB: Path = STATE_DIR / "kanban.db"
 LEARNING_DB: Path = STATE_DIR / "learning.db"
 AUTONOMY_DB: Path = STATE_DIR / "autonomy.db"
@@ -72,8 +124,10 @@ EVENTS_DB: Path = STATE_DIR / "events.db"
 HEARTBEATS_DB: Path = STATE_DIR / "heartbeats.db"
 DRIFT_SCORES_JSON: Path = STATE_DIR / "drift_scores.json"
 
-# Operator-readable health surface
-HEALTH_DIR: Path = AGENCY_HOME / "_health"
+# Operator-readable health surface. Parallels STATE_DIR — lives under
+# `~/.hermes/agency-state/_health/` (v0.20+) or `~/.agency/_health/`
+# (legacy).
+HEALTH_DIR: Path = _resolve_health_root()
 AUDITS_DIR: Path = HEALTH_DIR / "audits"
 OPERATOR_ACTIONS_JSONL: Path = HEALTH_DIR / "operator-actions.jsonl"
 RECAPTURE_HISTORY_JSONL: Path = HEALTH_DIR / "recapture-history.jsonl"
