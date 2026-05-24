@@ -27,15 +27,26 @@ def on_pre_llm_call(
     is_first_turn: bool = False,
     **_: Any,
 ) -> Optional[Dict[str, str]]:
-    """Inject applicable learning rules into the current turn's context.
+    """Inject the always-loaded background + applicable learning rules.
 
     Returns a dict `{"context": markdown}` — Hermes appends that to
     the USER message (not system prompt — preserves prompt cache).
 
-    This is the #1 reliability system: the supervised learning loop's
-    INJECT step. Replaces v0.2-v0.16's source-tree text-anchor patch.
+    Two layers compose:
+
+      1. Agency-level context docs (§1.1 always-loaded background):
+         Goals.md, Personal.md, Work.md, Clients.md, and the active
+         profile's SOUL.md. Guardrails.md is intentionally omitted
+         (enforcement-layer concern, per the aim/brake split).
+      2. Supervised-learning-loop rules: applicable corrections
+         resolved for this skill.
+
+    Either layer may be empty (deployment isn't configured yet; no
+    corrections captured yet). If both are empty, no context block
+    is returned.
     """
     try:
+        from _framework.agency_docs import load_agency_context
         from _framework.learning import inject_for_skill
         from .context import current_profile_and_role
 
@@ -43,14 +54,20 @@ def on_pre_llm_call(
         if not profile:
             return None
 
+        # Aim docs (always-loaded background)
+        agency_md = load_agency_context(profile=profile)
+
+        # Learning rules (the loop's INJECT step)
         rules_md = inject_for_skill(
             skill_name="interactive-chat",   # synthetic skill for free-form chat
             profile=profile,
             role=role,
         )
-        if not rules_md:
+
+        sections = [s for s in (agency_md, rules_md) if s]
+        if not sections:
             return None
-        return {"context": rules_md}
+        return {"context": "\n\n".join(sections)}
     except Exception as e:
         logger.debug("hermes-agency pre_llm_call hook skipped: %s", e)
         return None
