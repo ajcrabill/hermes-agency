@@ -97,10 +97,24 @@ def cmd_manifest_validate(args: argparse.Namespace) -> int:
     return _main()
 
 
-def cmd_audit(_args: argparse.Namespace) -> int:
-    """Run the framework audit (Week 4 build target)."""
-    print("agency audit: not yet implemented (Week 4 of v0.1 build).")
-    return 0
+def cmd_audit(args: argparse.Namespace) -> int:
+    """Run the framework + deployment audit."""
+    from _framework.audit import audit_alignment
+
+    if args.self_audit:
+        report = audit_alignment.audit_self()
+    elif args.skill:
+        if not args.profile:
+            print("--skill requires --profile", file=sys.stderr)
+            return 2
+        report = audit_alignment.audit_skill(skill=args.skill, profile=args.profile, strict=args.strict)
+    elif args.profile:
+        report = audit_alignment.audit_profile(profile=args.profile, strict=args.strict)
+    else:
+        report = audit_alignment.audit_deployment(strict=args.strict)
+
+    print(report.render())
+    return 0 if report.passed else 1
 
 
 def cmd_capture(args: argparse.Namespace) -> int:
@@ -248,10 +262,44 @@ def cmd_demote(args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_events(_args: argparse.Namespace) -> int:
-    """Live events feed (Week 4 build target)."""
-    print("agency events: not yet implemented (Week 4 of v0.1 build).")
+def cmd_events(args: argparse.Namespace) -> int:
+    """Recent events feed (or --tail to stream)."""
+    from _framework.sentinel import recent_events
+    import time as _time
+
+    if args.tail:
+        # Simple polling tail: print new rows every 2s for `args.duration`
+        # seconds (or until interrupted).
+        seen_ids: set[int] = set()
+        deadline = _time.time() + (args.duration or 60)
+        try:
+            while _time.time() < deadline:
+                rows = recent_events(limit=args.limit, minutes=args.minutes)
+                for r in reversed(rows):
+                    rid = int(r["id"])
+                    if rid in seen_ids:
+                        continue
+                    seen_ids.add(rid)
+                    _print_event(r)
+                _time.sleep(2)
+        except KeyboardInterrupt:
+            pass
+        return 0
+
+    rows = recent_events(limit=args.limit, minutes=args.minutes, kind=args.kind, actor=args.actor)
+    if not rows:
+        print("(no events)")
+        return 0
+    for r in rows:
+        _print_event(r)
     return 0
+
+
+def _print_event(r: dict) -> None:
+    sev = r.get("severity") or "info"
+    actor = r.get("actor") or "-"
+    target = r.get("target") or "-"
+    print(f"{r['ts']}  [{sev:8s}] {r['kind']:30s}  {actor:10s} → {target}")
 
 
 def cmd_upgrade(_args: argparse.Namespace) -> int:
@@ -287,6 +335,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     # audit
     p_audit = sub.add_parser("audit", help="Run audit-alignment.py")
+    p_audit.add_argument("--skill", help="Audit one skill (requires --profile)")
+    p_audit.add_argument("--profile", help="Audit one profile")
+    p_audit.add_argument("--strict", action="store_true", help="ALWAYS_BLOCK findings only (graduation-gate mode)")
+    p_audit.add_argument("--self", dest="self_audit", action="store_true", help="Audit the framework itself")
     p_audit.set_defaults(func=cmd_audit)
 
     # capture
@@ -320,8 +372,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_demote.set_defaults(func=cmd_demote)
 
     # events
-    p_events = sub.add_parser("events", help="Live events feed")
-    p_events.add_argument("--tail", action="store_true")
+    p_events = sub.add_parser("events", help="Recent events feed (or --tail to stream)")
+    p_events.add_argument("--tail", action="store_true", help="Stream new events as they arrive")
+    p_events.add_argument("--duration", type=int, default=60, help="Tail mode: stop after N seconds (default 60)")
+    p_events.add_argument("--limit", type=int, default=50, help="Max rows per fetch (default 50)")
+    p_events.add_argument("--minutes", type=int, default=60, help="Lookback window in minutes (default 60)")
+    p_events.add_argument("--kind", help="Filter by event kind")
+    p_events.add_argument("--actor", help="Filter by actor")
     p_events.set_defaults(func=cmd_events)
 
     # upgrade
