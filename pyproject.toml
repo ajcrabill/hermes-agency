@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hermes-agency"
-version = "0.10.1"
+version = "0.11.0"
 description = "A multi-agent framework for small-agency owners — a learning loop you can earn autonomy on."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["agent", "agency", "hermes", "multi-agent", "autonomy", "supervised-learning"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS",
@@ -31,15 +31,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Vendor-neutral by design. The framework speaks OpenAI-compatible API.
-# Add whichever client lib your deployment needs.
-openai = ["openai>=1.0"]
-embed = ["numpy>=1.24"]      # for cosine similarity in recapture detector
+# Vendor-neutral by design. Add whichever client lib your deployment uses.
+google = [
+    "google-api-python-client>=2.0",
+    "google-auth>=2.0",
+    "google-auth-oauthlib>=1.0",
+]
+embed = ["numpy>=1.24"]               # for cosine similarity in recapture detector
+voice = ["faster-whisper>=1.0"]       # voice-memo transcription
+ingest = ["docx2txt>=0.8", "pdfplumber>=0.10"]
 dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "ruff>=0.5",
     "mypy>=1.7",
+    "build>=1.0",
+    "twine>=4.0",
 ]
 
 [project.urls]

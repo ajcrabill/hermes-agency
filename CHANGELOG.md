@@ -9,6 +9,78 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.11.0] — 2026-05-24
+
+Signal + Slack ingress, PyPI publishing prep, MANIFEST.in for
+template distribution, CONTRIBUTING.md, Beta classifier.
+
+### Added — Signal ingress (`_framework/integrations/signal.py`)
+
+- Bridges to `signal-cli` (operator-installed); the framework
+  shells out via JSON-RPC mode.
+- `setup_interactive(profile, signal_number=...)` records the
+  config without registering the number (operator runs
+  `signal-cli register` + verify separately).
+- `poll_messages()` and `send_message()` wrap the CLI.
+- `signal_cli_available()` for graceful degradation when the
+  binary isn't on PATH.
+
+### Added — Slack ingress (`_framework/integrations/slack.py`)
+
+- Uses Slack web API via urllib (no `slack_sdk` dependency — keeps
+  the integration light + optional).
+- Required scopes documented (chat:write, im:history, im:read,
+  channels:history, users:read).
+- `setup_interactive(profile, token=...)` resolves the bot user
+  id via `auth.test` and stores both.
+- `poll_messages()` reads DMs across all visible channels (bot's
+  own messages excluded).
+- `send_message()` posts to channel or DM with optional thread_ts.
+- `open_im(user_id)` resolves a DM channel id.
+
+### PyPI publishing prep
+
+- **MANIFEST.in** — explicit inclusion of templates / docs /
+  framework yaml / shared skills / install.sh. Tests included in
+  sdist for downstream audit; build artifacts excluded.
+- **CONTRIBUTING.md** — how to add bug reports, skills, subsystems,
+  integrations, new roles. Coding conventions + vendor-neutrality
+  rules + commit style + security reporting.
+- **pyproject.toml** updates:
+  - Development Status bumped Alpha → Beta
+  - Optional-dependency groups renamed + expanded:
+    `google` (api-client + auth-oauthlib),
+    `voice` (faster-whisper),
+    `ingest` (docx2txt + pdfplumber),
+    `embed` (numpy)
+  - `dev` adds `build` + `twine` for the release workflow
+  - Removed the `openai` optional-deps name (operators pick their
+    own client; framework is provider-neutral)
+
+### Tests
+
+198 passing (190 from v0.10.1 + 8 new Signal/Slack):
+- 4 Signal tests (not-configured-default, setup-writes-config,
+  poll-requires-config, send-requires-recipient)
+- 4 Slack tests (not-configured-default, setup-resolves-bot-id-
+  via-stub, send-requires-config, poll-degrades-on-api-failure)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### PyPI publish flow (not yet pushed)
+
+```bash
+pip install build twine
+python -m build         # builds sdist + wheel into dist/
+twine check dist/*      # smoke-test PyPI metadata
+twine upload --repository testpypi dist/*   # try TestPyPI first
+twine upload dist/*     # then real PyPI
+```
+
+The framework is now Beta-classified. v1.0.0 will mark stable + the
+first official PyPI release. Until then, `git clone + ./install.sh`
+remains the documented path.
+
 ## [0.10.1] — 2026-05-24
 
 Bug fix: v0.10.0 shipped with a `framework-vendor-leak` self-audit

@@ -1,0 +1,42 @@
+# MANIFEST.in — package-data inclusion for PyPI distribution.
+#
+# These files live outside the Python package tree but must ship
+# inside the wheel so `agency init` can find the templates.
+
+include LICENSE
+include README.md
+include CHANGELOG.md
+include CONTRIBUTING.md
+include DEVELOPMENT_PLAYBOOK.md
+include MANIFEST.in
+include Makefile
+include install.sh
+
+# Templates: deployment scaffold + per-role profiles + scripts
+recursive-include templates *.template *.md *.py *.yaml *.json
+
+# Built-in audit invariants + framework-side YAML
+recursive-include _framework *.yaml
+
+# Built-in shared skills (under _framework/skills/)
+recursive-include _framework/skills *.md
+
+# Docs ship with the source distribution too (read-the-docs etc.)
+recursive-include docs *.md *.yaml
+
+# Test files don't ship in the wheel by default; we want them
+# available as a sdist for downstream packaging audits.
+recursive-include tests *.py
+
+# Exclude transient + build artifacts
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude *.db
+global-exclude *.db-journal
+global-exclude *.db-wal
+global-exclude *.db-shm
+prune build
+prune dist
+prune *.egg-info

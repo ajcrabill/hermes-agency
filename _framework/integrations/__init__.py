@@ -17,5 +17,10 @@ and an action surface that other code calls.
 from . import google_drive
 from . import google_calendar
 from . import gmail
+from . import signal as signal_integration
+from . import slack as slack_integration
 
-__all__ = ["google_drive", "google_calendar", "gmail"]
+__all__ = [
+    "google_drive", "google_calendar", "gmail",
+    "signal_integration", "slack_integration",
+]
