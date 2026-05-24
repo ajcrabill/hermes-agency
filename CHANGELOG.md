@@ -9,6 +9,90 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.8-spec] — 2026-05-24
+
+**Spec revision: the Principal's privilege + 12-60 month Outcome
+horizon + widget-translation example.** Three closely related
+clarifications:
+
+1. **The Principal's privilege.** §3.5 now explicitly states that
+   the agency takes everything it can off the Principal's plate
+   within the parameters (Guardrails, autonomy gates, send-guard,
+   etc.) **until the Principal chooses otherwise.** The Principal
+   can take over any aspect of any layer at any time, for any
+   reason, without explanation. That asymmetry — agency always
+   proposing to do more, Principal always free to do less by
+   reclaiming — is the right design tension. The CoS adjusts when
+   the Principal leans in.
+
+2. **Outcome horizon: 12-60 months** (minimum 12, maximum 60).
+   Previously the doc said 1-3 years; updated to 1-5 years per
+   AJ's clarification. Most small-business Outcomes still land in
+   the 24-36 month range, but the framework formally allows up to
+   60 months.
+
+3. **Widget-translation example.** §3.5 step 3 now shows the
+   silent translation work the CoS does. Principal casually says
+   *"I want to be selling three widgets a month."* CoS does the
+   math behind the scenes (3 widgets/month × 36 months = 108
+   widgets cumulative over three years) and proposes back: *"How
+   about we aim for selling 0 widgets in January 2026 growing to
+   108 widgets by January 2029?"* The Principal never has to know
+   the words "cumulative" or "SMART"; they just nod at the version
+   that feels right.
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Changed — `docs/StrategicPlanning.md`
+
+- **§1 three-layer model diagram** — "1-3yr" → "12-60mo" at the
+  Outcome layer.
+- **§1.1 Outcomes section** — duration bullet updated: "Lasts
+  12-60 months (minimum 12, maximum 60; most land 24-36)."
+  Intro: "what success looks like for the business in 1-5 years."
+- **§3.1 Outcome quality criteria** — "Span 1-3 years" bullet
+  rewritten with explicit minimum/maximum: "Span 12-60 months
+  (1-5 years). The **minimum** distance between starting date
+  and ending date is 12 months; the **maximum** is 60 months."
+- **§3.2 Guardrails** — stability horizon updated: "stable across
+  the same horizon as the Outcomes (12-60 months)."
+- **§3.5 Division of responsibility** — table column header
+  "Owner's role" → "Principal's role" (fixes terminology leftover
+  from v0.22.7). Layer-2 / layer-3 cells now read "doesn't appear
+  in their conversation, *unless they choose to lean in*."
+- **§3.5 new paragraph** — codifies the Principal's privilege and
+  the default operating posture explicitly.
+- **§3.5 step 1** — interview prompt: "Looking ahead one to five
+  years" (was "a year or two").
+- **§3.5 step 3** — widget-translation example added showing the
+  CoS's silent SMART math.
+- **§3.5 step 5 heading** — "Owner revises and approves" →
+  "Principal revises and approves."
+- **§7.1 authorship table** — "Approved by: **Owner**" →
+  "Approved by: **Principal**."
+- **§7.1 structure diagram** — "1-3yr" → "12-60mo" for all
+  Outcomes.
+
+### Changed — `docs/HERMES_AGENCY_SPEC.md`
+
+- §1.1 Layer-1 Outcome description: "1-3 year horizon" → "12-60
+  month horizon."
+
+### Changed — `templates/agency-vault/Goals.md.template`
+
+- Outcomes section description: "1-3 year horizon" → "12-60
+  month horizon (minimum 12, maximum 60)."
+
+### Spec header
+
+Bumped v0.22.7-spec → v0.22.8-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.7-spec] — 2026-05-24
 
 **Spec revision: standardized terminology — Principal, small

@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.7-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.8-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -277,7 +277,7 @@ the agency is aiming at*.
 framework):
 
 - **Layer 1 — Outcomes** — what success looks like (1-3 SMART
-  outcomes, 1-3 year horizon).
+  outcomes, 12-60 month horizon).
 - **Layer 2 — Interim Goals** — mid-cycle SMART indicators that
   predict outcome accomplishment.
 - **Layer 3 — Initiatives ARE skills and scripts.** Agentic

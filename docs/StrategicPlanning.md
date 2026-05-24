@@ -39,7 +39,7 @@ each SMART, each aligned to the layer above:
    ┌───────────────────────────────────────────────────────────────┐
    │ Layer 1 — OUTCOMES (Goals)                                    │
    │   What success looks like at the end of the cycle.            │
-   │   1-3 SMART statements. 1-3 year horizon. Knowable at         │
+   │   1-3 SMART statements. 12-60 month horizon. Knowable at      │
    │   end of cycle. Top entries in Goals.md.                      │
    └────────────────────────────┬──────────────────────────────────┘
                                 │ aligned to
@@ -78,7 +78,7 @@ question becomes a vibes check, and a vibes check can be answered
 
 Outcomes are results knowable *at the end* of a cycle. They're the
 destination — what the Principal says success looks like for the
-business in 1-3 years.
+business in 1-5 years.
 
 A well-formed Outcome in HermesAgency:
 
@@ -88,9 +88,10 @@ A well-formed Outcome in HermesAgency:
   coaching business.")
 - **Names a measurable end state** that's challenging enough to
   require behavior change.
-- Lasts **1-3 years**. Outcomes don't churn quarterly — if they're
-  changing every quarter, they aren't outcomes, they're tactical
-  goals miscategorized.
+- Lasts **12-60 months** (minimum 12, maximum 60; most land
+  24-36). Outcomes don't churn quarterly — if they're changing
+  every quarter, they aren't outcomes, they're tactical goals
+  miscategorized.
 - There are **1-3 of them** (definitely no more than 5). The
   point of the discipline is forced prioritization. A small
   business with seven equal priorities has zero priorities.
@@ -342,10 +343,12 @@ An Outcome should:
 - **Have a starting point AND an ending point** in measurable
   units. Not "increase" — "increase from W on date Y to Z by
   date W."
-- **Span 1-3 years.** Shorter than that is a tactical goal; longer
-  is a vision. For the source framework (school systems) the range
-  is 3-5 years; small businesses usually need a faster feedback
-  loop, so 1-3 years fits better.
+- **Span 12-60 months (1-5 years).** The **minimum** distance
+  between starting date and ending date is 12 months; the
+  **maximum** is 60 months. Shorter than 12 months is a tactical
+  goal, not an Outcome; longer than 60 months is a vision, not
+  an Outcome. Most small-business Outcomes land in the 24-36
+  month range.
 - **Be attainable** given the time and resources committed. A
   Goal too aspirational to be funded becomes a hope; pull it back
   until it's challenging-but-doable.
@@ -402,7 +405,7 @@ A Guardrail should:
   values, which aren't measurable. The measurability lives in the
   **Interim Guardrails** that sit underneath each Guardrail (see
   §3.4). The Guardrail itself is qualitative — "we will not X" —
-  and stable for 1-3 years.
+  and stable across the same horizon as the Outcomes (12-60 months).
 
 Anti-patterns to flag during the interview:
 
@@ -539,21 +542,36 @@ the register naturally.
 
 **Division of responsibility:**
 
-| Layer | Owner's role | CoS's role |
+| Layer | Principal's role | CoS's role |
 |---|---|---|
 | **Outcomes** (top-level Goals) | Talks about vision; reviews + approves the rough draft | Translates vision into SMART statements; presents for approval |
 | **Guardrails** | Talks about values + lines they won't cross; reviews + approves the rough draft | Translates values into prohibition statements; presents for approval |
-| **Interim Goals** | *(doesn't appear in their conversation)* | Drafts behind the scenes; refines over time |
-| **Interim Guardrails** | *(doesn't appear in their conversation)* | Drafts behind the scenes; refines over time |
-| **Initiatives** (skills + scripts) | *(doesn't appear in their conversation)* | Proposes mappings from existing profile catalogs; refines over time |
+| **Interim Goals** | *(doesn't appear in their conversation, unless they choose to lean in)* | Drafts behind the scenes; refines over time |
+| **Interim Guardrails** | *(doesn't appear in their conversation, unless they choose to lean in)* | Drafts behind the scenes; refines over time |
+| **Initiatives** (skills + scripts) | *(doesn't appear in their conversation, unless they choose to lean in)* | Proposes mappings from existing profile catalogs; refines over time |
 
-The Principal owns **what the business is trying to accomplish** and
-**what the business won't do** to accomplish it. Everything else
-is operational — the CoS's job, not the Principal's.
+The Principal owns **what the business is trying to accomplish**
+and **what the business won't do** to accomplish it. Everything
+else is operational — the CoS's job, not the Principal's —
+**unless the Principal chooses to lean into that area**, which is
+always their privilege as the Principal.
+
+The default operating posture: **the agency takes everything it
+can off the Principal's plate within the parameters imposed
+(Guardrails, autonomy gates, send-guard checks, etc.) and
+continues doing so until the Principal chooses otherwise.** The
+Principal can take over any aspect of any layer at any time, for
+any reason, without explanation. The CoS adjusts.
+
+This is the agency's job: **maximize what's lifted off the
+Principal's plate**, subject to the Principal's parameters, with
+the Principal able to reclaim any piece at will. That asymmetry —
+agency always proposing to do more, Principal always free to do
+less by reclaiming — is the right design tension.
 
 **Conversation flow during `/agency setup`:**
 
-1. **Listen for vision.** *"Looking ahead a year or two, what
+1. **Listen for vision.** *"Looking ahead one to five years, what
    would success look like for your business? Tell me what you'd
    want to be true that isn't true today."* The CoS asks
    follow-ups until it has enough to translate.
@@ -573,6 +591,20 @@ is operational — the CoS's job, not the Principal's.
    you want more inbound inquiries — how many would feel like
    enough? And by when?"*
 
+   **The CoS does the framework math behind the scenes.** Example
+   translation: the Principal casually says *"I want to be selling
+   three widgets a month."* The CoS doesn't ask the Principal to
+   work out what that means as a SMART Outcome. Instead, the CoS
+   silently does the math (3 widgets/month × 36 months = 108
+   widgets cumulative over three years) and proposes back: *"How
+   about we aim for selling 0 widgets in January 2026 growing to
+   108 widgets by January 2029?"* If the Principal nods, that
+   becomes the draft. If the Principal wants to push harder, the
+   CoS adjusts the end point or the end date. If the Principal
+   wants a different horizon, the CoS recomputes. The Principal
+   never has to know the words "cumulative" or "SMART"; they just
+   nod at the version that feels right.
+
 4. **Present the rough draft.** Before the setup interview is
    marked complete, the CoS shows the Principal the proposed
    `Goals.md` and `Guardrails.md` in plain readable form:
@@ -591,7 +623,7 @@ is operational — the CoS's job, not the Principal's.
    >
    > *Want to revise anything before we make it official?"*
 
-5. **Owner revises and approves.** The Principal can edit any of it.
+5. **Principal revises and approves.** The Principal can edit any of it.
    The CoS re-translates after edits, runs the criteria again,
    and presents again. This loops until the Principal says "good."
    **The `.configured` marker is not written until the Principal
@@ -840,15 +872,15 @@ the three questions at any time and get a data-grounded answer.
 
 ```
 Goals.md
-├── Outcome 1 (SMART, 1-3yr)
+├── Outcome 1 (SMART, 12-60mo)
 │   ├── Interim Goal 1.1 (SMART, 6-12mo)
 │   │   ├── skill: devon/lookalike-prospect-builder  (agentic Initiative)
 │   │   └── script: devon/pipeline-watchdog.py       (deterministic Initiative)
 │   └── Interim Goal 1.2 (SMART, 6-12mo)
 │       └── skill: devon/potential-clients-nudger
-├── Outcome 2 (SMART, 1-3yr)
+├── Outcome 2 (SMART, 12-60mo)
 │   └── ...
-└── Outcome 3 (SMART, 1-3yr)
+└── Outcome 3 (SMART, 12-60mo)
     └── ...
 
 Guardrails.md
@@ -870,8 +902,8 @@ treatment in §3.5):
 
 | Layer | Authored by | Approved by |
 |---|---|---|
-| **Outcomes** (top-level Goals) | CoS drafts from Principal's vision (interview) | **Owner** |
-| **Guardrails** | CoS drafts from Principal's values (interview) | **Owner** |
+| **Outcomes** (top-level Goals) | CoS drafts from Principal's vision (interview) | **Principal** |
+| **Guardrails** | CoS drafts from Principal's values (interview) | **Principal** |
 | **Interim Goals** | CoS | CoS (working hypotheses; Principal can override anytime) |
 | **Interim Guardrails** | CoS | CoS (same) |
 | **Initiative refs** (skill + script entries) | CoS (proposes mappings from active profiles' catalogs) | CoS (same) |
