@@ -222,15 +222,29 @@ def cmd_learn(args: argparse.Namespace) -> int:
     return 1
 
 
-def cmd_promote(_args: argparse.Namespace) -> int:
-    """Force-promote a skill (Week 3 build target)."""
-    print("agency promote: not yet implemented (Week 3 of v0.1 build).")
+def cmd_promote(args: argparse.Namespace) -> int:
+    """Force-promote a skill (still goes through the graduation gate)."""
+    from _framework.autonomy import promote
+    skill = args.skill
+    profile = args.profile or "default"
+    result = promote(skill=skill, profile=profile, reason=args.reason or "cli-promote")
+    if result.blocked:
+        print(f"REFUSED — {result.blocker}: {result.reason}")
+        return 1
+    if result.from_level == result.to_level:
+        print(f"{profile}:{skill} stays at L{result.from_level} ({result.reason})")
+        return 0
+    print(f"{profile}:{skill} L{result.from_level} → L{result.to_level} ({result.reason})")
     return 0
 
 
-def cmd_demote(_args: argparse.Namespace) -> int:
-    """Force-demote a skill (Week 3 build target)."""
-    print("agency demote: not yet implemented (Week 3 of v0.1 build).")
+def cmd_demote(args: argparse.Namespace) -> int:
+    """Force-demote a skill (no gate; demotion is always allowed)."""
+    from _framework.autonomy import demote
+    skill = args.skill
+    profile = args.profile or "default"
+    result = demote(skill=skill, profile=profile, reason=args.reason)
+    print(f"{profile}:{skill} L{result.from_level} → L{result.to_level} ({result.reason})")
     return 0
 
 
@@ -295,10 +309,13 @@ def build_parser() -> argparse.ArgumentParser:
     # promote / demote
     p_promote = sub.add_parser("promote", help="Force-promote a skill (gated by audit)")
     p_promote.add_argument("skill")
+    p_promote.add_argument("--profile", required=True, help="Profile id (e.g. loriah)")
+    p_promote.add_argument("--reason", default="cli-promote")
     p_promote.set_defaults(func=cmd_promote)
 
     p_demote = sub.add_parser("demote", help="Force-demote a skill")
     p_demote.add_argument("skill")
+    p_demote.add_argument("--profile", required=True, help="Profile id (e.g. loriah)")
     p_demote.add_argument("--reason", default="manual")
     p_demote.set_defaults(func=cmd_demote)
 
