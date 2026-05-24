@@ -1,4 +1,4 @@
-# HermesAgency: The Agent Team Designed for Solopreneurs & Small Businesses
+# HermesAgency: The Agent Team Designed for Small Businesses & Solopreneurs
 
 ### Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control.
 
