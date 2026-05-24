@@ -217,13 +217,36 @@ if [[ "$RUN_INIT" == "true" ]]; then
     fi
 fi
 
-# ── Apply hermes-patches (wire the plugin into Hermes) ──────────────────
+# ── Register the Hermes plugin ──────────────────────────────────────────
+# v0.17+ uses Hermes' documented plugin API instead of text-anchor patches.
+# We drop a symlink at ~/.hermes/plugins/hermes-agency/ pointing at our
+# plugin package; Hermes discovers it on next launch.
 if [[ "$APPLY_PATCHES" == "true" ]]; then
-    header "Wiring patches into Hermes"
-    agency hermes-patches apply 2>&1 || {
-        yellow "  ! patch application reported issues — review with:"
-        yellow "    agency hermes-patches systems"
-    }
+    header "Registering plugin with Hermes"
+
+    PLUGIN_DIR="${HOME}/.hermes/plugins"
+    PLUGIN_LINK="${PLUGIN_DIR}/hermes-agency"
+    PLUGIN_SRC="${TARGET}/hermes_agency_plugin"
+
+    mkdir -p "$PLUGIN_DIR"
+
+    if [[ -L "$PLUGIN_LINK" ]]; then
+        existing=$(readlink "$PLUGIN_LINK")
+        if [[ "$existing" == "$PLUGIN_SRC" ]]; then
+            green "  ✓ plugin already registered at $PLUGIN_LINK"
+        else
+            yellow "  ! replacing stale symlink ($existing → $PLUGIN_SRC)"
+            rm "$PLUGIN_LINK"
+            ln -s "$PLUGIN_SRC" "$PLUGIN_LINK"
+            green "  ✓ registered: $PLUGIN_LINK → $PLUGIN_SRC"
+        fi
+    elif [[ -e "$PLUGIN_LINK" ]]; then
+        yellow "  ! $PLUGIN_LINK exists but isn't a symlink — skipping"
+        yellow "    (remove it manually if you want this installer to manage it)"
+    else
+        ln -s "$PLUGIN_SRC" "$PLUGIN_LINK"
+        green "  ✓ registered: $PLUGIN_LINK → $PLUGIN_SRC"
+    fi
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────
@@ -234,12 +257,15 @@ echo "      source $VENV/bin/activate"
 echo "  Or add to your shell init:"
 echo "      echo 'source $VENV/bin/activate' >> ~/.zshrc"
 echo
-echo "  See which of the 7 reliability systems are wired into Hermes:"
-echo "      agency hermes-patches systems"
-echo
 echo "  Migrate v7 data (if you have a prior install):"
-echo "      agency migrate v7 --from <path-to-v7-home>"
+echo "      agency migrate v7 apply --from <path-to-v7-home>"
 echo
-green "  Use Hermes — it's now enriched by HermesAgency's patches:"
+green "  Use Hermes — it's now enriched by HermesAgency's plugin hooks:"
 green "      hermes"
+echo
+echo "  Inside Hermes you can use /agency slash commands:"
+echo "      /agency status      see deployment health"
+echo "      /agency systems     see which of the 7 are wired"
+echo "      /agency capture \"...\"  capture a learning correction"
+echo "      /agency help        show all subcommands"
 echo

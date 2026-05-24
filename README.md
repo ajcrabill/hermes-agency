@@ -15,7 +15,7 @@
 curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
 source ~/.zshrc   # or ~/.bashrc — reload to pick up the `hermes` binary
 
-# 2. Install HermesAgency (the plugin — adds the 7 reliability systems on top)
+# 2. Install HermesAgency (the plugin — adds the 7 reliability systems)
 curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
 
 # 3. Migrate v7 data (skip if you don't have a prior install)
@@ -25,10 +25,14 @@ agency migrate v7 apply --from ~/.hermes-v7-backup --profile loriah
 hermes
 ```
 
-That's the whole install. After step 2, HermesAgency's patches are already
-wired into your Hermes — `hermes chat` and `hermes run <skill>` pick up the
-learning loop, sentinel observation, kanban tracks-link type, and audit
-automatically.
+That's the whole install. Step 2 registers HermesAgency as a Hermes plugin
+(symlinked into `~/.hermes/plugins/hermes-agency/`). Hermes discovers it
+on next launch and starts calling our lifecycle hooks: learning rules
+inject into every turn, the autonomy ladder gates tool calls, the send-guard
+intercepts outbound mail, Sentinel observes session boundaries.
+
+Inside `hermes`, run `/agency systems` to confirm all 7 reliability
+systems are wired.
 
 ---
 
@@ -49,7 +53,12 @@ reliable in 7 specific ways:
 
 Each system is meant to wire into Hermes' own execution path — not run alongside it. See **`agency hermes-patches systems`** for the honest integration state on your install.
 
-> **Architectural honesty:** As of v0.16.0, the patches for the autonomy gate, verifier, and send-guard are not yet built. Those three systems exist as parallel infrastructure that the framework calls itself, but Hermes doesn't currently consult them during skill execution. Sentinel, kanban-tracks, audit, and the learning loop are Hermes-native. The roadmap to close the gap is in `docs/HERMES_AGENCY_SPEC.md` §13.6.
+**As of v0.17.0, all 7 reliability systems are Hermes-extending** — wired
+via the documented Hermes plugin API (`pre_llm_call`, `pre_tool_call`,
+`post_tool_call`, `on_session_start`, `on_session_end` hooks). The text-
+anchor patch approach used through v0.16 is deprecated. See
+`docs/HERMES_AGENCY_SPEC.md` §1.4 (plugin discipline) and §1.5 (the
+7-system table).
 
 ## How you use it (after the 4-step install)
 

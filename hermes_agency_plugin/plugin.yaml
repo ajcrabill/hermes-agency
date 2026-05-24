@@ -1,0 +1,10 @@
+name: hermes-agency
+version: "0.17.0"
+description: "HermesAgency plugin — wires 7 reliability systems into Hermes via lifecycle hooks: supervised learning loop, autonomy ladder, verifier, send-guard, Sentinel observer, kanban tracks-link, audit. Replaces the text-anchor patch approach used through v0.16."
+author: "AJ Crabill"
+hooks:
+  - pre_llm_call
+  - pre_tool_call
+  - post_tool_call
+  - on_session_start
+  - on_session_end

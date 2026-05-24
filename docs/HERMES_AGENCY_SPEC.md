@@ -151,14 +151,25 @@ operator-facing question "how do I use it?" had no clean answer
 because the answer the spec implied (`hermes chat`) wasn't
 actually enriched.
 
-v0.15.0 adds **`agency hermes-patches systems`** as the honesty
-surface. It prints the 7 systems and which are actually Hermes-
-extending today. Any "PATCH NOT YET BUILT — system is parallel,
-not Hermes-extending" line in that output is an architectural
-debt that v0.16+ closes. The audit (§14, future rule
+**v0.17.0 closed the structural integration gap** by pivoting from
+text-anchor patches into Hermes' source (the v0.2–v0.16 approach,
+fragile against Hermes refactors) to Hermes' **documented plugin API**.
+HermesAgency's plugin lives at `hermes_agency_plugin/__init__.py`,
+gets symlinked into `~/.hermes/plugins/hermes-agency/` by the bootstrap,
+and is discovered by Hermes' `PluginManager` on next launch.
+
+The plugin's `register(ctx)` function wires our reliability systems
+into Hermes' lifecycle hooks (`pre_llm_call`, `pre_tool_call`,
+`post_tool_call`, `on_session_start`, `on_session_end`) and adds
+`/agency <subcommand>` as an in-session slash command.
+
+`agency hermes-patches systems` remains as the honesty surface —
+running it on a v0.17 install shows 7/7 systems wired. Any change
+that adds new `_framework/<x>/` state-owning subsystems without a
+corresponding plugin hook is an architectural deviation tracked
+for the next release. The audit (§14, planned rule
 `framework-parallel-state-leak`) will eventually enforce this at
-commit-time, refusing changes that add new `_framework/<x>/`
-state-owning subsystems without a corresponding hook.
+commit-time.
 
 The discipline:
 
@@ -177,16 +188,22 @@ The exhaustive list of what HermesAgency adds to Hermes:
 
 | # | System | Hook into Hermes |
 |---|---|---|
-| 1 | Supervised learning loop | Patch into `_build_skill_message` / `skill_view` to inject applicable rules at skill-load |
-| 2 | Autonomy ladder (L1–L5) | Pre-action gate patch in Hermes' skill executor (consults `_framework.autonomy`) |
-| 3 | Verifier (per-skill criteria) | Post-completion hook in Hermes' skill-exit path (runs the skill's frontmatter verifier block) |
-| 4 | System Sentinel (read-only) | Reads Hermes' `state.db` event log via shim; emits to agency events log |
+| 1 | Supervised learning loop | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn |
+| 2 | Autonomy ladder (L1–L5) | Plugin's `pre_tool_call` hook consults `_framework.autonomy` and blocks tool calls the skill lacks authority for |
+| 3 | Verifier (per-skill criteria) | Plugin's `post_tool_call` hook records completions; v0.18 adds `transform_tool_result` to enforce verifier criteria |
+| 4 | System Sentinel (read-only) | Plugin's `on_session_start` / `on_session_end` hooks record session events; Sentinel reads from there + Hermes' own state |
 | 5 | Kanban tracks-link type | Shim writes `tracks` rows into Hermes' own `kanban.db` |
-| 6 | Send-guard (outbound mail gate) | Pre-send hook on Hermes' email-send path (consults `_framework.send_guard`) |
+| 6 | Send-guard (outbound mail gate) | Plugin's `pre_tool_call` hook filters for outbound-mail tools and runs `_framework.send_guard.evaluate` |
 | 7 | Audit (weekly alignment) | Scheduled script reading Hermes state + agency state; produces findings, not actions |
 
-Systems 1, 4, 5, 7 are Hermes-native in v0.15.0. Systems 2, 3, 6
-are parallel debt; their patches are the v0.16–v0.18 closure plan.
+**As of v0.17.0, all 7 systems are Hermes-extending** via the documented
+Hermes plugin API. Earlier versions (v0.2–v0.16) used text-anchor patches
+into Hermes' source — that approach proved fragile against Hermes refactors
+and was retired when Hermes' plugin API was discovered (see §16 v0.17.0
+change log entry). The remaining work (v0.18+) is policy depth, not
+integration shape: verifier enforcement, send-guard hard-rule expansion,
+and the migration-or-clean-install setup interview that runs as a Hermes
+slash command (`/agency setup`).
 
 ---
 
@@ -2134,3 +2151,59 @@ shape.
   No new features ship in v0.15.0. The work is narrative +
   surface-correction. The actual integration gap (3 missing
   patches + parallel state) is closed across v0.16–v0.19.
+
+- **v0.16.0 (2026-05-24)** — The 4-step install. bootstrap.sh drops
+  Hermes-install Branch B (per plugin discipline: framework doesn't
+  install runtime). `agency migrate v7 --from <dir>` accepts a v7
+  home directory and does full migration in one command (learning
+  corpus + SOULs + standards + vault MDs + legacy DBs). Wizard's
+  Hermes-install path removed. README leads with the literal 4-command
+  install recipe.
+
+- **v0.17.0 (2026-05-24)** — **Architectural pivot to Hermes plugin
+  API.** While preparing the missing-patch work for v0.17 (autonomy
+  gate, verifier, send-guard), discovered that Hermes has a documented
+  plugin API exposing exactly the lifecycle hooks we need:
+  `pre_llm_call`, `pre_tool_call`, `post_tool_call`, `on_session_start`,
+  `on_session_end`. PluginManager auto-discovers plugins from
+  `~/.hermes/plugins/<name>/`. Plugins register hooks + slash commands
+  via `register(ctx)`.
+
+  This release pivots HermesAgency from "framework that text-patches
+  Hermes' source" to "Hermes plugin that registers hooks via the API."
+  Same outcome (all 7 reliability systems wired into Hermes execution),
+  better implementation (no source-tree fragility, Hermes maintains the
+  hook contract). The four previously-parallel systems (learning loop,
+  autonomy ladder, verifier, send-guard) all become plugin hooks in one
+  release — no longer a v0.17/v0.18/v0.19 staged plan.
+
+  New: `hermes_agency_plugin/` package at the repo root with
+  `plugin.yaml` + `__init__.py::register(ctx)` + hook handlers + slash
+  command handler. bootstrap.sh symlinks `~/.hermes/plugins/hermes-agency
+  /` → the plugin package; Hermes discovers on next launch.
+
+  Deprecated: `_framework/hermes_patches/` (text-anchor patches).
+  REGISTRY now empty by design; module kept as no-op for one release,
+  removed in v0.18.
+
+  All 7 reliability systems report wired via `agency hermes-patches
+  systems`:
+  - Learning loop (pre_llm_call)
+  - Autonomy ladder (pre_tool_call)
+  - Verifier (post_tool_call — observation only in v0.17, enforcement
+    in v0.18)
+  - System Sentinel (on_session_start / on_session_end)
+  - Kanban tracks-link (shim, unchanged)
+  - Send-guard (pre_tool_call filtered to mail tools)
+  - Audit (script, unchanged)
+
+  `/agency` is now a Hermes slash command — supervisory surface lives
+  inside `hermes chat`. Subcommands: status, next, systems, capture,
+  learn list, audit, setup (stub for v0.19).
+
+  Tests: 224 passing + 4 skipped (deprecated text-patch tests, to be
+  deleted in v0.18). Audit clean.
+
+  Closure plan now narrower and faster: v0.18 = verifier enforcement
+  + deprecated-module removal; v0.19 = `/agency setup` migration-or-
+  clean-install in-Hermes interview; v0.20 = parallel-state collapse.

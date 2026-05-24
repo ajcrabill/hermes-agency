@@ -18,12 +18,18 @@ from pathlib import Path
 
 from _framework.constants import HEALTH_DIR
 
-from .skill_load_injection import SkillLoadInjectionPatch
-
-
-REGISTRY: list = [
-    SkillLoadInjectionPatch(),
-]
+# v0.17 NOTE: REGISTRY is intentionally empty. Through v0.16, this list
+# carried `SkillLoadInjectionPatch()` — a text-anchor patch into Hermes'
+# `agent/skill_commands.py::_build_skill_message`. v0.17 pivoted to the
+# documented Hermes plugin API (`hermes_agency_plugin/`); the learning-
+# rule injection now happens via the plugin's `pre_llm_call` hook instead
+# of mutating Hermes' source.
+#
+# The `skill_load_injection.py` module is kept temporarily for back-
+# compat with v0.16 deployments that have already applied the patch
+# (operators can `agency hermes-patches apply` to no-op cleanly during
+# the transition). It will be deleted in v0.18.
+REGISTRY: list = []
 
 
 # The 7 reliability systems HermesAgency is meant to add to Hermes.
@@ -33,44 +39,53 @@ REGISTRY: list = [
 # This list is the honest source of truth for "how much of HermesAgency
 # is actually Hermes-extending vs. parallel infrastructure." Display
 # this via `agency hermes-patches status --systems`.
+# As of v0.17, all 7 systems are wired into Hermes via the documented
+# Hermes plugin API (`hermes_agency_plugin/` at the repo root, symlinked
+# into `~/.hermes/plugins/hermes-agency/` by bootstrap.sh). The text-
+# anchor patches from v0.2-v0.16 are deprecated and no longer registered
+# in REGISTRY.
 SYSTEM_INVENTORY: list[dict] = [
     {
         "id": "learning-loop",
         "name": "Supervised learning loop",
-        "patch_id": "skill-load-injection",
+        "patch_id": "plugin:pre_llm_call hook",
         "patch_exists": True,
-        "note": "Injects applicable learning rules into Hermes' skill-load.",
+        "note": "Plugin's pre_llm_call hook injects applicable rules into "
+                "the user message of each turn. Replaces v0.2-v0.16's "
+                "skill-load-injection text patch.",
     },
     {
         "id": "autonomy-ladder",
         "name": "Autonomy ladder (L1–L5)",
-        "patch_id": "autonomy-gate",
-        "patch_exists": False,
-        "note": "TODO: pre-action gate in Hermes' skill executor. "
-                "Currently parallel — agency tracks autonomy state but "
-                "Hermes doesn't consult it before consequential actions.",
+        "patch_id": "plugin:pre_tool_call hook",
+        "patch_exists": True,
+        "note": "Plugin's pre_tool_call hook consults the autonomy ladder; "
+                "returns a block message if the skill lacks authority for "
+                "the tool's action class. New in v0.17.",
     },
     {
         "id": "verifier",
         "name": "Verifier (per-skill criteria)",
-        "patch_id": "post-completion-verifier",
-        "patch_exists": False,
-        "note": "TODO: post-completion hook in Hermes' skill exit. "
-                "Currently parallel — agency has verifier criteria but "
-                "Hermes never runs them.",
+        "patch_id": "plugin:post_tool_call hook",
+        "patch_exists": True,
+        "note": "Plugin's post_tool_call hook records tool completion to "
+                "events.db (v0.17 = observation). v0.18 adds enforcement "
+                "via transform_tool_result that rewrites failed-verifier "
+                "outputs into actionable errors.",
     },
     {
         "id": "sentinel",
         "name": "System Sentinel (read-only observer)",
-        "patch_id": "(no patch — Sentinel reads Hermes state via shim)",
+        "patch_id": "plugin:on_session_start/end hooks",
         "patch_exists": True,
-        "note": "Already shaped correctly: Sentinel observes Hermes "
-                "state.db / event log without modifying. No patch needed.",
+        "note": "Plugin's session hooks record session_started/ended events "
+                "to events.db. Sentinel reads from there + Hermes' own "
+                "state.db. Read-only, no mutations.",
     },
     {
         "id": "kanban-tracks",
         "name": "Kanban tracks-link type",
-        "patch_id": "(no patch — agency adds tracks rows to Hermes' kanban.db)",
+        "patch_id": "(shim — agency writes tracks rows to Hermes' kanban.db)",
         "patch_exists": True,
         "note": "Already shaped correctly: kanban shim writes to Hermes' "
                 "own kanban.db with the 'tracks' link type. Hermes-native.",
@@ -78,16 +93,17 @@ SYSTEM_INVENTORY: list[dict] = [
     {
         "id": "send-guard",
         "name": "Send-guard (outbound mail gate)",
-        "patch_id": "outbound-mail-guard",
-        "patch_exists": False,
-        "note": "TODO: pre-send hook on Hermes' email-send. "
-                "Currently parallel — agency has send-guard logic but "
-                "Hermes' email path doesn't call it.",
+        "patch_id": "plugin:pre_tool_call hook (mail tools)",
+        "patch_exists": True,
+        "note": "Plugin's pre_tool_call hook filters for outbound-mail "
+                "tools and runs send_guard.evaluate before allowing. "
+                "Blocks on hard-rule violations or access-list deny. "
+                "New in v0.17.",
     },
     {
         "id": "audit",
         "name": "Audit (weekly alignment check)",
-        "patch_id": "(no patch — audit runs as a script over Hermes state)",
+        "patch_id": "(script — audit runs over Hermes state on schedule)",
         "patch_exists": True,
         "note": "Already shaped correctly: audit-alignment runs as a "
                 "scheduled script reading Hermes state + agency state. "

@@ -48,7 +48,22 @@ def _stub_hermes_install(tmp_agency, monkeypatch):
     return skill_commands
 
 
+# v0.17 NOTE: the three tests below validated the text-anchor patch
+# system used through v0.16. That system was retired in v0.17 when the
+# framework pivoted to Hermes' documented plugin API
+# (`hermes_agency_plugin/`). The REGISTRY is now empty by design;
+# `skill_load_injection.py` remains as a deprecated module that no
+# longer self-registers. These tests skip until v0.18 when the
+# deprecated module is deleted entirely.
+_PATCH_DEPRECATED_SKIP = pytest.mark.skip(
+    reason="Text-anchor patches deprecated in v0.17 — replaced by "
+           "Hermes plugin API hooks (hermes_agency_plugin/). "
+           "Tests deleted along with the module in v0.18."
+)
+
+
 @pytest.mark.seam
+@_PATCH_DEPRECATED_SKIP
 def test_patch_detects_unapplied(tmp_agency, monkeypatch):
     _stub_hermes_install(tmp_agency, monkeypatch)
     from _framework.hermes_patches import check_status
@@ -58,6 +73,7 @@ def test_patch_detects_unapplied(tmp_agency, monkeypatch):
 
 
 @pytest.mark.seam
+@_PATCH_DEPRECATED_SKIP
 def test_patch_applies_idempotently(tmp_agency, monkeypatch):
     target = _stub_hermes_install(tmp_agency, monkeypatch)
     from _framework.hermes_patches import apply_all, check_status
@@ -80,6 +96,7 @@ def test_patch_applies_idempotently(tmp_agency, monkeypatch):
 
 
 @pytest.mark.seam
+@_PATCH_DEPRECATED_SKIP
 def test_patch_detects_anchor_missing(tmp_agency, monkeypatch):
     # Stub with the anchor removed
     hermes_home = tmp_agency.parent / ".hermes-noanchor"

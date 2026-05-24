@@ -270,6 +270,12 @@ def test_auto_reapply_detects_no_change(tmp_agency, monkeypatch):
 
 
 @pytest.mark.seam
+@pytest.mark.skip(
+    reason="auto_reapply detected Hermes refactor-drift in the text-anchor "
+           "patch system, retired in v0.17. The Hermes plugin API doesn't "
+           "have the drift problem — Hermes maintains the hook contract. "
+           "Test deleted alongside the module in v0.18."
+)
 def test_auto_reapply_detects_change(tmp_agency, monkeypatch):
     from _framework.hermes_patches.auto_reapply import (
         write_lock, needs_reapply,

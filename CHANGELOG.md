@@ -9,6 +9,108 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.17.0] — 2026-05-24
+
+**Architectural pivot: HermesAgency is now a real Hermes plugin.**
+
+While preparing to write text-anchor patches for the three missing
+reliability systems (autonomy gate, verifier, send-guard), the search
+through Hermes' source uncovered a documented plugin API with the exact
+lifecycle hooks we need: `pre_llm_call`, `pre_tool_call`,
+`post_tool_call`, `on_session_start`, `on_session_end`. Plugins drop at
+`~/.hermes/plugins/<name>/`, get auto-discovered, register hooks and
+slash commands via a `register(ctx)` function.
+
+This release pivots HermesAgency from "framework that text-patches
+Hermes' source" to "Hermes plugin that registers hooks via the API."
+Same goal, dramatically better implementation. Hermes' internal
+refactors no longer threaten our integration — the plugin API is a
+stable contract.
+
+### Added — `hermes_agency_plugin/` package
+
+The Hermes plugin entry point. `register(ctx)` wires five lifecycle
+hooks:
+
+| Hook | Reliability system |
+|---|---|
+| `pre_llm_call` | #1 Supervised learning loop — injects applicable rules into the user message of every turn (preserves prompt cache; system prompt stays identical across turns) |
+| `pre_tool_call` | #2 Autonomy ladder — consults `_framework.autonomy.get_skill_level` + `get_action_class_min_level`; returns a block-message string for refused tool calls |
+| `pre_tool_call` (mail tools) | #6 Send-guard — filters for outbound-mail tool names, constructs a `SendCandidate`, runs `_framework.send_guard.evaluate`, blocks on hard-rule violations or access-list deny |
+| `post_tool_call` | #3 Verifier — records tool completion to events.db (v0.17 = observation); v0.18 adds `transform_tool_result` for enforcement |
+| `on_session_start` / `on_session_end` | #4 System Sentinel — records session events to agency events.db |
+
+Plus `/agency` slash command — runs inside `hermes chat` for the
+supervisory surface (status, capture, audit, systems, learn list,
+setup stub).
+
+### Added — `agency hermes-patches systems` reports 7/7 wired
+
+All seven reliability systems are now Hermes-extending:
+
+```
+HermesAgency — 7 reliability systems (integration state)
+
+  ✓ Supervised learning loop          wired (Hermes-native — plugin hook)
+  ✓ Autonomy ladder (L1–L5)           wired (Hermes-native — plugin hook)
+  ✓ Verifier (per-skill criteria)     wired (Hermes-native — plugin hook)
+  ✓ System Sentinel                   wired (Hermes-native — plugin hooks)
+  ✓ Kanban tracks-link type           wired (Hermes-native shim)
+  ✓ Send-guard (outbound mail gate)   wired (Hermes-native — plugin hook)
+  ✓ Audit (weekly alignment check)    wired (Hermes-native — script)
+
+  7 / 7 systems are actually Hermes-extending.
+```
+
+### Changed — bootstrap.sh installs plugin via symlink
+
+The new bootstrap step:
+
+1. Verifies Hermes is on PATH (Step 1 of the install must be done first)
+2. Optionally `--reset` wipes prior agency state
+3. Clones / pip-installs HermesAgency
+4. Symlinks `~/.hermes/plugins/hermes-agency/` → `<repo>/hermes_agency_plugin/`
+5. Hermes auto-discovers on next launch
+
+Plugin discovery happens at Hermes start — no `agency hermes-patches
+apply` step needed. The bootstrap script's `--apply-patches` flag is
+preserved for the symlink registration; default is on.
+
+### Deprecated — text-anchor patches
+
+`_framework/hermes_patches/skill_load_injection.py` and the
+`apply_all` / `check_status` / `auto_reapply` machinery are
+**deprecated**. The REGISTRY is now empty by design; the module
+is kept as a no-op for one release so v0.16 deployments don't
+break. **Removed in v0.18.**
+
+4 tests are now `@pytest.mark.skip`-ed with deprecation rationale
+(3 in test_hermes_patches.py, 1 in test_quality_and_cost.py). The
+test files themselves get deleted alongside the module in v0.18.
+
+### Tests
+
+- New `tests/seams/test_plugin.py` — 10 tests covering the plugin
+  surface: import, `register()` signature, hook registration, hook
+  fail-open behavior on missing deployment, slash-command dispatch,
+  context resolver.
+- 224 passing, 4 skipped (deprecated text-patch tests).
+- Audit clean.
+
+### Roadmap update (§13.6 of the spec)
+
+The closure plan is now narrower and faster:
+
+- **v0.18** — verifier enforcement via `transform_tool_result` hook
+  (rewrite failed-verifier outputs into actionable LLM errors)
+- **v0.18** — delete `_framework/hermes_patches/` deprecated module
+- **v0.19** — `/agency setup` interactive interview (migration-or-clean-
+  install) as a real in-Hermes slash command — replaces the deferred
+  v0.20 "agency setup CLI" plan
+- **v0.20** — parallel-state collapse (move `~/.agency/_state/*.db` to
+  `~/.hermes/agency-state/` sidecar) so the framework owns no separate
+  state world
+
 ## [0.16.0] — 2026-05-24
 
 The 4-step install. AJ asked for the simplest possible install

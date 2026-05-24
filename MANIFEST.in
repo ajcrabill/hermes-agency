@@ -11,6 +11,11 @@ include DEVELOPMENT_PLAYBOOK.md
 include MANIFEST.in
 include Makefile
 include install.sh
+include bootstrap.sh
+
+# The Hermes plugin entry point — Hermes discovers this via the symlink
+# bootstrap.sh creates at ~/.hermes/plugins/hermes-agency/
+recursive-include hermes_agency_plugin *.py *.yaml *.md
 
 # Templates: deployment scaffold + per-role profiles + scripts
 recursive-include templates *.template *.md *.py *.yaml *.json
