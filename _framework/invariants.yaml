@@ -39,6 +39,11 @@ roles:
     default_action_classes: [draft-only, structural-change]
     default_cadence: per-author
     sends_mail: false            # author correspondence flows through CoS
+  - id: finance
+    keywords: [invoice, expense, revenue, budget, cash-flow, burn-rate, vendor-payment, reconcile, ledger, p-and-l, runway]
+    default_action_classes: [draft-only, structural-change]
+    default_cadence: weekly-monthly
+    sends_mail: false            # finance correspondence (invoice send-out, vendor mail) flows through CoS
 
 # Minimum-viable deployment: which roles MUST be enabled in deployment.yaml.
 required_roles:

@@ -9,6 +9,103 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.8.0] — 2026-05-24
+
+FinanceAgent role + finance subsystem. The seventh default role
+(after CoS / KB / Sentinel / Analyst / BD / Writing). Per spec
+§2.4 (N-agent expansion), demonstrates that adding a role is a
+self-contained extension — no framework-internal changes beyond
+listing the role in invariants.yaml.
+
+### Added — Finance role
+
+- `templates/profiles/finance/SOUL.md.template` — the agent's
+  identity: precise, numerical, sourced; numbers without
+  provenance are estimates and labeled as such
+- `templates/profiles/finance/standards.md.template` — Job
+  Description / Professional Standards (sourced-numbers-only,
+  24h-book-currency, no-autonomous-money-movement, vendor-terms-
+  are-commitments, bad-news-up, not-the-accountant) / Owned
+  Deliverables / Include-Me / NOT-Include-Me / Collaboration /
+  Conflict-Resolution
+- `invariants.yaml::roles` adds `finance` with keywords:
+  invoice, expense, revenue, budget, cash-flow, burn-rate,
+  vendor-payment, reconcile, ledger, p-and-l, runway
+
+### Added — `_framework/finance/`
+
+- **`finance_db.py`** — five tables (invoices_in, invoices_out,
+  expenses, revenue, vendor_payments) + budget_lines. Amounts in
+  cents (integers — no float drift). Currency per-row. CRUD +
+  overdue detection helpers.
+- **`computations.py`** — `cash_position`, `monthly_burn`,
+  `runway_months`, `revenue_attribution_summary`,
+  `budget_vs_actual`. Pure read functions over the DB.
+
+### Added — Seven finance skills
+
+- **`cash-flow-tracker`** — current position / next-30 / next-90
+  view with runway computation. Daily.
+- **`burn-rate-monitor`** — rolling 3-month burn vs 12-month avg;
+  flags trends up/down with category attribution. Weekly.
+- **`invoice-management`** — prepare outbound, log inbound, follow
+  up overdue with escalating cadence (3d / 7d / 14d / 30d), surface
+  upcoming inbound for payment authorization. Money movement
+  always requires owner authorization via CoS.
+- **`revenue-attribution`** — trace each revenue row back to its
+  originating outreach / referral / event. BD + owner see what's
+  converting.
+- **`expense-categorizer`** — apply operator's chart of accounts
+  consistently. High-confidence matches auto-categorize; low-
+  confidence surfaces for one-click classification (which
+  captures as a learning rule).
+- **`budget-vs-actual`** — monthly + quarterly variance reports.
+  Sorted by absolute variance. Flags planned-but-unused (often
+  the most actionable signal).
+- **`quarterly-financial-summary`** — end-of-quarter package: P&L
+  sketch, cash trend (≥4 quarters), runway, surprises, looking-
+  forward. Goes through KB + Analyst review before external
+  sharing.
+
+### Tests
+
+159 passing (148 from v0.7 + 11 new finance tests):
+- Invoice lifecycle (in + out + paid linkage)
+- Expense categorization
+- Revenue attribution + by-source summary
+- Cash position computation
+- Monthly burn + runway (incl. undefined-when-no-burn case)
+- Budget vs actual with variance %
+- Overdue detection
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### How the role composes
+
+Finance is the **seventh default role**. A deployment opts in by
+adding to `deployment.yaml::profiles` (with `id`, `role: finance`,
+`email: null` per the single-mailbox default — finance
+correspondence flows through CoS like all other specialists).
+
+Per spec §2.4, no framework internals required modification to
+add it — only invariants.yaml + templates + the substrate module.
+This demonstrates the N-agent expansion property: adding LegalAgent
+or ItOpsAgent next would follow the same shape.
+
+### Total skill count after v0.8
+
+| Role | Reference skills |
+|---|---|
+| ChiefOfStaff | 11 |
+| KnowledgeBase | 7 |
+| SystemSentinel | 7 |
+| AnalystJudge | 8 |
+| BusinessDevelopment | 6 |
+| WritingSupport | 17 (incl. coaching subsystem) |
+| **Finance (new)** | **7** |
+| Shared (cross-role) | 2 |
+| **Total** | **65** |
+
 ## [0.7.0] — 2026-05-24
 
 Three foundational pieces that complete the "operator gets
