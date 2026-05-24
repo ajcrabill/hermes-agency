@@ -39,15 +39,32 @@ def cmd_version(_args: argparse.Namespace) -> int:
 
 
 def cmd_status(args: argparse.Namespace) -> int:
-    """Quick health check — manifest valid? state dirs present? agents alive?"""
+    """Quick health check — Hermes engine? manifest valid? integrations?"""
     from _framework.manifest import validate
+    from _framework.hermes_engine import detect as _hermes_detect
 
     print(f"HermesAgency {__version__}")
     print(f"  AGENCY_HOME: {AGENCY_HOME}")
     if not AGENCY_HOME.exists():
-        print("  ✗ AGENCY_HOME does not exist. Run ./install.sh first.")
+        print("  ✗ AGENCY_HOME does not exist. Run `agency init` first.")
         return 1
 
+    # ── Hermes engine — the foundation. If missing, everything else is moot. ──
+    print()
+    print("  Hermes engine:")
+    hi = _hermes_detect()
+    if hi.installed:
+        print(f"    ✓ {hi.version or 'detected'}")
+        print(f"      home:   {hi.home}")
+        if hi.binary:
+            print(f"      binary: {hi.binary}")
+    else:
+        print("    ✗ Hermes not detected — this deployment cannot run skills.")
+        print("      Install: `agency init --hermes-only` (Branch B)")
+        print("      Or set HERMES_HOME to an existing install.")
+
+    # ── Manifest validity ──
+    print()
     print(f"  deployment.yaml: {DEPLOYMENT_YAML}")
     result = validate(DEPLOYMENT_YAML)
     if not result.findings:
@@ -68,7 +85,8 @@ def cmd_status(args: argparse.Namespace) -> int:
     # Always end with the actionable next-step hint
     print()
     print("  for actionable next steps:  agency next")
-    return 0 if result.ok else 1
+    # Non-zero exit if Hermes missing OR manifest invalid
+    return 0 if (result.ok and hi.installed) else 1
 
 
 def _print_integration_status() -> None:
@@ -145,6 +163,18 @@ def cmd_next(args: argparse.Namespace) -> int:
         return 0
 
     steps: list[tuple[str, str, str]] = []  # (priority, headline, commands)
+
+    # ── 0. Hermes engine — without this, NOTHING runs ─────────────────
+    from _framework.hermes_engine import detect as _hermes_detect
+    _hi = _hermes_detect()
+    if not _hi.installed:
+        steps.append((
+            "BLOCKER",
+            "Hermes engine not detected — agency cannot run skills",
+            "  agency init --hermes-only      # install Hermes (Branch B)\n"
+            "  # or, if already installed at a non-default location:\n"
+            "  export HERMES_HOME=/path/to/your/hermes",
+        ))
 
     # ── 1. Manifest validity ──────────────────────────────────────────
     result = validate(DEPLOYMENT_YAML) if DEPLOYMENT_YAML.exists() else None
@@ -364,9 +394,66 @@ def _audit_summary() -> int:
 
 
 def cmd_init(args: argparse.Namespace) -> int:
-    """Three-tier interactive wizard."""
+    """Three-tier interactive wizard.
+
+    With --hermes-only, runs just the Branch A/B Hermes step — useful
+    on a deployment that already has deployment.yaml + profiles but
+    is missing the engine.
+    """
+    if args.hermes_only:
+        return _hermes_only_bootstrap()
     from _framework.ops.init import run_wizard
     return run_wizard(tier=args.tier, force=args.force)
+
+
+def _hermes_only_bootstrap() -> int:
+    """Just the Branch A/B Hermes step, plus update deployment.yaml's
+    engine block if a manifest already exists."""
+    from _framework.ops.init.wizard import _hermes_step, _interactive_prompt, WizardAnswers
+    import yaml
+
+    answers = WizardAnswers()
+    print("=" * 70)
+    print("  agency init --hermes-only")
+    print("=" * 70)
+    ok = _hermes_step(answers, _interactive_prompt)
+    if not ok:
+        return 3
+
+    # If deployment.yaml exists, update its engine block in place
+    if DEPLOYMENT_YAML.exists():
+        text = DEPLOYMENT_YAML.read_text(encoding="utf-8")
+        try:
+            doc = yaml.safe_load(text) or {}
+        except yaml.YAMLError as e:
+            print(f"⚠ couldn't parse {DEPLOYMENT_YAML}: {e}")
+            print("  Add this block manually:")
+            _print_engine_block(answers)
+            return 0
+
+        doc["engine"] = {
+            "hermes_home":     answers.hermes_home,
+            "hermes_binary":   answers.hermes_binary,
+            "hermes_version":  answers.hermes_version,
+            "install_source":  answers.hermes_install_source,
+        }
+        DEPLOYMENT_YAML.write_text(yaml.dump(doc, sort_keys=False), encoding="utf-8")
+        print(f"✓ Updated {DEPLOYMENT_YAML}::engine")
+    else:
+        print()
+        print("No deployment.yaml yet — run `agency init` to create one.")
+        print("These values will land in its `engine:` block automatically.")
+
+    return 0
+
+
+def _print_engine_block(answers) -> None:
+    print(f"""engine:
+  hermes_home:    "{answers.hermes_home}"
+  hermes_binary:  "{answers.hermes_binary}"
+  hermes_version: "{answers.hermes_version}"
+  install_source: "{answers.hermes_install_source}"
+""")
 
 
 def cmd_manifest_validate(args: argparse.Namespace) -> int:
@@ -628,6 +715,14 @@ def cmd_upgrade(_args: argparse.Namespace) -> int:
 def cmd_hermes_patches(args: argparse.Namespace) -> int:
     """Apply / status / list Hermes integration patches."""
     from _framework.hermes_patches import apply_all, check_status, list_patches
+    from _framework.hermes_engine import is_installed as _hermes_present
+
+    # The patches modify a running Hermes install — refuse if there isn't one.
+    if args.action in ("apply", "status") and not _hermes_present():
+        print("✗ Hermes engine not detected — `agency hermes-patches` has nothing to patch.")
+        print("  Install Hermes first:")
+        print("    agency init --hermes-only")
+        return 1
 
     if args.action == "list":
         for p in list_patches():
@@ -649,6 +744,7 @@ def cmd_hermes_patches(args: argparse.Namespace) -> int:
 def cmd_cron(args: argparse.Namespace) -> int:
     """Sync per-profile cron jobs into Hermes' scheduler."""
     from _framework.cron import list_jobs, sync_cron_jobs
+    from _framework.hermes_engine import is_installed as _hermes_present
 
     if args.action == "list":
         jobs = list_jobs(profile=args.profile)
@@ -661,7 +757,13 @@ def cmd_cron(args: argparse.Namespace) -> int:
             print(f"  {profile:12s} {j.get('name', '?'):30s} {sched}")
         return 0
 
-    # sync
+    # sync — requires Hermes' scheduler to bind to
+    if not _hermes_present():
+        print("✗ Hermes engine not detected — `agency cron sync` has no scheduler to write to.")
+        print("  Install Hermes first:")
+        print("    agency init --hermes-only")
+        return 1
+
     summary = sync_cron_jobs(dry_run=args.dry_run)
     print(f"Target: {summary['target']}")
     print(f"  operator jobs preserved: {summary['operator_jobs']}")
@@ -983,6 +1085,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_init = sub.add_parser("init", help="Provision a deployment (interactive wizard)")
     p_init.add_argument("--tier", type=int, choices=[1, 2, 3], default=1)
     p_init.add_argument("--force", action="store_true")
+    p_init.add_argument(
+        "--hermes-only", action="store_true",
+        help="Run just the Hermes engine bootstrap (Branch A or B). "
+             "Doesn't touch deployment.yaml or profiles — useful when "
+             "Hermes is missing on an existing deployment.",
+    )
     p_init.set_defaults(func=cmd_init)
 
     # manifest-validate (low-level)

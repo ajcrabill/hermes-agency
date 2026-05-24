@@ -24,26 +24,38 @@ If you have to re-teach the same correction across contexts, that's a system fai
 
 ## Quickstart
 
-> Requires Python 3.11+ and a working [Hermes engine](https://github.com/NousResearch/hermes-agent) installation.
+> Requires Python 3.11+. **You do NOT need to install Hermes first** — the
+> wizard detects an existing install or installs Hermes for you as Step 0.
 
 ```bash
-# 1. Clone + install (PyPI publication is a v0.2 concern)
+# 1. Clone + install HermesAgency
 git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
 cd ~/HermesAgency
 ./install.sh
 
 # 2. Initialize your deployment (interactive wizard — pick a tier)
+#    First question: Hermes engine
+#      [a] Already installed → detect + layer on top
+#      [b] Install Hermes for me now (~2-5 min, downloads ~150 MB)
 agency init                     # T1 (5-10 min): defaults across all 6 agents
 agency init --tier 2            # T2 (15-30 min): OAuth + ingress configuration
 agency init --tier 3            # T3 (45-60 min): deep interview, exemplar capture
 
 # 3. Verify the spine
-agency status                   # all 6 profiles reporting; learning DB initialized
+agency status                   # Hermes detected? profiles up? manifest valid?
+agency next                     # what to do next based on actual state
 agency capture "test correction"   # rule appears in _state/learning.db
 agency audit                    # framework self-audit + skill audits
 
 # 4. Open the control panel
 open https://localhost:9118/control-panel
+```
+
+**If Hermes is missing on an existing deployment** (e.g. you installed
+HermesAgency separately from Hermes, or moved to a new machine):
+
+```bash
+agency init --hermes-only       # just Branch A/B; doesn't touch your manifest
 ```
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for full setup.

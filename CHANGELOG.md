@@ -9,6 +9,104 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.13.0] — 2026-05-24
+
+Hermes-as-first-class-prerequisite. The wizard now starts with a
+Branch A/B choice (detect existing Hermes, or install Hermes for
+you), and the framework refuses to pretend it's a valid deployment
+when there's no engine to layer onto.
+
+### Added — `_framework/hermes_engine/` subsystem
+
+Two modules:
+
+- `detection.py` — single source of truth for "is Hermes here? where?"
+  Signals (priority order): `$HERMES_HOME` env var → `~/.hermes`
+  default → `hermes` on `PATH`. A "valid Hermes home" has any of
+  `hermes-agent/`, `state.db`, `kanban.db`, or `scheduler.db`.
+  Returns a `HermesInfo` dataclass with version, binary path, source
+  dir, and which signal fired.
+
+- `installer.py` — bootstraps a fresh Hermes install. Steps:
+  prerequisites check (python 3.11+, git), git clone from
+  `github.com/NousResearch/hermes-agent`, create venv, `pip install -e`,
+  symlink binary to `~/.local/bin/hermes`, init HERMES_HOME, verify.
+  Idempotent — re-running against an existing install does
+  `git fetch` + `pip install --upgrade`.
+
+### Added — Branch A/B in the init wizard
+
+The wizard's first step (before owner/email/provider/etc.) is the
+Hermes step:
+
+1. Auto-detect. If found, confirm and use it.
+2. Otherwise offer three options:
+   - [a] Point at an existing install at a non-default path
+   - [b] Install Hermes fresh (clone + venv + pip install -e)
+   - [q] Quit and run `agency init` again later
+
+Either branch populates a new `engine:` block in `deployment.yaml`:
+
+```yaml
+engine:
+  hermes_home:     "/Users/agency/.hermes"
+  hermes_binary:   "/Users/agency/.local/bin/hermes"
+  hermes_version:  "Hermes Agent v0.14.0 (2026.5.16)"
+  install_source:  "fresh-clone:https://github.com/NousResearch/hermes-agent.git@main"
+```
+
+### Added — `agency init --hermes-only`
+
+Runs just the Branch A/B step. Useful when:
+- HermesAgency was installed but Hermes wasn't (the "I went out of
+  order" recovery path)
+- You moved a deployment to a new machine and need to rebootstrap
+  the engine without re-running the full wizard
+
+Writes the `engine:` block in-place if `deployment.yaml` already
+exists.
+
+### Improved — `agency status` surfaces Hermes detection front + center
+
+Status now prints a `Hermes engine:` section at the top of the
+report. If detected, shows version + home + binary. If missing,
+prints a loud ✗ with the resume command. Non-zero exit if either
+Hermes is missing or the manifest is invalid.
+
+### Improved — `agency next` treats Hermes-missing as a BLOCKER
+
+Hermes detection is the first check in `agency next` and gets
+priority #1 in the output if absent.
+
+### Improved — `agency hermes-patches` / `agency cron sync` refuse cleanly
+
+Previously these commands silently no-op'd or wrote to non-existent
+paths when Hermes wasn't installed. Now both hard-error with a
+clear "Hermes engine not detected — install with `agency init
+--hermes-only`" message and exit 1.
+
+### Schema — `deployment.yaml::engine` block
+
+Validator surfaces a `warning` if the `engine:` block is missing
+entirely, and a `warning` per missing key inside it. Not an error
+yet (back-compat with pre-v0.13 deployments) — a future major
+version may upgrade these to blocking errors.
+
+### Tests
+
+- New `tests/seams/test_hermes_engine.py` — 10 tests covering
+  detection across signal priorities (env / default-home /
+  path-binary-only) and installer prerequisites.
+- Total suite: 208 passing (was 198).
+- `agency audit --self`: clean.
+
+### Docs
+
+- README quickstart leads with "you do not need Hermes installed
+  first — wizard does it for you (Branch B)."
+- DEPLOYMENT.md prerequisites updated to drop the standalone
+  Hermes install requirement and explain the A/B model.
+
 ## [0.12.2] — 2026-05-24
 
 Four more UX/security patches from AJ's live install on esblaptop-m4.

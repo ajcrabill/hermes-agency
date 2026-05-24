@@ -17,6 +17,16 @@ deployment:
   timezone:          "{{TIMEZONE}}"                # IANA tz (e.g. "America/Chicago")
   framework_version: "{{FRAMEWORK_VERSION}}"       # set by `agency init`; framework-version.lock pins this
 
+# ── Hermes engine ────────────────────────────────────────────────────────
+# HermesAgency layers on top of the Hermes engine. This block is set by
+# the wizard (Branch A or Branch B). Don't edit by hand unless you know
+# what you're doing; `agency init --hermes-only` regenerates it cleanly.
+engine:
+  hermes_home:       "{{HERMES_HOME}}"             # e.g. ~/.hermes
+  hermes_binary:     "{{HERMES_BINARY}}"           # symlink target, e.g. ~/.local/bin/hermes
+  hermes_version:    "{{HERMES_VERSION}}"          # captured at install time
+  install_source:    "{{HERMES_INSTALL_SOURCE}}"   # "existing" | "fresh-clone:<url>@<ref>"
+
 # ── Active profiles ──────────────────────────────────────────────────────
 # Required roles: chief-of-staff, knowledge-base, system-sentinel.
 # Optional roles: analyst-judge, business-development, writing-support.

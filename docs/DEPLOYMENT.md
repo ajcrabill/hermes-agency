@@ -5,13 +5,19 @@ How to set up a new HermesAgency deployment from scratch.
 ## Prerequisites
 
 - Python 3.11+
-- [NousResearch Hermes](https://github.com/NousResearch/hermes-agent)
-  installed and on PATH (`hermes --version` should work)
+- git
 - Access to an OpenAI-compatible inference endpoint — local
   (Ollama, llama.cpp, MLX, LM Studio) or hosted (any provider
   with a compatible API)
 - An email address you control (for the Chief of Staff's outbound
   mailbox)
+
+You do **not** need to install Hermes before HermesAgency. The
+wizard's first step is **Branch A** (detect existing Hermes and
+layer on top) or **Branch B** (install Hermes for you fresh from
+[NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent),
+then layer on top). Either path lands you in the same place: a
+running Hermes engine with HermesAgency provisioned on top of it.
 
 ## Install
 

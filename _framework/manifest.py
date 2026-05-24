@@ -181,6 +181,26 @@ def validate(yaml_path: Path | str) -> ValidationResult:
     profiles = manifest["profiles"]
     defaults = manifest["defaults"]
     credentials = manifest["credentials"]
+    engine = manifest.get("engine", {}) or {}
+
+    # ── engine block (optional but recommended; warns if missing) ───────
+    if not engine:
+        result.add(
+            "warning", "engine-block-missing",
+            "deployment.yaml has no `engine:` block. HermesAgency requires "
+            "a Hermes engine; run `agency init --hermes-only` to populate it.",
+            location="engine",
+        )
+    else:
+        for key in ("hermes_home",):    # at minimum, the home must be set
+            v = engine.get(key, "")
+            if not v or (isinstance(v, str) and _is_placeholder(v)):
+                result.add(
+                    "warning", "engine-key-missing",
+                    f"engine.{key} not set — Hermes integration won't work until populated.",
+                    location=f"engine.{key}",
+                    hint="Run `agency init --hermes-only` to detect or install Hermes.",
+                )
 
     # ── deployment block ────────────────────────────────────────────────
     for key in ("owner", "org_name", "primary_email", "timezone", "framework_version"):

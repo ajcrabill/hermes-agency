@@ -48,6 +48,11 @@ class WizardAnswers:
     cos_email: str = ""
     kb_id: str = "kb"
     sentinel_id: str = "sentinel"
+    # Hermes engine (set by the Branch A/B step that runs first)
+    hermes_home: str = ""
+    hermes_binary: str = ""
+    hermes_version: str = ""
+    hermes_install_source: str = ""      # "existing" | "fresh-clone:<url>@<ref>"
     extras: dict = field(default_factory=dict)
 
 
@@ -95,6 +100,11 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
         return 2
 
     answers = WizardAnswers()
+
+    # ── Step 0: Hermes engine (Branch A / B) ───────────────────────────
+    # HermesAgency requires Hermes. Detect or install BEFORE anything else.
+    if not _hermes_step(answers, prompter):
+        return 3   # user aborted or install failed
 
     print("─── About you and the agency " + "─" * 38)
     answers.owner = prompter("Owner handle (kebab-case, e.g. j-doe)", "")
@@ -272,6 +282,128 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
     return 0
 
 
+# ── Hermes engine step (Branch A / B) ─────────────────────────────────────
+
+
+def _hermes_step(answers: WizardAnswers, prompter: Callable[[str, str], str]) -> bool:
+    """The first wizard step. Detects an existing Hermes install OR
+    installs one fresh. Populates `answers.hermes_*` fields on success.
+
+    Returns False if the user aborts or install fails irrecoverably —
+    the caller should propagate exit code 3.
+    """
+    from _framework.hermes_engine import detect, install, InstallPlan
+    from _framework.hermes_engine.installer import shell_init_lines
+
+    print("─── Hermes engine " + "─" * 49)
+    print(
+        "\n"
+        "HermesAgency layers on top of NousResearch's Hermes engine.\n"
+        "Without Hermes, the agency has nothing to run skills, no\n"
+        "scheduler for cron jobs, and no shared kanban.\n"
+    )
+
+    # Auto-detect first
+    info = detect()
+    if info.installed:
+        print(f"  ✓ Hermes detected (via {info.detected_via}):")
+        if info.version:
+            print(f"      version: {info.version}")
+        print(f"      home:    {info.home}")
+        if info.binary:
+            print(f"      binary:  {info.binary}")
+        confirm = prompter(
+            "Use this Hermes install? (y / n=skip detection, install fresh)", "y",
+        ).strip().lower()
+        if confirm.startswith("y"):
+            answers.hermes_home = str(info.home) if info.home else ""
+            answers.hermes_binary = str(info.binary) if info.binary else ""
+            answers.hermes_version = info.version or ""
+            answers.hermes_install_source = "existing"
+            print(f"  ✓ Layering on top of existing Hermes at {info.home}\n")
+            return True
+
+    # Branch B: install fresh
+    print()
+    print("Choose one:")
+    print("  [a] I have Hermes installed at a non-default location — let me specify")
+    print("  [b] Install Hermes for me now (downloads ~150 MB; takes 2-5 min)")
+    print("  [q] Quit; I'll install Hermes manually and re-run `agency init`")
+    print()
+    choice = prompter("Choice (a / b / q)", "b").strip().lower()
+
+    if choice.startswith("q"):
+        print("\n  Aborted. Install Hermes (https://github.com/NousResearch/hermes-agent)")
+        print("  and re-run `agency init` when ready.\n")
+        return False
+
+    if choice.startswith("a"):
+        # Manual path: user points us at an existing install
+        custom = prompter(
+            "Path to existing HERMES_HOME (e.g. ~/.hermes-custom)", "",
+        ).strip()
+        if not custom:
+            print("  No path given — aborting.")
+            return False
+        custom_path = Path(custom).expanduser().resolve()
+        import os as _os
+        _os.environ["HERMES_HOME"] = str(custom_path)
+        info = detect()
+        if not info.installed:
+            print(f"  ✗ Couldn't find Hermes at {custom_path}.")
+            print(f"    Expected one of: state.db, kanban.db, scheduler.db, or hermes-agent/")
+            return False
+        answers.hermes_home = str(info.home)
+        answers.hermes_binary = str(info.binary) if info.binary else ""
+        answers.hermes_version = info.version or ""
+        answers.hermes_install_source = "existing"
+        print(f"  ✓ Using Hermes at {info.home}\n")
+        return True
+
+    # choice == "b" (or empty default): full install
+    print()
+    print("─── Installing Hermes " + "─" * 45)
+    target_str = prompter(
+        "Target HERMES_HOME directory", str(Path.home() / ".hermes"),
+        # default is the conventional location
+    ).strip()
+    target = Path(target_str).expanduser().resolve()
+    ref = prompter("Git ref (branch / tag / commit) to install", "main").strip() or "main"
+
+    plan = InstallPlan(target_dir=target, ref=ref)
+    print()
+    result = install(plan, verbose=True)
+
+    if not result.success:
+        print()
+        print(f"  ✗ Install failed at step '{result.failed_step}':")
+        for line in result.error.splitlines()[:8]:
+            print(f"    {line}")
+        print()
+        print("  Re-run `agency init` after addressing the error,")
+        print("  or install Hermes manually:")
+        print(f"    git clone {plan.git_url} {plan.target_dir}/hermes-agent")
+        print(f"    cd {plan.target_dir}/hermes-agent && python3 -m venv venv")
+        print("    source venv/bin/activate && pip install -e .")
+        return False
+
+    answers.hermes_home = str(result.home)
+    answers.hermes_binary = str(result.binary)
+    answers.hermes_version = result.version or ""
+    answers.hermes_install_source = f"fresh-clone:{plan.git_url}@{plan.ref}"
+
+    print()
+    print(f"  ✓ Hermes {result.version or 'installed'} at {result.home}")
+    print()
+    print("  Add these to your shell init (~/.zshrc or ~/.bashrc) so the")
+    print("  install persists across sessions:")
+    print()
+    for line in shell_init_lines(plan):
+        print(f"      {line}")
+    print()
+    return True
+
+
 # ── Helpers ──────────────────────────────────────────────────────────────
 
 
@@ -419,6 +551,14 @@ deployment:
   primary_email:     {a.primary_email}
   timezone:          {a.timezone}
   framework_version: "{_fw_version}"
+
+engine:
+  # The Hermes engine HermesAgency layers on top of. Set by the
+  # wizard's Branch A (existing detected) or Branch B (fresh install).
+  hermes_home:       "{a.hermes_home}"
+  hermes_binary:     "{a.hermes_binary}"
+  hermes_version:    "{a.hermes_version}"
+  install_source:    "{a.hermes_install_source}"
 
 profiles:
 
