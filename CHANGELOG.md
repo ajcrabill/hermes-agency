@@ -9,6 +9,62 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.13.1] — 2026-05-24
+
+One-command installer. AJ asked: "what's the single command for
+fresh-install (wipe + clone + Hermes detect-or-install + agency
+setup)?" Three pieces ship to make that real.
+
+### Added — `bootstrap.sh`
+
+A self-contained shell script at the repo root. End-to-end:
+
+  1. (`--reset`) wipe `~/.agency`, `~/.agency-venv`, `~/.hermes`,
+     `~/.hermes-v7-snapshot`, `~/.hermes-engine-venv`
+  2. (`--reset-deep`) also wipe `~/HermesAgency`,
+     `~/.local/bin/hermes`, `~/agency-staging`
+  3. Preflight: python 3.11+, git
+  4. Clone HermesAgency (if not run from a checkout)
+  5. Create venv at `~/.agency-venv`
+  6. `pip install -e` with `[dev,google,embed,ingest]` extras
+  7. Run `agency init` — which starts with Branch A/B (detect or
+     install Hermes), then continues into the T1 wizard
+
+One-paste fresh-install (private repo, SSH-auth machine):
+
+```bash
+git clone https://github.com/ajcrabill/hermes-agency.git /tmp/ha-bootstrap \
+  && bash /tmp/ha-bootstrap/bootstrap.sh --reset
+```
+
+Flags: `--reset` / `--reset-deep` / `--no-init` / `--target=<dir>`
+/ `--venv=<dir>` / `--hermes-home=<dir>` / `--ref=<branch>` /
+`--skip-deps`.
+
+### Added — `agency reset` command
+
+For wiping an existing deployment without leaving the venv:
+
+```bash
+agency reset                       # wipes ~/.agency
+agency reset --include-hermes      # also wipes ~/.hermes
+agency reset --include-v7-snapshot # also wipes ~/.hermes-v7-snapshot
+agency reset --include-venv        # also wipes ~/.agency-venv
+agency reset -y                    # skip confirmation prompt
+```
+
+Prompts "Type 'wipe' to confirm" before deleting unless `-y`.
+
+### Fixed — `install.sh` stale "0.1.0" hardcode
+
+Same bug as the wizard's earlier framework_version fix. install.sh
+hardcoded `echo "0.1.0" > framework-version.lock`. Now reads
+`_framework.__version__` at install time.
+
+### Tests
+
+208 passing. Audit clean.
+
 ## [0.13.0] — 2026-05-24
 
 Hermes-as-first-class-prerequisite. The wizard now starts with a

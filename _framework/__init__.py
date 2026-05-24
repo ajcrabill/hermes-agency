@@ -11,4 +11,4 @@ Deployments never import from this package directly; they invoke
 through the `agency` CLI or via cron-fired skill loads.
 """
 
-__version__ = "0.13.0"
+__version__ = "0.13.1"

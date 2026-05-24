@@ -456,6 +456,62 @@ def _print_engine_block(answers) -> None:
 """)
 
 
+def cmd_reset(args: argparse.Namespace) -> int:
+    """Wipe deployment state for a clean re-init.
+
+    Always removes: ~/.agency
+    With --include-hermes: also removes ~/.hermes (the engine + its data)
+    With --include-v7-snapshot: also removes ~/.hermes-v7-snapshot
+    With --include-venv: also removes ~/.agency-venv
+
+    Always prompts for confirmation unless --yes is passed.
+    """
+    import shutil
+    home = Path.home()
+    targets: list[Path] = [AGENCY_HOME]
+    if args.include_hermes:
+        targets.append(home / ".hermes")
+    if args.include_v7_snapshot:
+        targets.append(home / ".hermes-v7-snapshot")
+    if args.include_venv:
+        targets.append(home / ".agency-venv")
+
+    print("This will permanently delete:")
+    any_present = False
+    for t in targets:
+        if t.exists():
+            print(f"  - {t}")
+            any_present = True
+        else:
+            print(f"  - {t}    (not present, skipped)")
+
+    if not any_present:
+        print("\nNothing to wipe.")
+        return 0
+
+    if not args.yes:
+        print()
+        try:
+            ans = input("Type 'wipe' to confirm: ").strip()
+        except EOFError:
+            ans = ""
+        if ans != "wipe":
+            print("Aborted.")
+            return 1
+
+    for t in targets:
+        if t.exists():
+            shutil.rmtree(t, ignore_errors=True)
+            print(f"  ✗ removed {t}")
+
+    print()
+    print("Done. To rebuild:")
+    print(f"  bash {Path.cwd()}/bootstrap.sh")
+    print("  # or, if HermesAgency is still installed in your venv:")
+    print("  agency init")
+    return 0
+
+
 def cmd_manifest_validate(args: argparse.Namespace) -> int:
     """Direct passthrough to the manifest validator."""
     from _framework.manifest import main as _main
@@ -1092,6 +1148,21 @@ def build_parser() -> argparse.ArgumentParser:
              "Hermes is missing on an existing deployment.",
     )
     p_init.set_defaults(func=cmd_init)
+
+    # reset — wipe state for a clean re-init
+    p_reset = sub.add_parser(
+        "reset",
+        help="Wipe ~/.agency (and optionally ~/.hermes etc.) for a clean re-init",
+    )
+    p_reset.add_argument("--include-hermes", action="store_true",
+                         help="Also wipe ~/.hermes (the engine itself)")
+    p_reset.add_argument("--include-v7-snapshot", action="store_true",
+                         help="Also wipe ~/.hermes-v7-snapshot")
+    p_reset.add_argument("--include-venv", action="store_true",
+                         help="Also wipe ~/.agency-venv")
+    p_reset.add_argument("-y", "--yes", action="store_true",
+                         help="Skip confirmation prompt")
+    p_reset.set_defaults(func=cmd_reset)
 
     # manifest-validate (low-level)
     p_mv = sub.add_parser("manifest-validate", help="Validate deployment.yaml")

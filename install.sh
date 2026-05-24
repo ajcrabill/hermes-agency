@@ -74,8 +74,9 @@ else
     green "  ✓ deployment.yaml (with placeholders — run 'agency init' to fill in)"
 fi
 
-echo "0.1.0" > "$AGENCY_HOME/framework-version.lock"
-green "  ✓ framework-version.lock = 0.1.0"
+FRAMEWORK_VERSION=$(python3 -c 'from _framework import __version__; print(__version__)' 2>/dev/null || echo "unknown")
+echo "$FRAMEWORK_VERSION" > "$AGENCY_HOME/framework-version.lock"
+green "  ✓ framework-version.lock = $FRAMEWORK_VERSION"
 
 # Copy shared framework docs into the framework-vault for Sentinel
 for doc in DEVELOPMENT_PLAYBOOK.md; do
