@@ -2,11 +2,11 @@
 
 ### Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control.
 
-**A multi-agent plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent), built for solopreneurs and small-business owners who want the AI capabilities big tech is rolling out — without surrendering their data, IP, or ideas to get them.**
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes engine](https://img.shields.io/badge/plugin%20for-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
+
+HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](https://github.com/NousResearch/hermes-agent) powerful Hermes agentic engine. Designed for and by small-business owners, HermesAgency pulls together the suite of capabilities every small business wants and needs but typically can't afford. It's where the powerful, always-working aspects of *technological intelligences* (the agents) collaborate with the ingenuity and creativity of *biological intelligences* (the humans). Together, with a **7-part continuous learning framework** designed from the ground up to rapidly expand the agents' understanding of the human's goals and values, HermesAgency gives business leaders access to the advantages of companies many times their size and revenue — without sacrificing the privacy and ownership of your data and intellectual property, and without getting locked into big-tech ecosystems.
 
 > By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal AI chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
 

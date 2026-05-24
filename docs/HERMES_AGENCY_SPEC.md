@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.18.2-spec (2026-05-24) — *also: v0.07 of the 9th version (see §0.5)*
+**Version:** v0.19.1-spec (2026-05-24) — *also: v0.09 of the 9th version (see §0.5)*
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -160,15 +160,35 @@ v0.17+ are v9 (proper-plugin era).
 
 ## 1. The promise — what this plugin is for
 
-**HermesAgency is a continuously-learning, multi-agent plugin for
-Hermes Agent, built for small-business owners who refuse to re-teach
-their AI ten times.**
+**HermesAgency is a multi-agent framework built as a plugin to
+NousResearch's powerful Hermes agentic engine.** Designed *for* and
+*by* small-business owners, HermesAgency pulls together the suite of
+capabilities every small business wants and needs but typically can't
+afford. It's where the powerful, always-working aspects of
+*technological intelligences* (the agents) collaborate with the
+ingenuity and creativity of *biological intelligences* (the humans).
+Together, with a **7-part continuous learning framework** designed
+from the ground up to rapidly expand the agents' understanding of
+the human's goals and values, HermesAgency gives business leaders
+access to the advantages of companies many times their size and
+revenue — without sacrificing the privacy and ownership of their
+data and intellectual property, and without getting locked into
+big-tech ecosystems.
 
-Every correction the owner gives is captured, tagged, propagated to every
-relevant agent across the agency, and applied without the owner repeating
-themselves. The autonomy ladder lets agents earn more independence over
-time — but only when the learning loop is provably working. The system
-tells the owner when it isn't.
+**The one-line operational promise:** every correction the owner
+gives is captured, tagged, propagated to every relevant agent across
+the agency, and applied without the owner repeating themselves. The
+autonomy ladder lets agents earn more independence over time — but
+only when the learning loop is provably working. The system tells
+the owner when it isn't.
+
+The collaboration model is explicit: technological intelligences
+contribute *consistency, persistence, parallel attention, and
+tireless follow-through*; biological intelligences contribute
+*judgment, taste, originality, ethical anchoring, and the moments
+of insight that re-direct the work*. Neither alone is enough for a
+small business to compete against operations many times its size.
+Together — with the right learning loop binding them — they can.
 
 ### 1.1 The seven-step learning loop
 
@@ -2683,6 +2703,50 @@ shape.
   actionable LLM errors. `_framework/hermes_patches/` deleted; tests
   cut; `SYSTEM_INVENTORY` moved to `hermes_agency_plugin/
   system_inventory.py`. Net -364 lines. 226 passing, zero skipped.
+
+- **v0.19.1-spec (2026-05-24)** — *Positioning revision; no code change.*
+  AJ wrote out the polished pitch paragraph — the prose version of
+  the three-pillar tagline. Threaded through the spec, README, and
+  package descriptions.
+
+  Key new framing elements:
+  - "Multi-agent framework built as a plugin to NousResearch's
+    powerful Hermes agentic engine" — calls Hermes by its full
+    descriptive name ("agentic engine") rather than just "engine"
+  - "Designed *for* and *by* small-business owners" — emphasizes
+    AJ as the principal user, not just the developer
+  - "Pulls together the suite of capabilities every small business
+    wants and needs but typically can't afford" — names the gap
+  - **The collaboration model:** "where the powerful, always-working
+    aspects of *technological intelligences* (the agents) collaborate
+    with the ingenuity and creativity of *biological intelligences*
+    (the humans)" — the philosophical core; agents contribute
+    consistency, persistence, parallel attention, tireless follow-
+    through; humans contribute judgment, taste, originality, ethical
+    anchoring, moments of insight
+  - "7-part continuous learning framework designed from the ground
+    up to rapidly expand the agents' understanding of the human's
+    goals and values" — names the seven systems with a coherent
+    purpose ("expand understanding of goals + values")
+  - "Advantages of companies many times their size and revenue" —
+    sharper competitive framing than "small-business at a
+    disadvantage"
+
+  Updated surfaces:
+  - **Spec §1 (The promise)** rewritten around the new framing.
+    Adds an explicit "collaboration model" subsection naming what
+    each kind of intelligence contributes.
+  - **README** lead paragraph replaced with the polished pitch
+    immediately under the three-pillar tagline + badges.
+  - **pyproject.toml** description picks up "many times your size"
+    + "without surrendering ownership" as the punchiest summary.
+  - **plugin.yaml** description echoes the "technological /
+    biological intelligences collaborate via 7-part continuous
+    learning framework" framing for plugin-listing pages.
+
+  Spec version → v0.19.1-spec. plugin.yaml → 0.19.1 (description-
+  only change; code path unchanged from v0.19.0). No code, no test
+  delta.
 
 - **v0.18.2-spec (2026-05-24)** — *Spec-revision pass; no code change.*
   Added the three-pillar tagline and the big-tech-contrast section.

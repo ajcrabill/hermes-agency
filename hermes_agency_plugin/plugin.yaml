@@ -1,6 +1,6 @@
 name: hermes-agency
-version: "0.19.0"
-description: "HermesAgency plugin — wires 7 reliability systems into Hermes via lifecycle hooks: supervised learning loop, autonomy ladder, verifier (with enforcement via transform_tool_result), send-guard, Sentinel observer, kanban tracks-link, audit. v0.18 adds verifier-enforcement and removes the deprecated text-anchor patch module."
+version: "0.19.1"
+description: "Multi-agent framework built as a plugin to NousResearch's Hermes agentic engine. Designed for and by small-business owners. Where technological intelligences (the agents) collaborate with biological intelligences (the humans) through a 7-part continuous learning framework that rapidly expands the agents' understanding of the human's goals and values. Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control."
 author: "AJ Crabill — AI Developer for Good Ancestor (www.GoodAncestor.com)"
 hooks:
   - pre_llm_call
