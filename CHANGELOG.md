@@ -9,6 +9,97 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.4.0] — 2026-05-24
+
+Addresses two direct AJ questions:
+  1. "Does the setup interview give a chance to name agents,
+     choose pronouns, customize personality?" → now yes, in Tier 3.
+  2. "Did you draw on actual v7 skills for the manuscript creation
+     centerpiece?" → was a real gap. Now closed with the coaching
+     subsystem + 6 new Writing skills + 3 new scripts.
+
+### Added — Per-agent personalization in Tier 3
+
+- `_framework/ops/init/agent_personalization.py` — per-agent
+  interview captures display name (functional id like `cos`, or
+  human-named like `Maya`), pronouns (she / he / they / it / none),
+  personality sketch (2-3 sentences).
+- Personalization appends as a `## Personalization` block to each
+  profile's `SOUL.md` after the role-default content. Skipping
+  all three options leaves the default SOUL.md unchanged.
+- Tier 3 wizard now loops profiles by default; CoS gets a focused
+  voice-notes question afterward for outbound-voice specifics.
+
+### Added — Coaching subsystem (the manuscript creation centerpiece)
+
+Generalized from v7's `book_coaching.db` workflow ("Scribe Method").
+
+- **`_framework/coaching/`** with `coaching.db`:
+  - `users` (email PK), `projects` (renamed from "books" — works for
+    theses / screenplays / white papers), `phases`,
+    `qa_history` (with `answer_source = voice|typed|imported`),
+    `deliverables`, `ingested_files` (sha256 dedup)
+- **6 new Writing skills**:
+  - `coaching-method` — the central Q&A coaching workflow (the
+    skill formerly under-covered in `book-coaching`)
+  - `structural-edit`, `voice-edit`, `polish-edit` — three
+    sequential editor lenses (each scores 0.0-1.0, target ≥0.90
+    to pass to the next). Ported from v7's `scribe-*-editor`
+    triple.
+  - `manuscript-ingest` — capture mechanism for .docx / .pdf / .txt
+    / voice memo attachments with sha256 dedup
+  - `voice-memo-transcribe` — faster-whisper STT with per-segment
+    confidence flags
+- **3 new script templates**:
+  - `coach-method.py` — the no_agent cron template (self-contained
+    deterministic flow; LLM as tool not boss)
+  - `ingest-attachments.py` — mechanical extraction layer
+  - `transcribe-voice-memo.py` — STT with confidence reporting
+
+### Added — The no_agent cron pattern (DEVELOPMENT_PLAYBOOK §5.6)
+
+V7's critical architectural lesson, now documented as a first-class
+framework pattern. Workflows where LLM "creativity" would corrupt
+state (book coaching progress, financial records, anything appended
+to long-running tables) declare `no_agent: true` in jobs.json.
+The cron runs a self-contained script that owns DB + side-effect
+authority; inference is called as a tool for content generation
+only. Reference example: `_framework/coaching/` + `coach-method.py`.
+
+### Added — Misc v7 skills (3 new)
+
+- **`push-notify`** (CoS) — desktop notifications for
+  important-AND-urgent items, with rate-limit guard
+- **`obligation-board`** (CoS) — tracks {{OWNER}}'s own commitments
+  (different from kanban, which is agency-owned work); surfaces
+  overdue with escalating friction
+- **`hardware-research`** (Analyst) — market research + price
+  comparison + recommendation for hardware purchase decisions
+
+### Tests
+
+107 passing (96 from v0.3 + 11 new):
+- 5 agent-personalization tests (personas, pronoun handling,
+  appendix writing, skip-when-default, Tier 3 integration)
+- 6 coaching tests (user upsert, project lifecycle, Q&A open/
+  answered, ingested-file dedup, deliverables, paused-project
+  exclusion)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### Honest accounting
+
+In v0.3 I built `book-coaching` / `manuscript-review` /
+`workbook-drafting` / etc. for Writing — covering the STANDARDS-
+file description but missing the actual centerpiece (the
+phase-driven Q&A coaching workflow with attachment ingestion and
+the three-editor pipeline). This release closes that gap.
+
+The no_agent cron pattern is the deeper architectural lesson — I'd
+missed it entirely. Without it, the coaching pipeline would have
+been rebuilt with the same vulnerability as v7's earlier version
+(LLM with DB write authority becoming "creative" about state).
+
 ## [0.3.0] — 2026-05-24
 
 Coverage release — "better to have skills available that aren't

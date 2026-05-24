@@ -418,9 +418,16 @@ def run_tier3_interview(
     cos_id: str | None = None,
     prompter: Callable[[Question], str] | None = None,
     refresh: bool = False,
+    profiles_to_personalize: list[tuple[str, str]] | None = None,
+    persona_prompter: Callable[[str, str, str], str] | None = None,
 ) -> dict[str, Path]:
     """Run the deep interview. Returns {section_name: output_path} for
-    each generated doc. Prompter abstraction makes this testable."""
+    each generated doc. Prompter abstraction makes this testable.
+
+    `profiles_to_personalize`: iter of (profile_id, role) for the
+    per-agent personalization section. When None, that section is
+    skipped (Tier 1 callers don't pass this; full Tier 3 does).
+    """
 
     prompter = prompter or _interactive_prompter
     AGENCY_VAULT.mkdir(parents=True, exist_ok=True)
@@ -494,31 +501,49 @@ The five sections:
         if skipped:
             print(f"    ({skipped} optional question(s) skipped — placeholders remain for later editing)")
 
-    # ── CoS persona refinement ──────────────────────────────────────────
+    # ── Per-agent personalization ──────────────────────────────────────
+    if profiles_to_personalize:
+        from .agent_personalization import (
+            personalize_agents, write_persona_appendices,
+        )
+        personas = personalize_agents(
+            profiles=profiles_to_personalize,
+            prompter=persona_prompter,
+        )
+        written = write_persona_appendices(personas, interview_date)
+        for pid in written:
+            generated[f"persona:{pid}"] = profile_soul(pid)
+            print(f"  ✓ appended personalization to profile {pid}'s SOUL.md")
+
+    # ── CoS voice notes (focused detail beyond the per-agent step) ─────
     if cos_id:
         print()
         print("─" * 70)
-        print(f"  Section: ChiefOfStaff persona ({cos_id})")
+        print(f"  Section: ChiefOfStaff voice ({cos_id})")
         print("─" * 70)
         print(
-            "We'll personalize the CoS's SOUL.md and standards.md based\n"
-            "on a few specific questions about how you want her to operate.\n"
+            "One more focused question for CoS specifically — she carries\n"
+            "the agency's outbound voice. The per-agent personalization\n"
+            "above captured tone; this captures voice specifics.\n"
         )
         cos_q = Question(
             key="COS_VOICE_NOTES",
-            prompt="In a sentence or two: how do you want your CoS to sound?",
+            prompt="Specific voice notes for outbound? (we-not-I, warm without flattering, etc.)",
             multiline=True,
             optional=True,
             follow_up=[
-                "Warm? Brisk? Formal? 'We not I'? Specific tone notes.",
+                "These get appended to CoS's SOUL.md as voice rules.",
+                "Skip if the per-agent personality already covered it.",
             ],
         )
         voice = prompter(cos_q)
         if voice and voice != "skip":
             soul = profile_soul(cos_id)
             if soul.exists():
-                # Append voice notes to existing SOUL.md
-                addendum = f"\n\n## Voice notes (from Tier 3 interview {interview_date})\n\n{voice}\n"
+                addendum = (
+                    f"\n\n## Voice notes (from Tier 3 interview {interview_date})\n\n"
+                    f"{voice}\n"
+                )
                 soul.write_text(soul.read_text(encoding="utf-8") + addendum, encoding="utf-8")
                 print(f"  ✓ appended voice notes to {soul}")
                 generated["cos_voice"] = soul

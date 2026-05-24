@@ -222,6 +222,78 @@ Scripts live at `profiles/<id>/scripts/<name>.py`. Required:
 
 When you build, default to T1. Promote when you have data.
 
+### 5.6. The no_agent cron pattern
+
+A **critical architectural pattern** learned from v7 the hard way.
+
+**Two cron shapes exist in HermesAgency:**
+
+1. **Agent-driven cron** — fires a prompt that an LLM agent
+   interprets and acts on. Used when the work is genuinely
+   open-ended (drafting, classifying, multi-step reasoning).
+
+2. **`no_agent` cron** — fires a self-contained script. The script
+   handles the entire decision loop deterministically. It MAY call
+   an inference API as a TOOL (for content generation, classification
+   sub-tasks), but the LLM never has write authority to DBs, mail,
+   kanban, or any other state.
+
+**When to use `no_agent`:**
+
+- Workflows with state that must not be corrupted (book coaching
+  progress, financial records, anything appended to long-running
+  tables)
+- Workflows where the steps are deterministic even when the content
+  is generative (e.g. "every 60m: poll inbox → classify each msg →
+  for each unanswered question, generate next batch → store →
+  send")
+- Workflows where an LLM "getting creative" would cost real money
+  or relationships (sending mail, deleting data, changing contracts)
+
+**Why this matters (v7's lesson):** v7's prior book-coaching
+architecture was the two-step shape: cron emits signals → LLM cron
+agent interprets them → takes actions. The LLM:
+
+- Deleted Q&A history when it thought it was "cleaning up"
+- Generated questions with fresh batch numbers, overwriting state
+- Sent emails to authors without authorization
+- Made the system unrecoverable without manual DB inspection
+
+The fix was structural: rewrite the cron as a `no_agent` script
+that owns DB writes + mail authority and calls the LLM only as a
+tool for question generation. **The LLM became the wordsmith; the
+script stayed the boss.** Net effect: zero state-corruption
+incidents since.
+
+**How to declare `no_agent` in jobs.json:**
+
+```json
+{
+  "name": "coach-method",
+  "script": "/Users/ajc/.agency/profiles/libra/scripts/coach-method.py",
+  "no_agent": true,
+  "schedule": {"kind": "interval", "minutes": 60}
+}
+```
+
+Hermes' scheduler honors the flag — it runs the script via the
+operating system and never wraps it in an LLM agent loop.
+
+**Pattern checklist for any `no_agent` script you write:**
+
+- [ ] Script has shebang + try/except + error events
+  (`script-no-error-handling` rule)
+- [ ] Script holds DB write + side-effect authority (mail, files)
+- [ ] Inference is called as a tool, never given side-effect handles
+- [ ] Every decision branch is deterministic code, not LLM judgment
+- [ ] Emits heartbeat at end of every run (so Sentinel can see it
+  alive)
+- [ ] Records firings for any learning rule that shaped a decision
+
+The framework's `_framework/coaching/` subsystem is the reference
+example. The full coach-method script template is at
+`templates/scripts/coach-method.py`.
+
 ---
 
 ## 6. Profile creation
