@@ -9,6 +9,67 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.14.0] — 2026-05-24
+
+`agency chat` — the framework's first built-in inference path.
+First-time users have a "type something, get a real response from
+your CoS" surface, with SOUL + standards + all applicable v7-
+migrated learning rules loaded into the prompt automatically.
+
+### Added — `_framework/runtime/` subsystem
+
+Three modules. Stdlib-only (urllib + json) — no new dependencies.
+
+- `provider.py` — `ResolvedProvider` config resolver. Reads
+  `deployment.yaml::defaults` + `credentials`, resolves
+  `env:VAR` / `keychain:NAME` / `file:PATH` / `-` credential
+  references. Refuses raw secrets in the credential field
+  (raises `ProviderResolveError` with guidance).
+
+- `prompt.py` — `compose_chat_prompt(profile, role, voice_tags,
+  skill_tag)` returns a `ComposedPrompt`. Stacks: SOUL.md →
+  standards.md → applicable learning rules (via the existing
+  `inject_for_skill()` resolver) → session framing footer.
+  Tells the agent to cite rule ids it uses (which records firings
+  for the recapture detector).
+
+- `chat.py` — `chat_once(message)` for one-shot, `repl()` for
+  interactive. Standard chat/completions HTTP call. Vendor-neutral
+  — names no provider in code (framework-vendor-leak audit
+  enforced).
+
+### Added — `agency chat` CLI command
+
+```bash
+agency chat                                       # interactive REPL
+agency chat "draft a polite decline note"         # one-shot
+agency chat --profile lynda --verbose "..."       # talk to a different profile, show
+                                                  # provider/model/rules/tokens after
+```
+
+Flags: `--profile`, `--role`, `--voice-tags=a,b,c`, `--skill-tag`,
+`-v/--verbose`.
+
+This is the answer to "how do I actually USE this thing?" — works
+the moment a deployment has a configured provider, regardless of
+whether Hermes' cron jobs have fired anything yet. Hermes is still
+the autonomous runtime for scheduled skill execution; `chat` is
+the interactive surface for the operator.
+
+### Tests
+
+- 10 new tests in `tests/seams/test_runtime.py` covering credential
+  resolution (env / dotenv / file / keychain / raw-rejection) and
+  prompt composition (no-files fallback, SOUL inclusion, standards
+  inclusion, framing footer).
+- 218 passing total (was 208).
+- `agency audit --self`: clean.
+
+### Docs
+
+- README quickstart adds a "Talk to your agency" section after the
+  wizard, leading with `agency chat` as the smoke-test surface.
+
 ## [0.13.2] — 2026-05-24
 
 Repo went public. Docs updated to lead with the curl-pipe

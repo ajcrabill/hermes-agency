@@ -456,6 +456,50 @@ def _print_engine_block(answers) -> None:
 """)
 
 
+def cmd_chat(args: argparse.Namespace) -> int:
+    """Interactive chat with a profile (default: CoS).
+
+    Loads the profile's SOUL.md + standards.md + applicable learning rules,
+    sends the user's input to the configured provider, prints the response.
+
+    Supports either:
+      agency chat                       # interactive REPL
+      agency chat "your message"        # one-shot
+    """
+    from _framework.runtime import (
+        chat_once, repl, ChatError, ProviderResolveError,
+    )
+
+    profile = args.profile or "loriah"
+    role = args.role or "chief-of-staff"
+    voice_tags = [v.strip() for v in (args.voice_tags or "").split(",") if v.strip()]
+    skill_tag = args.skill_tag or "interactive-chat"
+
+    if args.message:
+        # One-shot mode
+        try:
+            result = chat_once(
+                args.message,
+                profile=profile, role=role,
+                voice_tags=voice_tags, skill_tag=skill_tag,
+            )
+        except (ChatError, ProviderResolveError) as e:
+            print(f"✗ {e}", file=sys.stderr)
+            return 2
+        print(result.response)
+        if args.verbose:
+            print(file=sys.stderr)
+            print(f"  · provider: {result.provider}", file=sys.stderr)
+            print(f"  · model:    {result.model}", file=sys.stderr)
+            print(f"  · rules in context: {result.rules_in_context}", file=sys.stderr)
+            if result.tokens_in is not None:
+                print(f"  · tokens:   {result.tokens_in} in / {result.tokens_out} out", file=sys.stderr)
+        return 0
+
+    # REPL mode
+    return repl(profile=profile, role=role, voice_tags=voice_tags, skill_tag=skill_tag)
+
+
 def cmd_reset(args: argparse.Namespace) -> int:
     """Wipe deployment state for a clean re-init.
 
@@ -1148,6 +1192,27 @@ def build_parser() -> argparse.ArgumentParser:
              "Hermes is missing on an existing deployment.",
     )
     p_init.set_defaults(func=cmd_init)
+
+    # chat — interactive (or one-shot) chat with a profile
+    p_chat = sub.add_parser(
+        "chat",
+        help="Talk to a profile (loads SOUL + standards + learning rules + "
+             "sends to configured provider). Default REPL; pass a message "
+             "as positional arg for one-shot.",
+    )
+    p_chat.add_argument("message", nargs="?", default="",
+                        help="One-shot message. If omitted, enters REPL.")
+    p_chat.add_argument("--profile", default="loriah",
+                        help="Profile to talk to (default: loriah)")
+    p_chat.add_argument("--role", default="chief-of-staff",
+                        help="Role tag for rule resolution (default: chief-of-staff)")
+    p_chat.add_argument("--voice-tags", default="",
+                        help="Comma-separated voice tags to include in rule resolution")
+    p_chat.add_argument("--skill-tag", default="interactive-chat",
+                        help="Synthetic skill name for rule resolution (default: interactive-chat)")
+    p_chat.add_argument("-v", "--verbose", action="store_true",
+                        help="Print provider/model/token-counts after the response")
+    p_chat.set_defaults(func=cmd_chat)
 
     # reset — wipe state for a clean re-init
     p_reset = sub.add_parser(

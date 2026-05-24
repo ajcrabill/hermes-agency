@@ -76,6 +76,19 @@ agency audit                 # framework self-audit + skill audits
 agency panel                 # read-only control panel at localhost:9118
 ```
 
+### Talk to your agency
+
+```bash
+agency chat                  # interactive REPL with your CoS
+agency chat "draft a brief note declining the speaker invitation"   # one-shot
+agency chat --profile loriah --verbose "summarize my goals.md"      # see which rules fired
+```
+
+`agency chat` loads the profile's SOUL.md + standards.md + all applicable
+supervised-learning rules, then sends your message to the configured provider.
+This is the fastest way to confirm the framework is alive and your corrections
+are influencing responses.
+
 ### Tier choices
 
 `agency init` defaults to **Tier 1** (5-10 min, sensible defaults). To pick:
