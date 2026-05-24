@@ -9,6 +9,95 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.10.0] — 2026-05-24
+
+Observation + delivery polish. Five subsystems landed in one round:
+
+### Added — Two-tier quality auditor
+
+- **`_framework/quality/`** — continuous (0.0-1.0) scoring per
+  dimension (clarity, specificity, voice-fidelity, etc.) +
+  rolling-score tracking per producer + auto-undelegation when
+  a producer's rolling score drops below threshold across a
+  window of artifacts.
+- Composes with verifier: verifier = binary "complete?"; quality
+  = continuous "how well?"
+- Trust states: `trusted` (rolling ≥ 0.80) / `watching` (0.65-0.80)
+  / `undelegated` (< 0.65). Framework proposes transitions;
+  operator decides.
+
+### Added — Cost / token attribution
+
+- **`_framework/cost/`** — `inference_calls` ledger (per-call
+  tokens-in/out + cost in micro-cents) + per-skill / per-role
+  rollups + budgets (daily / weekly / monthly) with block-at-level.
+- Pricing layer is operator-registered. Framework ships no
+  hardcoded prices (vendor-neutral). Wildcard `model="*"` per
+  provider for "all-local-models cost nothing" type rules.
+- `check_budget()` returns a verdict per (skill, role, period)
+  with current spend vs limit vs block-level.
+
+### Added — Markdown projector (DB → vault regeneration)
+
+- **`_framework/state/markdown_projector.py`** — solves the v7
+  "vault and DB drift" problem (Appendix A.4 of spec). DB is
+  canonical; vault is human-readable projection.
+- Four built-in projectors (learning, goals, finance, prototypes)
+  — each is a small function the framework can call. Operators
+  register additional projectors via `register_projector(name, fn)`.
+- Output lands at `agency-vault/projections/<name>/` with an
+  `_index.md` aggregator.
+
+### Added — Email-OTP auth on control panel
+
+- **`_framework/ops/auth.py`** — 6-digit code, hashed for storage,
+  10-minute expiry, 5-attempt lockout. 24h session tokens with
+  revocation. Delivery via Gmail integration (operator's CoS profile);
+  falls back to terminal display when Gmail isn't configured.
+
+### Added — Auto-reapply Hermes patches
+
+- **`_framework/hermes_patches/auto_reapply.py`** — fingerprints
+  each patch target after a successful `apply_all()`. On the next
+  `agency hermes-patches reapply`, if any target's fingerprint
+  changed (Hermes upgraded + replaced our patches), the framework
+  auto-reapplies and updates the lock.
+- Operator adds `agency hermes-patches reapply` to their post-pip
+  install wrapper. Real pip hooks remain in the v0.12+ bucket
+  (pip's post-install story is messy).
+
+### Tests
+
+190 passing (171 from v0.9 + 19 new):
+- 6 quality tests (continuous scoring with min-overall, rolling
+  score, undelegation verdict across trust levels, not-enough-data
+  guard)
+- 4 cost tests (pricer registration + wildcard, record + rollup,
+  budget overage detection)
+- 2 projector tests (no-data safety, goals projection)
+- 4 OTP auth tests (happy path, wrong-code reject, lockout, session
+  revocation)
+- 3 auto-reapply tests (no-lock = needs apply, fingerprint match,
+  fingerprint change after stub Hermes upgrade)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### Decisions logged
+
+- Quality scoring uses **min(dimensions)** as overall, not the
+  average. A chain is as strong as its weakest link — average
+  rewards strong dimensions papering over weak ones.
+- Cost storage in **micro-units** (1/1,000,000 of currency) for
+  sub-cent precision on cheap models. Display layer divides.
+- Markdown projector is **periodic, not real-time**. Operator's
+  cron drives it; no live DB hooks needed. Cheap + simple.
+- OTP delivery degrades gracefully — if Gmail isn't configured,
+  operator sees the code in the terminal where `agency panel`
+  runs (single-machine localhost flow remains usable).
+- Auto-reapply uses a **shell wrapper**, not a pip hook. Pip's
+  post-install hook story is deprecated + messy. The wrapper is
+  transparent + operator-controllable.
+
 ## [0.9.0] — 2026-05-24
 
 CoS gains the two things AJ called out: a **goal progress tracker**
