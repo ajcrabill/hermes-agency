@@ -96,7 +96,7 @@ A well-formed Outcome in HermesAgency:
 
 - Is a **SMART statement** about a business result, not a process.
   ("Revenue from coaching engagements will increase from $180k in
-  FY2025 to $300k by FY2027" — not "Get more clients" or "Work on
+  January 2025 to $300k by December 2027" — not "Get more clients" or "Work on
   coaching business.")
 - **Names a measurable end state** that's challenging enough to
   require behavior change.
@@ -294,25 +294,44 @@ setup` interview when generating rough-draft `Goals.md` and
 and Interim Goals can be refined later — but the rough draft is
 much more useful if it follows these construction rules.
 
-The acronym in play throughout is **SMART**:
+### The SMART acronym, precisely
 
-- **S**pecific — names a precise subject (a customer segment, a
-  revenue stream, a particular operational metric), not a generic
-  category.
-- **M**easurable — names the measurement instrument (the survey,
-  the dashboard, the financial report) and the unit (percentage,
-  count, dollars).
-- **A**ttainable — the distance between start and end is doable
-  given the time and resources available.
-- **R**esults-focused — names an outcome, not an input or a
-  process.
-- **T**ime-bound — has a start date and an end date in
-  month/year form.
+SMART means **Specific, Measurable, Attainable, Results-focused,
+and Time-bound.** Each letter has a precise meaning in HermesAgency's
+strategic-planning practice:
+
+- **Specific** — the item declares a *narrow focus of action*;
+  it's not trying to do everything at once, and it's not trying
+  to be all things to all people.
+- **Measurable** — the item has a **starting date (month/year)**
+  and **ending date (month/year)**, AND a **starting point**
+  (the measure's value at the starting date) AND an **ending
+  point** (the measure's desired value by the ending date). The
+  canonical form is: *"<Subject + measure> will increase (or
+  decrease) from <starting point> in <starting month/year> to
+  <ending point> by <ending month/year>."*
+- **Attainable** — the *ending point* can be accomplished by the
+  *ending date* using the currently available resources (**time,
+  talent, and treasure**). Ambitious is fine; impossible is a
+  hope, not a goal.
+- **Results-focused** — the item is tied to the larger **vision
+  and/or values of the business**. It's not a free-floating
+  metric — it traces upward to something the owner has declared
+  matters.
+- **Time-bound** — the item has a starting date and an ending
+  date (month/year form for both). No "ongoing," no "by next
+  year," no fiscal-year shorthand. Specific months.
+
+Why month/year (not "Q1 2027" or "FY2026"): quarters and fiscal
+years vary by business; month/year is unambiguous, sortable, and
+makes the time-bound dimension testable.
 
 Quick reference: **Outcomes and Interim Goals are SMART;
 Guardrails are NOT SMART** (they're prohibition statements about
-values); **Interim Guardrails are SMART** (they're the measurable
-mid-cycle proxies that say a Guardrail is being honored).
+values, so the Measurable + Attainable + Time-bound letters
+don't apply); **Interim Guardrails are SMART** (they're the
+measurable mid-cycle proxies that say a Guardrail is being
+honored).
 
 ### 3.1 Quality criteria for Outcomes (top-level Goals)
 
@@ -324,12 +343,14 @@ An Outcome should:
   are results, not activities.
 - **Be a Goal, not a Vision.** A Vision is the 10-year aspiration
   ("be the trusted authority for X"). An Outcome is the next 1-3
-  year step toward it ("get inbound coaching inquiries from 4 per
-  quarter to 24 per quarter"). If the statement reads as
-  "perfection at scale," it's a Vision; pull it back.
+  year SMART step toward it ("Monthly inbound coaching inquiries
+  will increase from 1 in January 2026 to 8 by December 2027").
+  If the statement reads as "perfection at scale," it's a Vision;
+  pull it back.
 - **Be SMART** (all five letters).
 - **Have a starting date AND an ending date** in month/year form.
-  Not just "by Q4 2027" — pick the month.
+  Not just "by Q4 2027" or "FY2027" — pick the month
+  (e.g., "by December 2027").
 - **Have a starting point AND an ending point** in measurable
   units. Not "increase" — "increase from W on date Y to Z by
   date W."
@@ -865,13 +886,13 @@ act on — typically during weekly review.
 ### Outcomes
 
 **Outcome 1 — Coaching practice revenue:**
-*Revenue from one-on-one coaching engagements will increase from
-$180k in FY2025 to $300k by end of FY2027.*
+*Annual revenue from one-on-one coaching engagements will
+increase from $180k in January 2025 to $300k by December 2027.*
 
 **Outcome 2 — Authority positioning:**
-*Inbound coaching inquiries originating from owner's published
-content will increase from 4 per quarter in Q1 2026 to 24 per
-quarter by Q4 2027.*
+*Monthly inbound coaching inquiries originating from the owner's
+published content will increase from 1 in January 2026 to 8 by
+December 2027.*
 
 ### Outputs (Interim Goals under Outcome 1)
 
@@ -880,30 +901,34 @@ quarter by Q4 2027.*
 from 5 in January 2026 to 9 by December 2026.*
 
 **Interim Goal 1.2 — Engagement value:**
-*Average revenue per coaching engagement will increase from $3,000
-per month in Q1 2026 to $3,500 per month by Q4 2026.*
+*The average revenue per coaching engagement will increase from
+$3,000 per month in January 2026 to $3,500 per month by
+December 2026.*
 
 ### Inputs (skills/scripts under Interim Goal 1.1)
 
 **`devon/existing-client-commonality-analyzer`** *(agentic Initiative)*
-- Frontmatter outcome metric: *"The number of 'look-alike' prospects
-  identified by analyzing the common traits of existing satisfied
-  clients will increase from 0 in February 2026 to 50 by April 2026."*
+- Frontmatter outcome metric: *"The number of 'look-alike'
+  prospects identified by analyzing the common traits of existing
+  satisfied clients will increase from 0 in February 2026 to 50
+  by April 2026."*
 - Owner profile: Devon (BD)
 - Cadence: weekly firing, owner reviews biweekly
 - Status: Green
 
 **`devon/lookalike-prospect-builder`** *(agentic Initiative)*
-- Frontmatter outcome metric: *"50 look-alike prospects identified
-  per quarter, sourced from the commonality analyzer's output."*
+- Frontmatter outcome metric: *"The number of look-alike prospects
+  passed through to the nurture pipeline will increase from 0 in
+  February 2026 to 50 per quarter by June 2026."*
 - Owner profile: Devon (BD)
 - Cadence: weekly firing
 - Status: Green
 
 **`devon/pipeline-watchdog.py`** *(deterministic Initiative)*
-- Docstring outcome metric: *"100% of 'someday-maybe' leads
-  receiving a timely nudge within 30 days of their stated
-  check-back date, measured monthly."*
+- Docstring outcome metric: *"The percentage of 'someday-maybe'
+  leads receiving a timely nudge within 30 days of their stated
+  check-back date will increase from 20% in March 2026 to 90% by
+  June 2026, measured monthly."*
 - Owner profile: Devon (BD)
 - Cadence: daily run, owner reviews weekly digest
 - Status: Yellow (nudge rate at 70% in week 6)
@@ -923,14 +948,15 @@ work would be a poor fit with the owner's published values.*
 
 **Interim Guardrail 1.1 — Engagement fit screen:**
 *The percentage of new coaching engagements that pass the
-documented values-fit screen before contracting will be 100%,
-measured monthly.*
+documented values-fit screen before contracting will increase
+from 0% in February 2026 to 100% by March 2026, measured monthly.*
 
 **`cos/values-fit-screen-prepper`** *(agentic Initiative serving
 Interim Guardrail 1.1)*
-- Frontmatter outcome metric: *"100% of new prospect conversations
-  produce a documented values-fit screen draft for the owner to
-  review before a contract is offered, starting March 1 2026."*
+- Frontmatter outcome metric: *"The percentage of new prospect
+  conversations that produce a documented values-fit screen draft
+  for the owner to review before a contract is offered will
+  increase from 0% in February 2026 to 100% by March 2026."*
 - Owner profile: CoS (Loriah)
 - Cadence: per-prospect (triggered)
 - Status: Blue
