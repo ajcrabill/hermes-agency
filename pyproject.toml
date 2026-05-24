@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hermes-agency"
-version = "0.10.0"
+version = "0.10.1"
 description = "A multi-agent framework for small-agency owners — a learning loop you can earn autonomy on."
 readme = "README.md"
 requires-python = ">=3.11"

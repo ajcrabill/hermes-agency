@@ -9,6 +9,15 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.10.1] — 2026-05-24
+
+Bug fix: v0.10.0 shipped with a `framework-vendor-leak` self-audit
+finding. The pricing.py docstring used `"openai-compat"` as an
+example provider id, which the audit rule (correctly) flagged as
+a vendor name in framework code. Replaced with generic
+`"<your-hosted-provider>"` placeholder. Self-audit now clean
+again.
+
 ## [0.10.0] — 2026-05-24
 
 Observation + delivery polish. Five subsystems landed in one round:

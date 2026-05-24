@@ -14,7 +14,7 @@ Operators register a pricer for each (provider, model) they use:
   )
 
   register_pricer(
-      provider="openai-compat", model="gpt-x-fast",
+      provider="<your-hosted-provider>", model="<your-model-id>",
       tokens_in_per_million_cents=15,   # operator looks up actual pricing
       tokens_out_per_million_cents=60,
   )
