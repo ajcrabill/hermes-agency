@@ -120,6 +120,10 @@ def handle_setup_command(rest: str) -> str:
         return _start_clean_install()
     if sub == "answer":
         return _advance_clean_install(arg)
+    if sub == "approve":
+        return _approve_draft()
+    if sub == "revise":
+        return _revise_draft(arg)
     if sub == "status":
         return _status()
     if sub in ("", "help"):
@@ -258,11 +262,142 @@ def _advance_clean_install(text: str) -> str:
     # Advance
     next_idx = _step_index(step_id) + 1
     if next_idx >= len(_CLEAN_INSTALL_STEPS):
-        # Last question answered → finalize
-        return _finalize_clean_install(state)
+        # All questions answered → present rough draft for approval
+        # per StrategicPlanning.md §3.5 step 4-5. The Principal sees
+        # what the CoS heard and either approves or revises before
+        # .configured is written.
+        state.current_step = "AWAITING_APPROVAL"
+        save_state(state)
+        return _present_rough_draft(state)
     state.current_step = _CLEAN_INSTALL_STEPS[next_idx][0]
     save_state(state)
     return _format_clean_question(state, _CLEAN_INSTALL_STEPS[next_idx])
+
+
+# ── Approval gate (v0.23.5) ───────────────────────────────────────────────
+
+
+def _present_rough_draft(state: SetupState) -> str:
+    """Per StrategicPlanning.md §3.5: before `.configured` is written,
+    show the Principal the rough-draft Goals.md + Guardrails.md in
+    plain language and ask for approval.
+
+    The Principal either:
+      - `/agency setup approve` — confirm; finalize writes the files
+      - `/agency setup revise <field> <new text>` — edit a piece;
+         we re-present the updated draft for approval
+    """
+    ans = state.collected_answers
+    principal_name = (
+        ans.get("principal_name")
+        or ans.get("owner_name")
+        or "[Principal]"
+    )
+    org_name = ans.get("org_name", "[your business]")
+
+    lines = [
+        f"## Setup — rough draft for {principal_name}'s review",
+        "",
+        "Here's what I heard. Before I make it official:",
+        "",
+        f"**Your business:** {org_name}",
+        "",
+        f"**Your role:** {ans.get('role_description', '[not provided]')}",
+        "",
+        "**Goals you're working toward:**",
+        "",
+        f"  {ans.get('current_goals', '[not provided]')}",
+        "",
+        "**Lines you won't cross (Guardrails):**",
+        "",
+        f"  {ans.get('values', '[not provided]')}",
+        "",
+    ]
+    if ans.get("personal_context", "").strip().lower() not in ("", "skip"):
+        lines.append("**Personal context I noted:**")
+        lines.append("")
+        lines.append(f"  {ans['personal_context']}")
+        lines.append("")
+    if ans.get("clients", "").strip().lower() not in ("", "skip"):
+        lines.append("**Clients I noted:**")
+        lines.append("")
+        lines.append(f"  {ans['clients']}")
+        lines.append("")
+    lines.extend([
+        "---",
+        "",
+        "**Want to revise anything?**",
+        "",
+        "  `/agency setup revise <field> <new text>`",
+        "    where <field> is one of: org, role, goals, values,",
+        "    personal, clients, voice, principal-name",
+        "",
+        "**Looks good?**",
+        "",
+        "  `/agency setup approve`",
+        "",
+        "_After you approve, I'll write `Goals.md` + `Guardrails.md`_",
+        "_to the vault and mark the deployment configured. I'll also_",
+        "_draft the Interim Goals + Initiative mappings behind the_",
+        "_scenes — those are my working hypotheses and refresh_",
+        "_continuously; you don't need to approve those layers._",
+    ])
+    return "\n".join(lines)
+
+
+def _approve_draft() -> str:
+    """Principal approves the rough draft → finalize."""
+    state = load_state()
+    if state.current_step != "AWAITING_APPROVAL":
+        return (
+            "There's no draft awaiting approval. Run `/agency setup` to "
+            "start (or see status with `/agency setup status`)."
+        )
+    return _finalize_clean_install(state)
+
+
+_REVISE_FIELDS = {
+    "org": "org_name",
+    "role": "role_description",
+    "goals": "current_goals",
+    "values": "values",
+    "guardrails": "values",  # alias
+    "personal": "personal_context",
+    "clients": "clients",
+    "voice": "voice_notes",
+    "principal-name": "principal_name",
+    "name": "principal_name",  # alias
+}
+
+
+def _revise_draft(arg: str) -> str:
+    """Principal edits a single field of the rough draft, then re-sees
+    the draft."""
+    state = load_state()
+    if state.current_step != "AWAITING_APPROVAL":
+        return (
+            "There's no draft awaiting approval right now. Run "
+            "`/agency setup` to start."
+        )
+    parts = arg.split(None, 1)
+    if len(parts) < 2:
+        return (
+            "Usage: `/agency setup revise <field> <new text>`\n\n"
+            f"Valid fields: {', '.join(sorted(set(_REVISE_FIELDS.keys())))}"
+        )
+    field, new_text = parts[0].lower(), parts[1].strip()
+    if field not in _REVISE_FIELDS:
+        return (
+            f"Unknown field `{field}`. Valid: "
+            f"{', '.join(sorted(set(_REVISE_FIELDS.keys())))}"
+        )
+    target_key = _REVISE_FIELDS[field]
+    state.collected_answers[target_key] = new_text
+    save_state(state)
+    return (
+        f"✓ Updated `{field}`. Here's the revised draft:\n\n"
+        + _present_rough_draft(state)
+    )
 
 
 # ── Step navigation helpers ───────────────────────────────────────────────
