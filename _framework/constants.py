@@ -90,12 +90,15 @@ DEVELOPMENT_PLAYBOOK_MD: Path = FRAMEWORK_VAULT / "DEVELOPMENT_PLAYBOOK.md"
 
 # Agency-vault — the PRINCIPAL'S context layer (read by agents; owned by operator).
 # Goals.md is the single most important document the agency reads — every
-# prioritization routes back here. Values.md describes the non-negotiables.
+# prioritization routes back here. Guardrails.md describes the non-negotiables
+# (replaces the older Values.md per v0.22.4-spec; both paths are exported
+# for backward-compat during the v0.23 transition).
 # Personal.md, Work.md, Clients.md provide the situational context CoS uses
 # for every triage decision.
 AGENCY_VAULT: Path = AGENCY_HOME / "agency-vault"
 GOALS_MD: Path = AGENCY_VAULT / "Goals.md"
-VALUES_MD: Path = AGENCY_VAULT / "Values.md"
+GUARDRAILS_MD: Path = AGENCY_VAULT / "Guardrails.md"
+VALUES_MD: Path = AGENCY_VAULT / "Values.md"  # legacy; superseded by GUARDRAILS_MD in v0.22.4-spec
 PERSONAL_MD: Path = AGENCY_VAULT / "Personal.md"
 WORK_MD: Path = AGENCY_VAULT / "Work.md"
 CLIENTS_MD: Path = AGENCY_VAULT / "Clients.md"
@@ -194,6 +197,7 @@ __all__ = [
     "DEVELOPMENT_PLAYBOOK_MD",
     "AGENCY_VAULT",
     "GOALS_MD",
+    "GUARDRAILS_MD",
     "VALUES_MD",
     "PERSONAL_MD",
     "WORK_MD",

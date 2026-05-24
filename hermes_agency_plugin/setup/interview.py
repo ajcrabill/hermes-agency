@@ -61,11 +61,14 @@ _CLEAN_INSTALL_STEPS: list[tuple[str, str, str]] = [
         "current_goals",
     ),
     (
-        "VALUES",
-        "What are 3-7 values that guide how you work and make "
-        "decisions? Could be \"honesty,\" \"craft,\" \"long-term "
-        "thinking,\" \"being a good ancestor,\" etc. The agency uses "
-        "these as soft constraints on every draft. Goes into Values.md.",
+        "GUARDRAILS",
+        "What are 1-3 lines you won't cross — values that guide HOW "
+        "you work and make decisions, even when crossing them might "
+        "be tempting? Could be \"honesty,\" \"craft,\" \"long-term "
+        "thinking,\" \"being a good ancestor,\" etc. The agency "
+        "translates these into prohibitions the enforcement layer "
+        "(Sentinel, send-guard, audit) checks against. Goes into "
+        "Guardrails.md.",
         "values",
     ),
     (
@@ -316,8 +319,19 @@ def _finalize_clean_install(state: SetupState) -> str:
         written.append("Goals.md")
 
     if (v := ans.get("values", "")) and v.lower() != "skip":
-        _write_vault(vault_dir / "Values.md", "# Values", v)
-        written.append("Values.md")
+        # v0.22.4-spec: Values.md → Guardrails.md. The setup interview's
+        # GUARDRAILS step writes Guardrails.md as the canonical file.
+        # We also write a tombstone Values.md that points at Guardrails.md
+        # so any legacy reader (older skill, older v7 migration tool, etc.)
+        # doesn't silently get empty values.
+        _write_vault(vault_dir / "Guardrails.md", "# Guardrails", v)
+        written.append("Guardrails.md")
+        _write_vault(
+            vault_dir / "Values.md",
+            "# Values (legacy — see Guardrails.md)",
+            f"> *This file is retained for backward-compat with v0.22.4-and-earlier tooling. The canonical file is now [`Guardrails.md`](./Guardrails.md). Content mirrored below.*\n\n{v}",
+        )
+        written.append("Values.md (legacy tombstone)")
 
     personal_parts = []
     # principal_name is the v0.23+ field; owner_name is the legacy
