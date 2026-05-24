@@ -9,6 +9,113 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.23.0] — 2026-05-24
+
+**v0.06 of the 9th version** (see spec §0.5). First code release
+since v0.22.0; ships the foundational structural work from the
+v0.22.1–v0.22.12 spec sequence. Six months of design contract,
+condensed into the code that makes the §1.1 always-loaded
+background claim verifiably true.
+
+### Added — `_framework/agency_docs/` module
+
+New module that loads the agency-level aim docs (Goals.md,
+Personal.md, Work.md, Clients.md, per-profile SOUL.md) into the
+`pre_llm_call` context block. The module's header explicitly
+names the aim-vs-brake distinction — Guardrails.md is
+*intentionally* not loaded by this path, per the v0.22.4-spec
+split. Guardrails belong to the enforcement layer (Sentinel,
+send-guard, AnalystJudge), not the always-on prompt context.
+
+Public API: `load_agency_context(profile: str) -> str`. Returns
+markdown to prepend to the model's prompt. Empty string when no
+aim docs are present (unconfigured deployment).
+
+### Changed — `hermes_agency_plugin/hooks.py::on_pre_llm_call`
+
+Now composes two layers into the context block:
+
+1. Aim docs from `agency_docs.load_agency_context()`
+2. Applicable learning rules from `inject_for_skill()`
+
+Either layer may be empty; both empty → no context block.
+Failure-isolated.
+
+This closes the highest-priority gap from the v0.22.10 cross-doc
+audit: **"Goals.md not actually injected at pre_llm_call."** Now
+verifiable in code.
+
+### Renamed — Owner → Principal (templates + setup interview)
+
+Per v0.22.7-spec terminology standardization:
+
+- Template placeholder `{{OWNER_NAME}}` → `{{PRINCIPAL_NAME}}` in
+  Goals.md.template, Guardrails.md.template, Personal.md.template,
+  Work.md.template. The renderer (`wizard.py`, `tier3_interview.py`,
+  `_state_files.py`) passes BOTH keys (canonical + legacy alias)
+  so any template that still uses `{{OWNER_NAME}}` works during
+  the transition.
+- Setup interview's `OWNER` step → `PRINCIPAL` step; field name
+  `owner_name` → `principal_name` (with backward-compat read from
+  the old field name for in-flight setup state).
+
+### Renamed — Values.md → Guardrails.md (transitional)
+
+Per v0.22.4-spec aim/brake split:
+
+- `_framework/constants.py`: added `GUARDRAILS_MD` path constant.
+  `VALUES_MD` retained as legacy alias.
+- Setup interview's `VALUES` step → `GUARDRAILS` step; new prompt
+  reframes the question as "lines you won't cross" with explicit
+  mention of the enforcement layer.
+- Finalize step now writes `Guardrails.md` as canonical AND writes
+  a `Values.md` tombstone that points at the new file (mirrors
+  content) so legacy readers don't see empty values.
+
+### Spec — v0.22.11 + v0.22.12 cleanup work folded in
+
+This release also ships the spec revisions from v0.22.11-spec
+(six inconsistencies fixed) and v0.22.12-spec (§13.7 v0.23 plan's
+Thread C added with eight new requirements + eight matching
+acceptance criteria).
+
+### Tests
+
+- 248 passing (was 242 at v0.22.0, +6 new for `test_agency_docs`).
+- `agency audit --self`: clean.
+
+### What's NOT in v0.23.0 (deferred to v0.23.1+)
+
+The v0.22.12-spec Thread A+B+C plan has 12 deliverables; this
+release ships 4 of them cleanly. The remaining 8 are scoped for
+focused follow-up commits, each landing as a focused PR:
+
+- **v0.23.1**: Guardrails.md loaded into Sentinel + send-guard +
+  AnalystJudge (Thread A part 2 + Thread B row 4/6/7 wiring)
+- **v0.23.2**: SKILL.md frontmatter parser for `outcome`,
+  `interim_goal`, `outcome_metric`, `status`, etc. (Thread B
+  prereq)
+- **v0.23.3**: Six new audit rules (`unaligned-skills`,
+  `unaligned-initiatives`, `unaligned-interim-goals`,
+  `stale-skill-status`, `abandoned-outcome`,
+  `agency-context-injection`) + findings-only-semantics test
+  (Thread B + Thread C #4)
+- **v0.23.4**: `_framework/goals/` three-layer rewrite — parses
+  Outcomes / Interim Goals / Initiative refs from the v0.22.2
+  Goals.md structure
+- **v0.23.5**: Setup interview LLM-driven restructure with
+  layer-1 approval gating + non-business prompt + silent SMART
+  math (Thread B + Thread C #2, #3, #7, #8)
+- **v0.23.6**: Weekly strategic-plan health-check CoS skill
+  (Thread B)
+- **v0.23.7**: Quarterly `strategic-review-prep` CoS skill
+  (Thread C #6)
+- **v0.23.8**: `/agency capture --goal <key>` flag + goal_keys
+  column migration (Thread A)
+
+The v0.22.12-spec acceptance criteria in spec §13.7 remain the
+release gate for closing out v0.23.
+
 ## [0.22.12-spec] — 2026-05-24
 
 **Spec revision: §13.7 v0.23 plan now Thread A+B+C.** The cross-doc
