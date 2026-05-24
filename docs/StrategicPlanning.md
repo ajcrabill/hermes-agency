@@ -3,10 +3,10 @@
 ## 0. Why this exists
 
 A small business has limited resources. Intentional accomplishment
-of what the owner is trying to achieve requires a strategic approach
+of what the Principal is trying to achieve requires a strategic approach
 to planning *and* implementation. **HermesAgency exists to be the
 operational layer that makes a strategic plan executable** — a team
-of agents working in concert toward the outcomes the owner has
+of agents working in concert toward the outcomes the Principal has
 declared, with each agent's work traceable back to those outcomes.
 
 The hardest problem in running a small business isn't choosing
@@ -77,7 +77,7 @@ question becomes a vibes check, and a vibes check can be answered
 ### 1.1 Outcomes (Goals)
 
 Outcomes are results knowable *at the end* of a cycle. They're the
-destination — what the owner says success looks like for the
+destination — what the Principal says success looks like for the
 business in 1-3 years.
 
 A well-formed Outcome in HermesAgency:
@@ -101,7 +101,7 @@ strategic plan exists in service of these.
 ### 1.2 Outputs (Interim Goals)
 
 Outputs are measures knowable *in the midst* of a cycle. Without
-aligned outputs, the owner won't know whether the strategic plan is
+aligned outputs, the Principal won't know whether the strategic plan is
 working or not until the outcome cycle ends — at which point it's
 too late to pivot.
 
@@ -146,8 +146,8 @@ strategic plan vs. ad-hoc utility work):
 
 1. **SMART objective** — the skill's / script's purpose
    (declared in its SKILL.md frontmatter or docstring) is SMART.
-2. **One owner** — one profile is accountable for the skill /
-   script.
+2. **One agent profile** — one profile is accountable for the
+   skill / script.
 3. **Real cadence** — the skill / script fires on a meaningful
    schedule (continuous, daily, weekly) producing actual output —
    not running paper-loops that produce nothing. (The analog of
@@ -155,13 +155,13 @@ strategic plan vs. ad-hoc utility work):
    source framework: for agents, "leadership time" is scheduled
    firings × meaningful per-firing output.)
 4. **Uses real resources** — model tokens, integration credits,
-   the owner's review attention. An Initiative that exists in a
+   the Principal's review attention. An Initiative that exists in a
    plan but has no resources assigned isn't an Initiative, it's
    a hope.
 5. **Current state → future state** — the skill / script
    produces an artifact that changes something in the world.
-6. **Owner has authority** — the profile owns the skill / script
-   and the firing-cadence configuration.
+6. **Agent profile has authority** — the responsible profile
+   owns the skill / script and the firing-cadence configuration.
 
 If a skill or script fails any of these tests, **it's not a
 strategic Initiative** — it might still exist as a utility (one-off,
@@ -191,11 +191,11 @@ intentional steps to generate slightly more alignment tomorrow
 than we had yesterday** — through Initiative selection, retirement
 of misaligned work, and ongoing measurement.
 
-A small-business owner using HermesAgency is essentially in the
+A Principal using HermesAgency at a small business is essentially in the
 position of a one-person school superintendent: choosing which
 Initiatives the agency will execute and committing the resources
-to make them go. The CoS agent's job is to help the owner *see*
-the alignment math, propose Initiatives the owner might not have
+to make them go. The CoS agent's job is to help the Principal *see*
+the alignment math, propose Initiatives the Principal might not have
 considered, and surface drift when an Initiative stops being
 aligned.
 
@@ -204,16 +204,16 @@ aligned.
 ## 2. Guardrails — the parallel structure for non-negotiables
 
 Outcomes describe **what to accomplish**. Guardrails describe
-**what not to do while accomplishing it.** They're the owner's
-values made structurally enforceable — the lines the owner
+**what not to do while accomplishing it.** They're the Principal's
+values made structurally enforceable — the lines the Principal
 refuses to cross even in pursuit of the Outcomes.
 
 A well-formed Guardrail in HermesAgency:
 
 - Is a **prohibition statement** about how the work gets done,
-  capturing one of the owner's core values. ("Honesty" → "The
+  capturing one of the Principal's core values. ("Honesty" → "The
   business will not publish, send, or sign content that
-  misrepresents what the owner knows or believes.")
+  misrepresents what the Principal knows or believes.")
 - Lasts as long as the Outcomes.
 - Has **1-3 Interim Guardrails per Guardrail**, each SMART, each a
   leading indicator that the Guardrail is being honored.
@@ -224,7 +224,7 @@ A well-formed Guardrail in HermesAgency:
 Guardrails are not optional. They're the structural answer to the
 question "what stops me from winning the wrong way?" Without them,
 a strategically focused business can become a focused machine for
-producing outcomes that violate the owner's actual values.
+producing outcomes that violate the Principal's actual values.
 
 Guardrails live in `Guardrails.md` (parallel to `Goals.md`). As
 of v0.22-spec, `Guardrails.md` replaces the older `Values.md` —
@@ -304,7 +304,7 @@ strategic-planning practice:
   hope, not a goal.
 - **Results-focused** — the item is tied to the larger **vision
   and/or values of the business**. It's not a free-floating
-  metric — it traces upward to something the owner has declared
+  metric — it traces upward to something the Principal has declared
   matters.
 - **Time-bound** — the item has a starting date and an ending
   date (month/year form for both). No "ongoing," no "by next
@@ -352,9 +352,9 @@ An Outcome should:
 - **Be one of no more than five.** Three or fewer is typical and
   better. The discipline is forced prioritization — five "top
   priorities" means zero priorities.
-- **Be informed by listening + data.** The owner should have
+- **Be informed by listening + data.** The Principal should have
   collected feedback from relevant stakeholders (clients, peer
-  business owners, a coach, the financial picture) and looked at
+  peer Principals, a coach, the financial picture) and looked at
   baseline data before naming the Outcome. The CoS surfaces both
   during the interview.
 - **Describe a specific subject, not "everyone."** "Coaching
@@ -378,13 +378,13 @@ Anti-patterns to flag during the interview:
 
 A Guardrail should:
 
-- **Reflect a value of the owner, not a want, need, or strategy.**
+- **Reflect a value of the Principal, not a want, need, or strategy.**
   "Honesty" is a value; "send better emails" is a strategy.
   Guardrails capture the *values* expressed as enforceable
   prohibitions.
 - **Be a prohibition statement.** "The business will NOT do X."
   Phrasing matters: "the business will not pursue clients whose
-  work the owner would be embarrassed to publish" is a clean
+  work the Principal would be embarrassed to publish" is a clean
   Guardrail; "the business should pursue ethical clients" is a
   permission/aspiration, not a prohibition.
 - **Avoid tricky double-negative or weak language.** Phrases like
@@ -393,7 +393,7 @@ A Guardrail should:
   State the line cleanly.
 - **Cover behavior the business might genuinely be tempted to
   cross.** A Guardrail no one would think of violating is dead
-  weight. The good Guardrails name the temptations the owner
+  weight. The good Guardrails name the temptations the Principal
   knows they have ("would I trade integrity for the big retainer?
   No — write that down").
 - **Be one of no more than five.** Three or fewer is typical.
@@ -414,7 +414,7 @@ Anti-patterns to flag during the interview:
   doesn't meet the documented service standard."
 - *"We will be honest"* — too vague. Push for a specific
   prohibition: "We will not publish, send, or sign content that
-  misrepresents what the owner knows."
+  misrepresents what the Principal knows."
 
 ### 3.3 Quality criteria for Interim Goals (the leading indicators)
 
@@ -447,7 +447,7 @@ correct:
   research is acceptable as a starting point. Revisit when 6-12
   months of data exist.
 - **Is one of 1-3 per Outcome.** Three is the textbook target;
-  for a one-owner business, 1-2 well-chosen Interim Goals are
+  for a one-Principal business, 1-2 well-chosen Interim Goals are
   often plenty.
 
 **Operational criteria** — what makes an Interim Goal *usable*:
@@ -456,8 +456,8 @@ correct:
   likely accomplished.** If the math doesn't add up — you can hit
   every Interim Goal and the Outcome can still miss — your Interim
   Goals are picking the wrong things.
-- **The owner has ≥80% authority over what drives the metric.**
-  An Interim Goal that depends on external actors the owner can't
+- **The Principal has ≥80% authority over what drives the metric.**
+  An Interim Goal that depends on external actors the Principal can't
   influence (the economy, a partner's behavior, a regulatory
   change) is too fragile. Pick something the agency can move.
 - **Data is updatable multiple times per year**, ideally monthly
@@ -477,7 +477,7 @@ correct:
   improves, the Outcome should also improve; if the metric
   declines, the Outcome should also decline. Asymmetric metrics
   hide problems.
-- **Is the data the owner actually uses for decisions.** A metric
+- **Is the data the Principal actually uses for decisions.** A metric
   that exists only on the dashboard but never informs a real
   choice is decorative.
 - **Has explicit implementation behind it.** Some skill or script
@@ -518,11 +518,11 @@ criteria as Interim Goals (above), with two differences:
 
 ### 3.5 How the CoS uses this section in the setup interview
 
-**Principle: the owner doesn't need to know any of this.** The
+**Principle: the Principal doesn't need to know any of this.** The
 strategic-planning framework — SMART, Outcomes vs Outputs vs
 Initiatives, leading vs lagging indicators, correlation arguments,
 the canonical *"increase from W on date Y to Z by date W"* form —
-is the CoS's working knowledge, not the owner's. The owner talks
+is the CoS's working knowledge, not the Principal's. The Principal talks
 about their **vision** (*what does success look like in a year or
 two? what are you trying to accomplish?*) and their **values**
 (*what won't you trade off? what lines won't you cross?*); the
@@ -533,7 +533,7 @@ CoS translates that into a structured `Goals.md` and
 conversation, not a strategy seminar. The CoS uses plain language
 (*"a goal"*, *"something you won't do"*) — not specialized terms
 (*"Outcome"*, *"Guardrail"*, *"Interim Goal"*, *"SMART"*) — unless
-the owner explicitly asks for more depth or clearly has a
+the Principal explicitly asks for more depth or clearly has a
 strategic-planning background, in which case the CoS shifts up
 the register naturally.
 
@@ -547,9 +547,9 @@ the register naturally.
 | **Interim Guardrails** | *(doesn't appear in their conversation)* | Drafts behind the scenes; refines over time |
 | **Initiatives** (skills + scripts) | *(doesn't appear in their conversation)* | Proposes mappings from existing profile catalogs; refines over time |
 
-The owner owns **what the business is trying to accomplish** and
+The Principal owns **what the business is trying to accomplish** and
 **what the business won't do** to accomplish it. Everything else
-is operational — the CoS's job, not the owner's.
+is operational — the CoS's job, not the Principal's.
 
 **Conversation flow during `/agency setup`:**
 
@@ -574,7 +574,7 @@ is operational — the CoS's job, not the owner's.
    enough? And by when?"*
 
 4. **Present the rough draft.** Before the setup interview is
-   marked complete, the CoS shows the owner the proposed
+   marked complete, the CoS shows the Principal the proposed
    `Goals.md` and `Guardrails.md` in plain readable form:
 
    > *"Here's what I heard. I'm proposing we aim for:*
@@ -591,17 +591,17 @@ is operational — the CoS's job, not the owner's.
    >
    > *Want to revise anything before we make it official?"*
 
-5. **Owner revises and approves.** The owner can edit any of it.
+5. **Owner revises and approves.** The Principal can edit any of it.
    The CoS re-translates after edits, runs the criteria again,
-   and presents again. This loops until the owner says "good."
-   **The `.configured` marker is not written until the owner
+   and presents again. This loops until the Principal says "good."
+   **The `.configured` marker is not written until the Principal
    approves.**
 
 6. **CoS drafts the rest behind the scenes.** After approval, the
    CoS drafts Interim Goals (per Outcome), Interim Guardrails
    (per Guardrail), and proposes Initiative mappings to skills
    and scripts from the active profiles' existing catalogs.
-   These don't require the owner's pre-approval — they're CoS's
+   These don't require the Principal's pre-approval — they're CoS's
    working hypotheses, refined over time.
 
 **Ongoing revision (not just at setup):**
@@ -612,18 +612,18 @@ setup:
 
 - **Daily implementation work** — when a skill keeps producing
   output that doesn't quite fit, or a scheduled review surfaces
-  a pattern the owner cares about, the CoS proposes refinements
+  a pattern the Principal cares about, the CoS proposes refinements
   to the relevant layer.
-- **The supervised learning loop** — corrections the owner gives
+- **The supervised learning loop** — corrections the Principal gives
   accumulate into rules; when many rules cluster around the same
   theme, the CoS proposes a goal or guardrail refinement.
 - **Weekly health check + quarterly review** — explicit cadences
-  for owner-facing review.
+  for Principal-facing review.
 
 **Refinements at layer 1 (Outcomes / Guardrails) always go back
-to the owner for approval.** Refinements at layers 2 and 3
+to the Principal for approval.** Refinements at layers 2 and 3
 (Interims / Initiatives) are the CoS's working drafts and
-refresh continuously without owner approval — though the owner
+refresh continuously without Principal approval — though the Principal
 can override at any time by editing the file directly or by
 saying so in conversation.
 
@@ -650,8 +650,8 @@ A strategic Initiative is any skill or script:
 2. that is intended to move a business function from a **current
    state to a future state**,
 3. that uses **business resources** (model tokens, integration
-   credits, the owner's review attention, scheduler slots),
-4. that has **one profile** as the owner,
+   credits, the Principal's review attention, scheduler slots),
+4. that has **one profile** as the Principal,
 5. and that **fires on a meaningful cadence** producing actual
    output — continuous, daily, weekly — not paper-loops that
    produce nothing.
@@ -659,9 +659,9 @@ A strategic Initiative is any skill or script:
 A **Goal-aligned Initiative** is any strategic skill/script that:
 
 - has a correlation ≥0.5 with an Interim Goal, AND
-- is influenceable by the owner profile (the profile has
-  authority over ~80% of the configuration that determines
-  firing behavior).
+- is influenceable by the responsible agent profile (the
+  profile has authority over ~80% of the configuration that
+  determines firing behavior).
 
 A skill/script can exist in HermesAgency *without* being a
 strategic Initiative — utility skills (one-off helpers), debug
@@ -693,8 +693,8 @@ duplicate document. The SKILL.md / script docstring captures:
 | Outcome metric | `outcome_metric: ...` | The SMART lag measure for this skill/script's contribution. *"X will increase from W% on date Y to Z% by date W."* |
 | Problem description | (body section) | What problem; what evidence supports that solving it will move the Interim Goal. |
 | Solution description | (body section) | What's the proposed approach; what evidence supports it will solve the problem. |
-| Owner | `owner_profile: devon` | The one profile accountable. |
-| Resource cost | `resource_cost: ...` | Model tokens / week, integration credits / week, owner review hours / week. |
+| Agent profile (responsible) | `owner_profile: devon` | The one agent profile accountable. |
+| Resource cost | `resource_cost: ...` | Model tokens / week, integration credits / week, Principal review hours / week. |
 | Interdependent contributors | `depends_on: [...]` | Other skills/scripts/profiles this one needs. |
 | Output metrics | `output_metrics: ...` | Mid-cycle indicators of effect. |
 | Input metrics | `input_metrics: ...` | Effort measures — firing cadence, trigger counts. *Don't over-instrument*. |
@@ -728,7 +728,7 @@ different mechanism in HermesAgency.
 |---|---|---|---|
 | **Inputs** | "Are we implementing the strategies?" | The 7-step learning loop (spec §1.1) | Every turn (continuous) |
 | **Inputs → Outputs** | "Are we deploying resources wisely?" | Weekly strategic-plan health check + audit alignment rules | Weekly / monthly |
-| **Outputs → Outcomes** | "Do we have the right strategies to get the results the owner wants?" | Quarterly strategic review | Quarterly / annual |
+| **Outputs → Outcomes** | "Do we have the right strategies to get the results the Principal wants?" | Quarterly strategic review | Quarterly / annual |
 
 The testability **nests**: the input test runs continuously and
 feeds the mid-tier test, which runs weekly and feeds the top-tier
@@ -740,7 +740,7 @@ those resources fund aren't actually being implemented.
 ### 6.1 Input-layer testability — the 7-step learning loop
 
 **The 7-step learning loop is the input-layer testability
-mechanism.** Every correction the owner gives, every rule the
+mechanism.** Every correction the Principal gives, every rule the
 agency injects, every firing recorded — together these answer the
 most-frequent testability question: *are we implementing the
 strategies?*
@@ -788,7 +788,7 @@ when implementation is solid, the resources may be aimed wrong.
 Quarterly (or at a cadence appropriate to the Outcome horizon),
 the strategic review runs the highest-level test: *are the Interim
 Goals we've been chasing actually predictive of the Outcomes the
-business owner wants?*
+Principal wants?*
 
 This is the slowest, most expensive question, and the most
 important. A business can implement strategies flawlessly (input
@@ -829,7 +829,7 @@ next layer up**:
 
 The testability isn't a separate dashboard. It's the same data
 structure (rules, firings, audit findings, alignment correlations)
-read at three different time horizons. The owner can ask any of
+read at three different time horizons. The Principal can ask any of
 the three questions at any time and get a data-grounded answer.
 
 ---
@@ -870,18 +870,18 @@ treatment in §3.5):
 
 | Layer | Authored by | Approved by |
 |---|---|---|
-| **Outcomes** (top-level Goals) | CoS drafts from owner's vision (interview) | **Owner** |
-| **Guardrails** | CoS drafts from owner's values (interview) | **Owner** |
-| **Interim Goals** | CoS | CoS (working hypotheses; owner can override anytime) |
+| **Outcomes** (top-level Goals) | CoS drafts from Principal's vision (interview) | **Owner** |
+| **Guardrails** | CoS drafts from Principal's values (interview) | **Owner** |
+| **Interim Goals** | CoS | CoS (working hypotheses; Principal can override anytime) |
 | **Interim Guardrails** | CoS | CoS (same) |
 | **Initiative refs** (skill + script entries) | CoS (proposes mappings from active profiles' catalogs) | CoS (same) |
 
-The owner doesn't write any of these layers directly. They talk
+The Principal doesn't write any of these layers directly. They talk
 about vision and values; the CoS does the translation and the
-structuring. The owner reviews and approves the **layer-1 draft**
+structuring. The Principal reviews and approves the **layer-1 draft**
 before setup completes; the **layer-2 and layer-3 drafts** are
-CoS's ongoing work, refreshed continuously without owner
-pre-approval (though always editable by the owner).
+CoS's ongoing work, refreshed continuously without Principal
+pre-approval (though always editable by the Principal).
 
 The structure isn't decorative — it's load-bearing. When an agent
 fires a skill, it can ask: *which Initiative is this work in
@@ -908,7 +908,7 @@ Outcomes; Sentinel, AnalystJudge, and the send-guard check that
 work against the Guardrails.
 
 This is what makes the strategic plan operationally relevant: it's
-not a document the owner writes once and forgets. The aim is a
+not a document the Principal writes once and forgets. The aim is a
 live context the agency operates inside every minute; the brake is
 a live check the watchdog layer runs at session boundaries and at
 every outbound send.
@@ -957,7 +957,7 @@ strategic-plan health check:
    Are the artifacts being produced? Has the Initiative been
    delivering the expected outputs?
 
-The check is presented to the owner as a short weekly summary,
+The check is presented to the Principal as a short weekly summary,
 not as a dashboard to admire. The goal is: **point at the one or
 two things that have drifted, name what's drifted, propose a
 pivot.** The strategic plan is a tool for pivoting, not a tool for
@@ -982,7 +982,7 @@ strategic-plan alignment at every layer:
 - **`abandoned-outcome`** — Outcomes that no strategic
   skill/script declares an alignment to.
 
-These don't auto-fix anything. They produce findings the owner can
+These don't auto-fix anything. They produce findings the Principal can
 act on — typically during weekly review.
 
 ---
@@ -998,7 +998,7 @@ act on — typically during weekly review.
 increase from $180k in January 2025 to $300k by December 2027.*
 
 **Outcome 2 — Authority positioning:**
-*Monthly inbound coaching inquiries originating from the owner's
+*Monthly inbound coaching inquiries originating from the Principal's
 published content will increase from 1 in January 2026 to 8 by
 December 2027.*
 
@@ -1020,15 +1020,15 @@ December 2026.*
   prospects identified by analyzing the common traits of existing
   satisfied clients will increase from 0 in February 2026 to 50
   by April 2026."*
-- Owner profile: Devon (BD)
-- Cadence: weekly firing, owner reviews biweekly
+- Agent profile: Devon (BD)
+- Cadence: weekly firing, Principal reviews biweekly
 - Status: Green
 
 **`devon/lookalike-prospect-builder`** *(agentic Initiative)*
 - Frontmatter outcome metric: *"The number of look-alike prospects
   passed through to the nurture pipeline will increase from 0 in
   February 2026 to 50 per quarter by June 2026."*
-- Owner profile: Devon (BD)
+- Agent profile: Devon (BD)
 - Cadence: weekly firing
 - Status: Green
 
@@ -1037,22 +1037,22 @@ December 2026.*
   leads receiving a timely nudge within 30 days of their stated
   check-back date will increase from 20% in March 2026 to 90% by
   June 2026, measured monthly."*
-- Owner profile: Devon (BD)
-- Cadence: daily run, owner reviews weekly digest
+- Agent profile: Devon (BD)
+- Cadence: daily run, Principal reviews weekly digest
 - Status: Yellow (nudge rate at 70% in week 6)
 
 **`devon/potential-clients-nudger`** *(agentic Initiative)*
 - Companion to pipeline-watchdog.py — drafts the actual nudge
-  message in owner's voice.
-- Owner profile: Devon (BD)
+  message in Principal's voice.
+- Agent profile: Devon (BD)
 - Cadence: triggered by pipeline-watchdog
 - Status: Green
 
 ### Guardrails
 
-**Guardrail 1 — Work the owner is proud of:**
-*The owner will not accept coaching engagements with clients whose
-work would be a poor fit with the owner's published values.*
+**Guardrail 1 — Work the Principal is proud of:**
+*The Principal will not accept coaching engagements with clients whose
+work would be a poor fit with the Principal's published values.*
 
 **Interim Guardrail 1.1 — Engagement fit screen:**
 *The percentage of new coaching engagements that pass the
@@ -1063,9 +1063,9 @@ from 0% in February 2026 to 100% by March 2026, measured monthly.*
 Interim Guardrail 1.1)*
 - Frontmatter outcome metric: *"The percentage of new prospect
   conversations that produce a documented values-fit screen draft
-  for the owner to review before a contract is offered will
+  for the Principal to review before a contract is offered will
   increase from 0% in February 2026 to 100% by March 2026."*
-- Owner profile: CoS (Loriah)
+- Agent profile: CoS (Loriah)
 - Cadence: per-prospect (triggered)
 - Status: Blue
 
@@ -1082,7 +1082,7 @@ predictive. Initiatives churn most frequently — start, succeed,
 retire, replace — sometimes monthly. **The plan is updated as
 circumstances on the ground require**, not on a fixed cadence.
 
-The exception: a quarterly review where the owner deliberately
+The exception: a quarterly review where the Principal deliberately
 zooms out and asks "are these still the right Outcomes? The right
 Interim Goals?" Even when the answer is "yes," asking the
 question is the discipline.
@@ -1099,7 +1099,7 @@ to be indispensable."*
 ### How do I know if a skill/script is a strategic Initiative or just utility work?
 
 Run the six tests in §1.3 against the skill or script. If it has
-a SMART purpose, a clear owner profile, real resources, a
+a SMART purpose, a clear responsible agent profile, real resources, a
 meaningful cadence, and the right authority — it's a strategic
 Initiative and belongs in the plan. If it doesn't, it's either
 utility work (legitimate but not strategic) or a hope (an
@@ -1121,7 +1121,7 @@ metric should have a moderate-to-strong correlation (≥0.6) with
 the Outcome's metric.
 
 In the absence of historical data (common for a young business),
-the owner makes a defensible leading-indicator argument: "I
+the Principal makes a defensible leading-indicator argument: "I
 believe, based on sector knowledge / published research / personal
 experience, that this Interim Goal predicts the Outcome." That's
 acceptable as a starting point. The plan should then be revisited
@@ -1138,15 +1138,15 @@ are.
 
 ### Who decides what's in the strategic plan?
 
-In HermesAgency, the **owner is the final adopter**. The CoS agent
+In HermesAgency, the **Principal is the final adopter**. The CoS agent
 (and other profiles, when relevant) can propose Outcomes, Interim
 Goals, and Initiatives based on data from the agency's operations,
-sector signals, and the owner's stated priorities. The owner
+sector signals, and the Principal's stated priorities. The Principal
 accepts, edits, or rejects.
 
-The CoS doesn't ship a plan over the owner's head. The owner doesn't
+The CoS doesn't ship a plan over the Principal's head. The Principal doesn't
 write a plan without the CoS's data-grounded proposals. The
-collaboration model is **owner-as-decider + agency-as-proposer**.
+collaboration model is **Principal-as-decider + agency-as-proposer**.
 
 ### What's the relationship between the strategic plan and the
 agency's daily work?
@@ -1163,7 +1163,7 @@ is true:
 2. The plan is too granular — work is structurally unmappable.
    *Coarsen the plan; not every email needs an Initiative.*
 
-The judgment call between #1 and #2 is the owner's, surfaced by
+The judgment call between #1 and #2 is the Principal's, surfaced by
 the audit.
 
 ### What's the relationship between the strategic plan and the
@@ -1176,16 +1176,15 @@ Initiative *and* well-executing earns autonomy faster than a skill
 that's well-executing but doesn't trace to anything. **Alignment is
 a graduation gate, not just a process check.**
 
-### What if I'm a solopreneur and "Initiative ownership by a profile"
-sounds like overkill?
+### What if my small business is just me, and "Initiative ownership by a profile" sounds like overkill?
 
-Fair. For a solo operation, the model still works — most
-Initiatives will be owned by the owner (you) with agent profiles
-as contributors. The point isn't the org-chart formality; it's the
-**discipline of naming who's accountable** for moving a specific
-SMART metric. Even a one-person shop needs to know which thing
-they're personally moving this week vs. which thing an agent is
-moving on its own.
+Fair. For a one-person small business, the model still works —
+most Initiatives will be owned by the Principal (you) with agent
+profiles as contributors. The point isn't the org-chart formality;
+it's the **discipline of naming who's accountable** for moving a
+specific SMART metric. Even a one-person shop needs to know which
+thing the Principal is personally moving this week vs. which thing
+an agent is moving on its own.
 
 When the agency grows, the Initiative-ownership structure scales
 naturally — the same plan accommodates one human + six agents
@@ -1252,6 +1251,6 @@ rather than just another AI assistant.
 
 > *Adapted from a public-sector strategic-planning framework AJ has
 > taught in school-systems work, with the governance-vs-management
-> distinctions stripped out (not relevant in a one-owner business).
+> distinctions stripped out (not relevant in a one-Principal business).
 > The core three-layer alignment model — and the discipline of
 > requiring every layer to be SMART — is preserved.*

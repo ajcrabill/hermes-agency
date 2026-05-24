@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.6-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.7-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -13,7 +13,7 @@
 This is the build + design specification for **HermesAgency** — a
 continuously-learning, multi-agent plugin for [NousResearch's Hermes
 Agent](https://github.com/NousResearch/hermes-agent), built for
-small-business owners who don't want to re-teach their AI ten times.
+small businesses whose Principal doesn't want to re-teach their AI ten times.
 
 The spec was written before code so the architecture could be reviewed,
 revised, and locked before any building. AJ is the first customer; his
@@ -126,6 +126,26 @@ Eight prior versions failed in instructive ways. v9 is the version
 where each failure mode has a structural answer rather than a
 patch.
 
+### Standard terminology
+
+The spec and companion docs use these terms consistently. Use them
+in new prose; v0.23 sweeps any remaining historical drift in code.
+
+| Concept | Standard term | Notes |
+|---|---|---|
+| Entity HermesAgency is designed for | **small business** (lowercase) | Used everywhere when referring to the business itself |
+| The human who interfaces with HermesAgency | **Principal** (capitalized) | The CoS's principal client — the one the agency is hired to support. Replaces older terms like "owner," "business owner," "small-business owner," "solopreneur," "business leader" |
+| The collection of all agent profiles | **the agency** (lowercase) | Most tasks touch more than one agent; "the agency" is the default referent |
+| The specific agent that owns strategic planning | **the CoS** / **Chief of Staff** | Strategic planning is a single-agent endeavor — all agents are implicated, but only the CoS owns it |
+| The agent profile that owns a skill/script | **agent profile** (or **responsible profile**) | Distinct from the Principal — refers to the agent role |
+
+§16 historical change-log entries retain the older terminology
+that was in use at the time — those describe what was said in
+past spec versions and are preserved verbatim as a historical
+record. Code references (yaml field names like `owner:`, skill
+names like `owner-channels-ingress`) retain their existing names
+until v0.23 ships the corresponding code-rename work.
+
 ### Dual-version notation
 
 The spec carries two version numbers:
@@ -178,7 +198,7 @@ architectural contract. v0.1–v0.16 were v8 of Loriah
 
 **HermesAgency is a multi-agent framework built as a plugin to
 NousResearch's powerful Hermes agentic engine.** Designed *for* and
-*by* small-business owners, HermesAgency pulls together the suite of
+*by* Principals at small businesses, HermesAgency pulls together the suite of
 capabilities every small business wants and needs but typically can't
 afford. It's where the powerful, always-working aspects of
 *technological intelligences* (the agents) collaborate with the
@@ -189,17 +209,17 @@ the human's goals and values, HermesAgency gives business leaders
 access to the advantages of companies many times their size and
 revenue — without sacrificing the privacy and ownership of their
 data and intellectual property, and without getting locked into
-big-tech ecosystems. The owner's declared goals (in `Goals.md`)
+big-tech ecosystems. The Principal's declared goals (in `Goals.md`)
 and broader context (`Values.md`, `Personal.md`, `Work.md`,
 `Clients.md`) are always part of the background the agency
 operates in — present every turn, not foreground, but never absent.
 
-**The one-line operational promise:** every correction the owner
+**The one-line operational promise:** every correction the Principal
 gives is captured, tagged, propagated to every relevant agent across
-the agency, and applied without the owner repeating themselves. The
+the agency, and applied without the Principal repeating themselves. The
 autonomy ladder lets agents earn more independence over time — but
 only when the learning loop is provably working. The system tells
-the owner when it isn't.
+the Principal when it isn't.
 
 The collaboration model is explicit: technological intelligences
 contribute *consistency, persistence, parallel attention, and
@@ -215,7 +235,7 @@ The 7-step learning loop has a precise role in HermesAgency's
 strategic-planning architecture: it's the **input-layer
 testability mechanism** in the three-layer model (see
 [`docs/StrategicPlanning.md`](./StrategicPlanning.md) §5). Every
-correction the owner gives, every rule the agency injects, every
+correction the Principal gives, every rule the agency injects, every
 firing recorded — together these answer the most-frequent
 testability question: *are we implementing the strategies?* The
 weekly health check then asks the mid-tier question (are inputs
@@ -224,7 +244,7 @@ question (are outputs moving outcomes?). Three nested testability
 layers, three cadences, the same underlying data structure.
 
 For HermesAgency to deliver on the input-layer test, an unbroken
-chain must hold for every owner correction:
+chain must hold for every Principal correction:
 
 1. **Capture** — the correction lands in the learning corpus
    (`_state/learning.db.learning_rules`).
@@ -241,10 +261,10 @@ chain must hold for every owner correction:
    autonomy + file a visible alert + record the loop-break event for
    diagnosis.
 
-Break any link and the owner is back to re-teaching. Every architectural
+Break any link and the Principal is back to re-teaching. Every architectural
 choice in §2-§12 serves the integrity of this chain.
 
-**The learning loop never operates in a vacuum.** The owner's
+**The learning loop never operates in a vacuum.** The Principal's
 agency-level context documents — `Goals.md`, `Personal.md`,
 `Work.md`, `Clients.md`, and per-profile `SOUL.md` — are always
 part of the operating background. Skills see them every turn,
@@ -270,13 +290,13 @@ framework):
 
 This is what "Goals.md is part of the operating background" means
 operationally: every turn, the agency reasons inside a structured
-hierarchy of what the owner is trying to accomplish, and what
+hierarchy of what the Principal is trying to accomplish, and what
 specific Initiatives are running in service of that.
 
 **`Guardrails.md` is intentionally NOT in the always-loaded
 context.** It holds the parallel structure for non-negotiables
 (prohibitions + Interim Guardrails + Guardrail-aligned
-Initiatives — see `StrategicPlanning.md` §2). The owner's values
+Initiatives — see `StrategicPlanning.md` §2). The Principal's values
 are expressed there as enforceable Guardrails. But Guardrails are
 *brake*, not *aim* — putting them into every skill's prompt
 would bias the agency toward defensive thinking. Instead,
@@ -308,7 +328,7 @@ always in the background context" implementation-true is small:
   alongside the other agency-level docs (Values, Personal, Work,
   Clients) at every skill load. The mechanism exists; the wiring
   audit is a v0.23 item.
-- Optional: at capture time, let the owner attach which goal(s)
+- Optional: at capture time, let the Principal attach which goal(s)
   the correction relates to. Not required — most corrections are
   stylistic and don't need an explicit goal-tag — but useful for
   later "which corrections served which goal" inspection.
@@ -325,9 +345,9 @@ be corrected without manual prompt-engineering. The combination —
 **explicit correction → cross-skill propagation → autonomy gated on
 learning fidelity** — is what makes the framework actually save time.
 
-If a small-agency owner has to repeat the same correction across
+If a Principal has to repeat the same correction across
 contexts, the system has *cost* them attention rather than saved it.
-HermesAgency makes "the owner is repeating themselves" a visible system
+HermesAgency makes "the Principal is repeating themselves" a visible system
 failure mode, not an ambient frustration.
 
 ### 1.3 Vendor-neutral by design
@@ -354,7 +374,7 @@ This is an architectural commitment, not a configuration convenience:
   / Cohere / Google / etc.). Vendor names are allowed in templates,
   deployment-specific files, and documentation that explicitly
   enumerates "compatible vendors" — but not in core framework code.
-- **Why this matters:** small-agency owners may have strong
+- **Why this matters:** Principals may have strong
   preferences (cost, sovereignty, privacy, local-only,
   political/ethical, vendor relationships). The framework should be
   invisible to those preferences. Adding a new compatible provider
@@ -466,8 +486,8 @@ Every large platform is rolling out the same feature set: AI
 assistants, multi-agent workflows, persistent memory, learning
 from corrections, integrated calendaring and email. The capability
 that distinguishes small-business work from large-enterprise work
-is collapsing — fast. **A small-business owner without these tools
-is at a real disadvantage against competitors who have them.**
+is collapsing — fast. **A small business without these tools is at
+a real disadvantage against competitors who have them.**
 
 But the big-platform versions of these features come at a price
 the spec is explicit about refusing:
@@ -486,10 +506,10 @@ the spec is explicit about refusing:
   size, not with the value they unlock. Small businesses pay
   proportionally more than large ones for the same capability.
 
-HermesAgency's position: **a small-business owner should be able to
-have all the same capabilities — continuous learning, multi-agent
+HermesAgency's position: **a small business should have access to
+all the same capabilities — continuous learning, multi-agent
 workflows, integrated communication, autonomy-graded delegation —
-without surrendering the data, IP, or ideas that make their business
+without surrendering the data, IP, or ideas that make the business
 distinct.** Not by refusing the capability (that's losing the
 competitive race) but by owning the implementation.
 
@@ -551,15 +571,15 @@ model from [`StrategicPlanning.md`](./StrategicPlanning.md) §5:
   that tests Initiatives against Interim Goal metrics and surfaces
   alignment drift. Reads from `firings`, the audit's findings, and
   Goals.md's Interim Goal metrics. Cadence: weekly.
-- **Top-tier (quarterly): strategic review** — an owner-led review
+- **Top-tier (quarterly): strategic review** — a Principal-led review
   that tests Interim Goal trends against Outcomes. The agency
-  proposes the data summary; the owner adjudicates whether the
+  proposes the data summary; the Principal adjudicates whether the
   Interim Goals were the right ones. Cadence: quarterly or aligned
   to the Outcome horizon.
 
 The three layers don't introduce new code paths; they read the same
 data structure (rules, firings, audit findings, alignment
-correlations) at three different time horizons. The owner can ask
+correlations) at three different time horizons. The Principal can ask
 *"are we implementing?"* (input test, continuous), *"are we
 deploying resources wisely?"* (mid-tier test, weekly), or *"do we
 have the right strategies?"* (top-tier test, quarterly) at any
@@ -634,7 +654,7 @@ template profile, persona stub, and starter skills.
 
 | Role | Identity | Mode | Sends mail (default)? |
 |---|---|---|---|
-| **ChiefOfStaffAgent** | The owner's interface, top-level coordinator | Coordinate, communicate, real-time ops | **Yes — the only outbound mail surface** |
+| **ChiefOfStaffAgent** | The Principal's interface, top-level coordinator | Coordinate, communicate, real-time ops | **Yes — the only outbound mail surface** |
 | **KnowledgeBaseAgent** | Classify, organize, retrieve | Knowledge work | No — work routed in/out via CoS + kanban |
 | **SystemSentinelAgent** | Pure observability + audit; no action authority | Watch | No — read-only by design |
 | **AnalystJudgeAgent** | Adversarial review, dossier, research, curation | Investigate, critique, judge | No — internal only |
@@ -649,7 +669,7 @@ voice. Per §2.4 below.
 Deployments CAN override the default (give a specialist agent her own
 mailbox) — but only if there's a real reason the single-mailbox model
 fails for that deployment. The framework's default ships single-mailbox
-because that's what small-agency owners actually want: one persona to
+because that's what Principals at small businesses actually want: one persona to
 manage, one outbound voice to maintain, one canonical send path to
 audit.
 
@@ -692,7 +712,7 @@ watches the loop's health and fires alerts when it breaks (§5.3).
 
 ### 2.3 Owner-agency interface model — one face
 
-The agency is **one face to the owner, and one face to the world**.
+The agency is **one face to the Principal, and one face to the world**.
 Both faces are ChiefOfStaff.
 
 ```
@@ -700,7 +720,7 @@ Both faces are ChiefOfStaff.
          │ (email, chat, Signal, Slack, dashboard chat tab, …)
          ▼
    ┌──────────┐
-   │   COS    │  ← The owner's single conversational surface
+   │   COS    │  ← The Principal's single conversational surface
    └──────────┘  ← The world's single inbound/outbound surface
     │     ▲
     │ via kanban (cross-profile channel — see §6.3)
@@ -713,8 +733,8 @@ Both faces are ChiefOfStaff.
                  │ CoS reviews + sends as the agency's voice
 ```
 
-The owner's preferred channels (email, chat, Signal, Slack, whatever)
-are **input methods to CoS**, not separate agent interfaces. The owner
+The Principal's preferred channels (email, chat, Signal, Slack, whatever)
+are **input methods to CoS**, not separate agent interfaces. The Principal
 does not message KnowledgeBase to ask for a research item, or Writing
 to ask about author coaching — they message CoS, who delegates via
 kanban to the right specialist, retrieves the result, and responds in
@@ -761,7 +781,7 @@ without framework changes. The framework supports N agents from Day 1:
   scaffold templates (one per role) which are pure data.
 - **Owner-agency interface model still holds.** Adding a FinanceAgent
   does NOT add a finance@ mailbox by default. Finance work flows
-  through CoS like all other specialist work: owner asks CoS about
+  through CoS like all other specialist work: Principal asks CoS about
   Q3 burn → CoS delegates to FinanceAgent via kanban
   (`tenant=finance` or similar) → FinanceAgent produces a report →
   CoS surfaces the result in her voice.
@@ -815,7 +835,7 @@ its non-negotiable professional commitments:
 
 | Role | What `standards.md` covers (default content) |
 |---|---|
-| **ChiefOfStaffAgent** | The owner's time + attention are the resources being stewarded. Single voice for the agency. Discretion. Follow-through. Never the bottleneck. |
+| **ChiefOfStaffAgent** | The Principal's time + attention are the resources being stewarded. Single voice for the agency. Discretion. Follow-through. Never the bottleneck. |
 | **KnowledgeBaseAgent** | Verifiable claims only. IP-alignment first, opinions last. Citation discipline. The agency's stated frameworks applied correctly. (KB's role-specific `accuracy.md` content, just under the consistent filename.) |
 | **SystemSentinelAgent** | Her `standards.md` is short — it states her commitments (observe without acting, signal not noise, alerts are earned) AND **directly references the master plan + development playbook** as the canonical standards she watches over and holds herself + the rest of the fleet to. The reference is in the doc; the loaded artifact is still just `standards.md`. |
 | **AnalystJudgeAgent** | Every approval carries reasoning. Every rejection names specific failure modes. Adversarial review without performative cynicism. Evidence threshold for `block` vs `revise`. |
@@ -833,7 +853,7 @@ just `standards.md`.*
 **Framework ships defaults; deployments customize freely.** Each
 template profile ships with its `SOUL.md.template` +
 `standards.md.template`. Deployments edit, extend, replace, or delete
-freely — these should reflect the owner's actual standards for the
+freely — these should reflect the Principal's actual standards for the
 role.
 
 **Different from audit reference.** Sentinel and Analyst both *use*
@@ -855,7 +875,7 @@ governs the agent's OWN work, always present in context.
 
 **Audit rules:**
 - `profile-missing-soul` — critical (no identity = no agent)
-- `profile-missing-standards` — warn (owner may have intentionally
+- `profile-missing-standards` — warn (Principal may have intentionally
   removed; agent operates on persona alone, which is risky but allowed)
 
 ### 2.6 Curator-subject separation, formalized
@@ -871,7 +891,7 @@ Three nested layers of "the watcher is not the doer":
   can't influence what she's watching.
 
 When AnalystJudge's own artifacts need review, the chain steps up to
-SystemSentinel for structural compliance + the owner directly for
+SystemSentinel for structural compliance + the Principal directly for
 qualitative judgment.
 
 ---
@@ -888,7 +908,7 @@ depends on it. Cannot be turned off in a deployment.
 
 CREATE TABLE learning_rules (
     id              TEXT PRIMARY KEY,        -- short hash
-    correction      TEXT NOT NULL,            -- the lesson, in owner's voice
+    correction      TEXT NOT NULL,            -- the lesson, in Principal's voice
     source          TEXT NOT NULL,            -- where it was captured (email/kanban/etc.)
     skill_tags      TEXT NOT NULL,            -- JSON array of skill tags + 'general' if cross-cutting
     role_tags       TEXT,                     -- JSON array: chief-of-staff, analyst-judge, etc. (cross-agent rules)
@@ -947,8 +967,8 @@ def capture_correction(
 ```
 
 Convenience wrappers per common capture path:
-- `capture_from_kanban_comment(task_id, comment_text)` — owner replied to a kanban task with a correction
-- `capture_from_inbox(message_id, classification)` — owner email containing a directive
+- `capture_from_kanban_comment(task_id, comment_text)` — Principal replied to a kanban task with a correction
+- `capture_from_inbox(message_id, classification)` — Principal email containing a directive
 - `capture_from_chat(session_id, turn_index)` — interactive correction during a Hermes chat
 
 Every capture path runs through the same `capture_correction` core so
@@ -1021,7 +1041,7 @@ When `check_recapture` returns a match:
 4. The responsible skill demotes one level (`autonomy.failure` event
    with reason `recapture: similarity=0.91`).
 
-False-positive handling: owner can mark a recapture as "not a
+False-positive handling: Principal can mark a recapture as "not a
 recapture" via kanban comment `not-recapture` on the alert task. The
 detector records the negative example and excludes from future
 auto-alerts on the same prior rule. (No ML retraining; just a denylist.)
@@ -1032,7 +1052,7 @@ auto-alerts on the same prior rule. (No ML retraining; just a denylist.)
   Special value `general` means "applies across all skills."
 - `role_tags`: kebab-case role names from §2.1 set. Used for
   cross-agent rules (e.g. voice/style rules that apply to anyone
-  speaking for the owner).
+  speaking for the Principal).
 - `voice_tags`: free-form attributes like `firm`, `warm-not-flattering`,
   `we-not-i`. Skills declare which voice tags apply via frontmatter.
 
@@ -1050,7 +1070,7 @@ A rule tagged `[skill-foo, general]` injects everywhere. A rule tagged
 - Top 5 skills by firings count (where learning loop is most active)
 - Top 5 skills by 0-firings + >3 captured rules (where loop may be broken)
 
-Delivered as a kanban task to the owner (`tenant=compliance`). Sentinel
+Delivered as a kanban task to the Principal (`tenant=compliance`). Sentinel
 authors it.
 
 ---
@@ -1064,8 +1084,8 @@ Framework-level subsystem at `_framework/autonomy/`. Borrowed from v7
 
 ```
 L1 draft-only         — drafts everything, sends nothing
-L2 send-batched       — sends in supervised batches (owner reviews queue)
-L3 send-single        — sends single items, notified to owner
+L2 send-batched       — sends in supervised batches (Principal reviews queue)
+L3 send-single        — sends single items, notified to Principal
 L4 structural-change  — modifies DB rows, archives tasks, structural ops
 L5 auto-irreversible  — auto-send to new contacts, delete data
 ```
@@ -1103,7 +1123,7 @@ first-class promotion input.**
 promotion-decision point in `cmd_record_event`. Returns (block, reason).
 On block:
 - Records `audit_blocked_promote` event in `skill_autonomy_history`
-- Files kanban task to owner with idempotency key
+- Files kanban task to Principal with idempotency key
 - Parks `consecutive_clean` at threshold so the next clean_run after the
   issue is fixed retries promotion
 - Returns 0 from `cmd_record_event` (not an error; gate working)
@@ -1198,12 +1218,12 @@ Sentinel's cron set:
 - Does not author skills, fix bugs, or take any kind of action.
 
 If Sentinel notices something wrong, her only output is a kanban task to
-the owner. She's the alarm, not the firefighter.
+the Principal. She's the alarm, not the firefighter.
 
 ### 5.5 Persona stub
 
 Sentinel's persona is laconic, factual, undramatic. She doesn't try to
-sound friendly. She reports what's true; the owner decides what to do
+sound friendly. She reports what's true; the Principal decides what to do
 about it. Default persona file `templates/profiles/system-sentinel/SOUL.md`
 ships with this voice; deployments can edit but should resist making her
 chatty.
@@ -1308,7 +1328,7 @@ normalizes here.
 **Role:** Pure knowledge curator and IP-alignment validator. She *knows*
 the agency's IP — frameworks, methods, prior decisions, established
 positions, brand voice, prior content — and *validates* other agents'
-and the owner's work product *against* that IP. She does not create
+and the Principal's work product *against* that IP. She does not create
 work product herself; that's CoS, BD, and WritingSupport's job. KB's
 output is verdicts, annotations, and IP-aligned context, not artifacts.
 
@@ -1432,7 +1452,7 @@ CoS, who routes per-author work to WritingSupport via kanban.
   responses for CoS to send.
 - `manuscript-review` — feedback on author drafts (routed in by CoS)
 - `workbook-drafting` — staff-facing instructional content (internal
-  delivery — to vault, then surfaced to owner via CoS)
+  delivery — to vault, then surfaced to Principal via CoS)
 - `newsletter-drafting` — weekly newsletter authoring; hands the
   draft to CoS for send via `send-orchestrator`
 - `multi-author-state` — maintains per-author project arcs, coaching
@@ -1621,7 +1641,7 @@ that profile.)
 ### 8.3 Brand-agnostic paths
 
 Every path in the framework derives from constants in
-`hermes_agency_plugin/constants.py`. The owner's chosen agent names
+`hermes_agency_plugin/constants.py`. The Principal's chosen agent names
 (e.g., "Loriah" for CoS, "Lynda" for Analyst) live ONLY in
 deployment-edited files — never in plugin paths, never in plist
 labels, never in env var names.
@@ -1640,12 +1660,12 @@ during the v0.17–v0.19 transition) carries a header:
 ```
 
 Every file in a deployment's vault (`~/.hermes/agency-state/vaults/<id>/`)
-is owner-edited; plugin upgrades will not touch operator content. The
+is Principal-edited; plugin upgrades will not touch operator content. The
 plugin treats operator content as input, never as something to rewrite.
 
-The audit (§10) checks that plugin files don't contain literal owner
-names, mail addresses, or contact references — pure plugin code,
-content-empty.
+The audit (§10) checks that plugin files don't contain literal
+Principal names, mail addresses, or contact references — pure
+plugin code, content-empty.
 
 ---
 
@@ -1668,7 +1688,7 @@ deployment:
 # Custom: define your own role (advanced).
 profiles:
 
-  - id:           loriah                # the name THIS owner gives this role
+  - id:           loriah                # the name THIS Principal gives this role
     role:         chief-of-staff        # framework role from §7
     persona_file: identities/chief-of-staff.md     # SOUL.md — who CoS is
     # standards.md lives at profiles/<id>/standards.md by convention (per §2.5)
@@ -1827,9 +1847,10 @@ ajcrabill's v7 deployment, generalized for framework distribution.`
 
 ### 10.2 Scaffolds
 
-Same shape as v7. Path-constant-aware. Read `deployment.yaml` for owner
-values. Output is brand-agnostic frame + placeholder content for
-deployment to fill.
+Same shape as v7. Path-constant-aware. Read `deployment.yaml` for
+Principal-specific values (the `owner:` field carries
+Principal identity). Output is brand-agnostic frame + placeholder
+content for deployment to fill.
 
 - `scaffold-skill.py --role <role> --name <name>` — emits SKILL.md with
   proper frontmatter (incl. autonomy block matching role's
@@ -1900,8 +1921,8 @@ slash command, registered by the plugin via
 /agency help                    # subcommand listing
 ```
 
-Operators don't leave Hermes to run agency operations. The owner-
-agency interface model (§2.3) holds: one face for the owner, one
+Operators don't leave Hermes to run agency operations. The Principal-
+agency interface model (§2.3) holds: one face for the Principal, one
 face for the world, both inside `hermes`.
 
 ### 11.4 Shell-side `agency` command — thin shim for non-interactive use
@@ -1954,7 +1975,7 @@ A fresh, blank machine can:
    → responsible skill demotes
 7. Control panel at port 9118 shows the deployment with learning-loop
    health at the top
-8. Public docs in the repo are sufficient for a new owner to read
+8. Public docs in the repo are sufficient for a new Principal to read
    README → ARCHITECTURE → DEPLOYMENT and get to step 1 above
 
 ### 12.2 Out of scope for v0.1 (deferred to v0.2+)
@@ -2215,7 +2236,7 @@ load-bearing scaffolding the strategic-planning doc describes,
   `output_metrics`, `input_metrics`) or script docstring.
 - The `/agency setup` clean-install interview is restructured
   per `StrategicPlanning.md` §3.5. The strategic-planning framework
-  is **the CoS's working knowledge, not the owner's** — the owner
+  is **the CoS's working knowledge, not the Principal's** — the Principal
   doesn't need to know SMART, Outcomes, Interim Goals, Initiatives,
   leading/lagging indicators, or any of the framework terminology.
   Specific requirements:
@@ -2226,18 +2247,18 @@ load-bearing scaffolding the strategic-planning doc describes,
     markdown carries knowledge.
   - **Conversation defaults to 8th-grade reading level.** The
     CoS uses plain language ("a goal", "something you won't do")
-    not specialized terms. Register shifts up only if the owner
+    not specialized terms. Register shifts up only if the Principal
     asks for depth or clearly has a strategic-planning background.
-  - **The owner is only asked about vision (Outcomes) and
+  - **The Principal is only asked about vision (Outcomes) and
     values (Guardrails).** Interim Goals, Interim Guardrails, and
     Initiative mappings are CoS's behind-the-scenes work — they
-    never appear in the owner's conversation.
+    never appear in the Principal's conversation.
   - **Before `.configured` is written, the CoS presents the
     rough-draft `Goals.md` and `Guardrails.md` (layer 1 only) to
-    the owner for revision and approval.** The marker is written
-    only after the owner approves. After approval, the CoS drafts
+    the Principal for revision and approval.** The marker is written
+    only after the Principal approves. After approval, the CoS drafts
     Interim Goals, Interim Guardrails, and Initiative mappings —
-    no owner pre-approval required for layers 2-3 (those are
+    no Principal pre-approval required for layers 2-3 (those are
     CoS's working hypotheses, refined over time via daily
     implementation + the supervised learning loop + weekly health
     checks).
@@ -2262,13 +2283,13 @@ Acceptance:
 
 1. `agency audit` flags profiles whose agency-context docs aren't
    reachable; the §1.1 claim is testable.
-2. A fresh `/agency setup clean` walks the owner through the
+2. A fresh `/agency setup clean` walks the Principal through the
    three-layer interview and produces a structured Goals.md +
    Guardrails.md + 1-2 starter Playbook pages.
 3. The audit's strategic-alignment rules produce non-zero findings
    on a deployment with active skills and an incomplete plan
    (this is the *normal* state — the audit's job is to show the
-   gap so the owner can close it).
+   gap so the Principal can close it).
 4. The weekly strategic-plan health check fires and produces a
    short pivot-proposal summary.
 
@@ -2337,12 +2358,12 @@ we're leaving for v0.2+.
 
 1. **Three-tier setup wizard.** (agent-core ARCHITECTURE.md §Setup
    Wizard + ROADMAP Sprint 8.) The fast/slow startup pattern AJ wanted:
-   - **Tier 1 (5-10 min) "Just defaults"** — required only: owner name,
+   - **Tier 1 (5-10 min) "Just defaults"** — required only: Principal name,
      primary email, model/provider, storage backend, vault path. Boots a
      working deployment with sensible defaults across all 6 agents.
    - **Tier 2 (15-30 min) "Recommended"** — Gmail/Calendar OAuth,
      OpenBrain ingest sources (if any), daily-digest schedule, ingress
-     channel configuration (which of email/Signal/Slack/chat the owner
+     channel configuration (which of email/Signal/Slack/chat the Principal
      wants for talking to CoS).
    - **Tier 3 (45-60 min) "Power user / deep interview"** — content-
      creation skill definitions per role, IP-corpus bulk import (for KB),
@@ -2353,7 +2374,7 @@ we're leaving for v0.2+.
    Wizard lands under `_framework/ops/init/` and runs via
    `agency init --tier {1|2|3}`. Tier 1 is non-interactive
    (sensible defaults). Tier 2 is mostly y/n + paste-key. Tier 3 is a
-   real interview — the agent asks the owner about their work, their
+   real interview — the agent asks the Principal about their work, their
    IP, their preferred voice, captures exemplars, and uses that input
    to calibrate the starter skills.
 
@@ -2409,13 +2430,13 @@ we're leaving for v0.2+.
    `agent_core.quality`.) The verifier we already built handles
    pass/fail; agent-core's two-tier auditor also SCORES delivered work
    on a continuous scale, and *automatically* undelegates work to a
-   lower-trust agent (or back to owner) when scores drop. Maps to v7's
+   lower-trust agent (or back to Principal) when scores drop. Maps to v7's
    demotion-on-failure but more granular. Adopt for HermesAgency
    `_framework/quality/` — composes with the existing verifier (§6.1).
 
 7. **OpenWebUI as the chat surface.** (agent-core architectural
    commitment, "best-in-class tools at the edges.") Don't reinvent
-   chat. The owner-channels-ingress skill (§7.1) accepts chat through
+   chat. The Principal-channels-ingress skill (§7.1) accepts chat through
    OpenWebUI as one of its inputs. ObligationBoard plugin lets the
    agent manipulate tasks from inside chat.
 
@@ -2474,7 +2495,7 @@ we're leaving for v0.2+.
     a real audience.
 
 14. **Identity layer for multi-tenant deployments.** (agent-core
-    `agent_core.identity`.) Single-deployment-single-owner is fine
+    `agent_core.identity`.) Single-deployment-single-Principal is fine
     for v0.1. Multi-tenant (multiple owners on one deployment) is
     real engineering work — defer indefinitely or until there's
     demand.
@@ -2512,7 +2533,7 @@ shape.
 - **0.1.0-spec.1 (2026-05-23 PM)** — single-mailbox default. Only CoS has
   an outbound mailbox; all other agents default to `email: null`. New
   §2.3 "Owner-agency interface model — one face" codifies the
-  commitment: agency is one face to the owner (CoS) and one face to
+  commitment: agency is one face to the Principal (CoS) and one face to
   the world (CoS). Multi-channel ingress (email/chat/Signal/Slack)
   normalizes to CoS. Specialists draft → CoS sends. Per-author Writing
   workflow updated accordingly. New §2.4 "Adding new agents" makes

@@ -9,6 +9,107 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.7-spec] — 2026-05-24
+
+**Spec revision: standardized terminology — Principal, small
+business, agency, CoS.** Across the docs, the human who
+interfaces with HermesAgency had been called many things —
+"owner," "small-business owner," "business owner," "solopreneur,"
+"business leader." Standardized on **Principal** (capitalized).
+The entity HermesAgency is designed for is consistently **small
+business** (lowercase). The collection of all agents is **the
+agency**. The specific agent that owns strategic planning is
+**the CoS** (Chief of Staff).
+
+Spec-only revision; does not advance the 9th-version milestone
+counter. Code-side renames (yaml field names, skill names,
+template placeholders, setup-interview prompts) ship as part of
+v0.23.
+
+### Added — spec §0 "Standard terminology" subsection
+
+New reference table in the §0 lineage section codifying the
+standard terms and noting which contexts retain older terminology:
+§16 historical change-log entries (preserved verbatim as historical
+record) and code references (yaml `owner:` field, skill
+`owner-channels-ingress`, etc.) where the rename ships in v0.23.
+
+### Changed — `docs/StrategicPlanning.md`
+
+Sweep through the doc. ~80 instances of "the owner" / "owner's" /
+"small-business owner" / "business owner" / "solopreneur" replaced
+with the standard terms. Anti-pattern examples in §3.3 left as
+fragments (those are intentionally illustrating bad forms).
+
+Specific clarifications:
+- §1.3 test #2 "One owner" → "One agent profile" — the agent
+  ownership concept gets a distinct phrase, separate from the
+  Principal concept
+- §1.3 test #6 "Owner has authority" → "Agent profile has
+  authority" — same distinction
+- §5 Playbook page table: "Owner" field → "Agent profile
+  (responsible)" — preserves the `owner_profile` frontmatter key
+  but in prose uses the disambiguated phrase
+- §8 worked example: "Owner profile: Devon (BD)" → "Agent
+  profile: Devon (BD)"
+- §9 "What if I'm a solopreneur" question → "What if my small
+  business is just me"
+
+### Changed — `docs/HERMES_AGENCY_SPEC.md`
+
+Sweep through the live spec body (§0 through §13.7). ~75
+"owner" / "owner's" / "small-business owner" / "small-agency
+owner" instances replaced. §16 historical change-log entries
+preserved verbatim. Code references (`owner:` yaml field,
+`owner-channels-ingress` skill name, SQL column comments referring
+to literal 'owner' values stored in DB) retained until v0.23
+ships the corresponding code-rename work.
+
+Key replacements:
+- §1 intro: "designed for and by small-business owners" →
+  "designed for small businesses — for and by Principals who
+  run them"
+- §1.1 always-loaded context paragraph: "the Principal's
+  declared goals" everywhere (consistent throughout)
+- §1.4 promise: "every correction the Principal gives"
+- §2.0 — §2.2 architecture text: "the Principal" throughout
+- §13.7 v0.23 plan: aligned with the new terminology
+
+### Changed — `README.md`
+
+Intro paragraph: "Designed for small businesses — for and by
+Principals who run them." System-1 description: "the
+Principal's declared goals" / "the Principal's declared values."
+"Win new business" lead-in: "The Principal of a small business
+wears every hat." Profile descriptions: "the one face to the
+Principal."
+
+### Code work deferred to v0.23
+
+The following code-level renames will ship in v0.23 along with
+the other interview-restructure work:
+
+- `_framework/constants.py` — any `OWNER_*` constants → `PRINCIPAL_*`
+- `templates/agency-vault/*.template` — `{{OWNER_NAME}}` →
+  `{{PRINCIPAL_NAME}}`
+- `hermes_agency_plugin/setup/interview.py` — OWNER step renamed
+  to PRINCIPAL step
+- `deployment.yaml` schema — `owner:` field renamed (with
+  backward-compat read)
+- Skill name `owner-channels-ingress` → `principal-channels-ingress`
+- SQL schema column comments / actor enum values that store
+  'owner' as a literal value
+- Tests touching any of the above
+
+### Spec header
+
+Bumped v0.22.6-spec → v0.22.7-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.6-spec] — 2026-05-24
 
 **Spec revision: strategic-planning is the CoS's job, not the
