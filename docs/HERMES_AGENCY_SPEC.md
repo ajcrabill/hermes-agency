@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.19.1-spec (2026-05-24) — *also: v0.09 of the 9th version (see §0.5)*
+**Version:** v0.22-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -129,19 +129,34 @@ patch.
 
 The spec carries two version numbers:
 
-- **Public release version** (e.g. `v0.18.0`): semver against the
+- **Public release version** (e.g. `v0.22.0`): semver against the
   `hermes-agency` repo on GitHub. This is what `pip install
-  hermes-agency==0.18.0` resolves to, and what `agency --version`
-  prints.
+  hermes-agency==0.22.0` resolves to, and what `agency --version`
+  prints. Patch and spec-only revisions (`v0.22.1-spec` etc.) bump
+  within a release line without advancing the 9th-version counter.
 - **"v0.M of the 9th version"** (e.g. *v0.05 of the 9th version*):
-  an internal counter that started fresh at v0.17 when the plugin-
-  API pivot reset the architectural foundation. v0.17.0 = v0.01;
-  v0.17.1 = v0.02; v0.17.2 = v0.03; v0.18.0 = v0.05; etc.
+  an internal milestone counter that started fresh at v0.17 when
+  the plugin-API pivot reset the architectural foundation. One
+  number per public minor release:
 
-The 9th-version counter signals what v0.17+ is *relative to* v0.1–v0.16:
-not a continuation, but a re-foundation on a different architectural
-contract. v0.1–v0.16 were v8 of Loriah (parallel-framework era).
-v0.17+ are v9 (proper-plugin era).
+  | Public release | 9th-version milestone | Theme |
+  |---|---|---|
+  | v0.17 | v0.01 | Plugin-API pivot (all 7 systems Hermes-hooked) |
+  | v0.18 | v0.02 | Verifier enforcement + deprecated-patches removal |
+  | v0.19 | v0.03 | `/agency setup` interactive interview |
+  | v0.20 | v0.04 | Parallel-state collapse → `~/.hermes/agency-state/` |
+  | v0.22 | v0.05 | PyPI publication + entry-point install |
+  | (v0.21) | — | Deferred (profile registration + agentskills.io conformance) |
+  | v0.23 | v0.06 (planned) | Cosmetic rename `_framework/` → `hermes_agency_plugin/<x>/` |
+
+  Note that v0.21 leaves no gap in the 9th-version counter — the
+  counter tracks *what shipped*, not *what was numbered*. When v0.21
+  eventually lands, it picks up the next available milestone slot.
+
+The 9th-version counter signals what v0.17+ is *relative to*
+v0.1–v0.16: not a continuation, but a re-foundation on a different
+architectural contract. v0.1–v0.16 were v8 of Loriah
+(parallel-framework era). v0.17+ are v9 (proper-plugin era).
 
 ### Practical answer for new readers
 

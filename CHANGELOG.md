@@ -11,9 +11,10 @@ roles. Patch bumps are fixes only.
 
 ## [0.22.0] — 2026-05-24
 
-**PyPI publication + entry-point install.** Closes the install loop
-from spec §13.7. After this release, `pip install hermes-agency`
-registers the plugin with Hermes automatically — no symlink at
+**PyPI publication + entry-point install** (v0.05 of the 9th
+version — see spec §0.5). Closes the install loop from spec §13.7.
+After this release, `pip install hermes-agency` registers the
+plugin with Hermes automatically — no symlink at
 `~/.hermes/plugins/hermes-agency/` required.
 
 (v0.21 — profile registration + agentskills.io conformance — is
@@ -107,7 +108,7 @@ any clone, symlink, or post-install fixup.
 **Parallel-state collapse.** Agency state moves from
 `~/.agency/_state/` → `~/.hermes/agency-state/`, so HermesAgency
 no longer owns a separate state world (per spec §13.7 v0.20 plan,
-v0.10 of the 9th version).
+v0.04 of the 9th version).
 
 ### Changed — state resolution
 
@@ -201,7 +202,7 @@ The closure plan is now:
 ## [0.19.0] — 2026-05-24
 
 `/agency setup` becomes a real interactive interview inside Hermes
-(v0.06 of the 9th version — see spec §0.5). The bash `agency init`
+(v0.03 of the 9th version — see spec §0.5). The bash `agency init`
 wizard is no longer the primary configuration surface; first-run
 setup happens via `/agency setup` slash-command inside `hermes`.
 
@@ -294,8 +295,8 @@ formulation:
 
 ## [0.18.0] — 2026-05-24
 
-Verifier enforcement + deprecated-patches removal (v0.05 of the 9th
-effort — see spec §0.5 for lineage).
+Verifier enforcement + deprecated-patches removal (v0.02 of the 9th
+version — see spec §0.5 for lineage).
 
 ### Added — `transform_tool_result` hook (verifier enforcement)
 
