@@ -12,6 +12,7 @@ Subcommands:
   /agency learn list [<n>]         — list recent learning rules
   /agency audit                    — run the alignment audit
   /agency health                   — weekly strategic-plan health check (v0.23.6)
+  /agency review-prep              — quarterly strategic-review packet (v0.23.7)
   /agency setup                    — migration-or-clean-install interview
                                      (stub in v0.17; full flow in v0.20)
 """
@@ -35,6 +36,7 @@ Subcommands:
   learn list [N]              List recent learning rules (default 10)
   audit                       Run the alignment audit
   health                      Weekly strategic-plan health check (v0.23.6)
+  review-prep                 Quarterly strategic-review packet (v0.23.7)
   setup                       Migration-or-clean-install (v0.20+)
   help                        Show this message
 
@@ -76,6 +78,8 @@ def handle_agency_command(raw_args: str) -> Optional[str]:
             return _cmd_audit()
         if sub == "health":
             return _cmd_health()
+        if sub in ("review-prep", "review_prep"):
+            return _cmd_review_prep()
         if sub == "setup":
             return _cmd_setup(rest)
         return f"Unknown /agency subcommand: {sub}\n\n{_HELP_TEXT}"
@@ -284,6 +288,28 @@ def _cmd_health() -> str:
         return render_report(report)
     except Exception as e:
         return f"strategic-plan health check failed: {e}"
+
+
+def _cmd_review_prep() -> str:
+    """v0.23.7: quarterly strategic-review packet.
+
+    Produces the data packet the Principal walks into the
+    quarterly review meeting with. The meeting is Principal-driven;
+    the CoS prepares.
+
+    Cadence: invoked weekly by the CoS's `quarterly-trigger-check`
+    cron — runs the actual packet only on the first Monday of
+    Jan / Apr / Jul / Oct. The Principal can also pull manually
+    any time.
+    """
+    try:
+        from _framework.strategic_review import (
+            produce_review_packet, render_packet,
+        )
+        packet = produce_review_packet()
+        return render_packet(packet)
+    except Exception as e:
+        return f"strategic-review-prep failed: {e}"
 
 
 def _cmd_setup(rest: str = "") -> str:
