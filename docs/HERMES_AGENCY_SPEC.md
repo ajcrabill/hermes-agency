@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.11.0 (2026-05-24)
+**Version:** v0.15.0 (2026-05-24)
 **Status:** Living spec — tracks shipped releases
 **Author:** Drafted with AJ
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -10,8 +10,8 @@
 ## 0. Document purpose
 
 This is the build + design specification for **HermesAgency** — a
-multi-agent framework layered on top of NousResearch's Hermes engine,
-designed for small-agency owners and operators.
+Hermes plugin that adds 7 reliability systems on top of NousResearch's
+Hermes engine, designed for small-agency owners and operators.
 
 The spec was written *before* code so the architecture could be reviewed,
 revised, and locked before any building. AJ is the first customer; his
@@ -21,9 +21,21 @@ v7 system is migrating to HermesAgency via the v7-migration tool
 This document is the source of truth for the framework's design.
 Sections §0–§15 describe the architecture and roadmap as locked at
 v0.1; §16 (change log) tracks every formal revision since, including
-all eleven release-level versions through v0.11.0. New features land
-through the release cycle and accrete in the change log; sections
-above are revised when the underlying architecture changes.
+all release-level versions. New features land through the release
+cycle and accrete in the change log; sections above are revised
+when the underlying architecture changes.
+
+**Architectural reset at v0.15 (2026-05-24):** Through v0.1–v0.14, the
+implementation drifted from "Hermes plugin" toward "parallel framework
+with its own state, chat, panel, and runtime." The spec's first
+sentence — *layered on Hermes* — was the design intent throughout,
+but most subsystems got built as `_framework/<x>/` modules with their
+own state under `~/.agency/_state/<x>.db`, called by the agency's own
+code paths rather than by Hermes during skill execution. v0.15.0
+corrects the *narrative* (new §1.4 "Plugin discipline" + the
+`agency hermes-patches systems` honesty-surface). v0.16–v0.19
+correct the *implementation* by building the missing patches and
+collapsing parallel state. See §13 for the closure roadmap.
 
 ---
 
@@ -113,6 +125,68 @@ This is an architectural commitment, not a configuration convenience:
 When this spec or the playbook mentions a vendor anywhere outside an
 explicit "compatible-with" enumeration, that's a bug. Lynda's audit
 catches it.
+
+### 1.4 Plugin discipline — Hermes is the runtime, always
+
+**HermesAgency is a plugin, not a parallel framework.** Every
+reliability system it adds (the 7 in §1.5) must be expressed as a
+Hermes hook — a patch into Hermes' execution path, or a shim that
+reads/writes Hermes' own state. The agency CLI exists for setup,
+audit, capture, and supervision. It does not exist as an alternate
+runtime.
+
+Equivalently: there is no daily-use command in HermesAgency that
+replaces `hermes chat` or `hermes run <skill>`. If you find yourself
+typing `agency chat`, the integration is broken — fix the patch,
+don't normalize the workaround.
+
+This is a constitutional rule, not a style preference. Through
+v0.1–v0.14 the implementation drifted: each new subsystem (CRM,
+finance, coaching, prototyping, goals, quality, cost, OTP, panel,
+runtime/chat) got built as `_framework/<x>/` with its own state DB
+and its own code paths. The agency framework called these modules
+itself; Hermes never touched them. The result was a framework that
+ran alongside Hermes instead of one that extended it — and the
+operator-facing question "how do I use it?" had no clean answer
+because the answer the spec implied (`hermes chat`) wasn't
+actually enriched.
+
+v0.15.0 adds **`agency hermes-patches systems`** as the honesty
+surface. It prints the 7 systems and which are actually Hermes-
+extending today. Any "PATCH NOT YET BUILT — system is parallel,
+not Hermes-extending" line in that output is an architectural
+debt that v0.16+ closes. The audit (§14, future rule
+`framework-parallel-state-leak`) will eventually enforce this at
+commit-time, refusing changes that add new `_framework/<x>/`
+state-owning subsystems without a corresponding hook.
+
+The discipline:
+
+- **New reliability systems** must propose their Hermes-hook
+  shape (patch into a Hermes file, or shim over a Hermes table)
+  before any standalone code is written.
+- **Existing parallel modules** (autonomy, verifier, send-guard,
+  any of the v0.3+ subsystems that ended up parallel) are
+  architectural debt to be repaid via the v0.16–v0.19 plan.
+- **`agency hermes-patches systems`** is the public source of
+  truth for whether the discipline is being kept.
+
+### 1.5 The seven reliability systems
+
+The exhaustive list of what HermesAgency adds to Hermes:
+
+| # | System | Hook into Hermes |
+|---|---|---|
+| 1 | Supervised learning loop | Patch into `_build_skill_message` / `skill_view` to inject applicable rules at skill-load |
+| 2 | Autonomy ladder (L1–L5) | Pre-action gate patch in Hermes' skill executor (consults `_framework.autonomy`) |
+| 3 | Verifier (per-skill criteria) | Post-completion hook in Hermes' skill-exit path (runs the skill's frontmatter verifier block) |
+| 4 | System Sentinel (read-only) | Reads Hermes' `state.db` event log via shim; emits to agency events log |
+| 5 | Kanban tracks-link type | Shim writes `tracks` rows into Hermes' own `kanban.db` |
+| 6 | Send-guard (outbound mail gate) | Pre-send hook on Hermes' email-send path (consults `_framework.send_guard`) |
+| 7 | Audit (weekly alignment) | Scheduled script reading Hermes state + agency state; produces findings, not actions |
+
+Systems 1, 4, 5, 7 are Hermes-native in v0.15.0. Systems 2, 3, 6
+are parallel debt; their patches are the v0.16–v0.18 closure plan.
 
 ---
 
@@ -1426,6 +1500,79 @@ Phased, post-v0.1. v7 stays authoritative throughout. Timeline:
 - v7 archived (frozen, read-only) for 6 months as a fallback
 - After 6 months stable on .agency, v7 deleted
 
+### 13.6 Plugin-integration closure plan (v0.16 → v0.19)
+
+After v0.15.0 corrected the narrative (the framework is a Hermes
+plugin, not a parallel runtime), three patches and one cleanup
+release close the implementation gap. Each is a release-sized
+chunk of real engineering.
+
+**v0.16.0 — `autonomy-gate` patch**
+
+Patch into Hermes' skill executor (the function that decides
+whether to execute a proposed action vs. require operator
+approval). Before any L2+ action fires, the patch consults
+`_framework.autonomy.allowed(skill_id, profile, action_class)`.
+Refused actions become drafts in the kanban with the autonomy
+verdict attached. The autonomy ladder (§4) becomes load-bearing
+instead of advisory.
+
+Acceptance: a skill at L1 (`draft-only`) that tries to emit a
+`structural-change` action gets caught by Hermes itself, not by
+agency-side bookkeeping. `agency hermes-patches systems` reports
+"Autonomy ladder (L1–L5)" as wired.
+
+**v0.17.0 — `post-completion-verifier` patch**
+
+Patch into Hermes' skill-exit hook. After a skill completes, the
+patch runs the skill's `verifier:` block from its frontmatter
+(§6.1) against the output. Failures cause Hermes to refuse the
+skill's completion (back to draft state) until the verifier
+passes. The verifier registry from `_framework.verifier`
+gets wired in as the gate.
+
+Acceptance: a skill whose verifier asserts `file_contains` on a
+generated draft fails immediately if the draft is missing the
+required content. The skill doesn't claim "done" until the
+verifier passes. `agency hermes-patches systems` reports
+"Verifier (per-skill criteria)" as wired.
+
+**v0.18.0 — `outbound-mail-guard` patch**
+
+Patch into Hermes' email-send path (whatever Hermes uses to
+hand off to the configured mailer). Before any outbound message
+leaves, the patch consults `_framework.send_guard.check(...)`.
+The send-guard's first-message hard-rules + per-recipient
+cooling periods become load-bearing instead of advisory.
+
+Acceptance: an attempted outbound mail to a recipient who's
+under a "first-touch hard rule wait" gets refused at Hermes'
+send path. The kanban gets a card explaining the refusal.
+`agency hermes-patches systems` reports "Send-guard (outbound
+mail gate)" as wired.
+
+**v0.19.0 — Parallel-state collapse**
+
+The remaining `_framework/<x>/_state/*.db` databases (learning,
+events, autonomy, quality, cost, goals, finance, crm, coaching,
+prototypes, per_subject_state) get migrated to sidecar tables
+under `~/.hermes/agency-state/<x>.db` (the convention being:
+"state HermesAgency owns, but stored next to Hermes' own DBs
+so anything reading Hermes state can find it"). Read paths
+update to look there first, fall back to `~/.agency/_state/`
+during a one-release migration window, then become
+authoritative.
+
+Acceptance: a fresh Hermes install with HermesAgency layered
+on top has a single `~/.hermes/` state directory. The agency
+framework owns no separate state world. `agency status` reports
+"state location" as `~/.hermes/agency-state/` with zero rows
+in any `~/.agency/_state/` paths.
+
+After v0.19.0, the framework is what the spec said it would be:
+a Hermes plugin with seven Hermes-extending hooks, sharing
+state with Hermes, never running as a parallel surface.
+
 ---
 
 ## 14. Decisions still open
@@ -1906,3 +2053,84 @@ shape.
   user-facing release log. Title rolled from "v0.1 Specification"
   to "Specification" — the spec is no longer a one-version
   artifact.
+
+- **v0.12.0 (2026-05-24)** — Spec-into-repo + five new
+  opportunity-hunting skills. KB `weekly-industry-newsletter`,
+  Writing `thought-leadership-scanner` (niche-first, highly
+  curated), BD `existing-client-commonality-analyzer`, BD
+  `referral-opportunity-scanner`, BD `potential-clients-pipeline`.
+  Tests: 198 passing. Audit clean. v0.12.1 + v0.12.2 are UX-fix
+  patches from AJ's first real install — added `agency next`
+  command, T2 wizard resume-hints, framework_version stale-
+  hardcode fix, raw-secret rejection in credential prompt,
+  `--tail N` ergonomics, case-consistency check in profile-id
+  prompts.
+
+- **v0.13.0 (2026-05-24)** — Hermes-as-first-class-prerequisite.
+  The wizard's first step is now Branch A (detect existing
+  Hermes) or Branch B (install Hermes for the user). The
+  framework refuses to pretend it's a valid deployment when no
+  engine is present. New `_framework/hermes_engine/` subsystem
+  (detection + installer). New `agency init --hermes-only` for
+  out-of-order recovery. `agency status` surfaces Hermes
+  detection front-and-center; `agency next` treats Hermes-missing
+  as BLOCKER #1; `agency hermes-patches apply` and `agency cron
+  sync` hard-error if Hermes isn't detected. Schema: new
+  `deployment.yaml::engine` block. v0.13.1 adds `bootstrap.sh`
+  one-command installer + `agency reset` command for clean
+  re-init + install.sh framework_version hardcode fix. v0.13.2
+  flipped repo to public (MIT) and re-front-loaded docs around
+  the curl-pipe one-liner.
+
+- **v0.14.0 (2026-05-24)** — `agency chat` added. The framework
+  gained its first built-in inference path: `_framework/runtime/`
+  with provider config resolver, prompt composer (SOUL +
+  standards + applicable learning rules + session framing), and
+  stdlib-only HTTP client. *Retrospectively, this was a wrong
+  turn* — see v0.15.0 below. v0.14.0 was added to answer "how do
+  I use this thing right now," but the correct answer was always
+  "via `hermes chat` with patches applied." `agency chat` should
+  have been a diagnostic from the start. v0.15.0 demotes it.
+
+- **v0.15.0 (2026-05-24)** — **Architectural reset: plugin
+  framing restored.** AJ pointed out the framework had drifted
+  from "Hermes plugin" toward "parallel framework." The spec's
+  first sentence (*layered on Hermes*) was correct intent, but
+  v0.3 → v0.14 added parallel surfaces (own state, own chat,
+  own panel, own runtime). v0.15.0 corrects the *narrative* +
+  exposes the honest integration state:
+
+    - New §1.4 "Plugin discipline" — constitutional rule: every
+      reliability system must be a Hermes hook. No parallel
+      runtimes. No daily-use commands that compete with `hermes
+      chat`.
+    - New §1.5 — the explicit 7-system table with each
+      system's Hermes-hook shape.
+    - New §13.6 — closure roadmap for v0.16 → v0.19 to build
+      the missing patches (autonomy gate, verifier, send-guard)
+      and collapse parallel state.
+    - New `agency hermes-patches systems` command — the honest
+      integration inventory. Reports 4/7 wired into Hermes
+      today (learning loop, Sentinel, kanban-tracks, audit) +
+      3/7 still parallel with explicit "PATCH NOT YET BUILT"
+      markers. `_framework/hermes_patches/apply.py` carries
+      `SYSTEM_INVENTORY` as the source of truth for what the
+      framework claims and what's actually wired.
+    - `agency chat` demoted to **diagnostic surface**. Prints a
+      banner on every invocation pointing users to `hermes chat`.
+      `--no-banner` for scripted use. README + bootstrap.sh
+      post-install message + CLI help all redirect daily use to
+      `hermes chat`.
+    - `agency panel` demoted in docs (read-only diagnostic UI,
+      not a primary surface).
+    - README tagline: "A Hermes plugin that adds 7 reliability
+      systems for small-agency owners..." (was: "A multi-agent
+      framework..."). "How you use it" leads with `hermes chat`
+      after `agency hermes-patches apply`.
+    - bootstrap.sh "Done" footer points users at the canonical
+      sequence: `agency hermes-patches apply` → `agency hermes-
+      patches systems` → `hermes chat`.
+
+  No new features ship in v0.15.0. The work is narrative +
+  surface-correction. The actual integration gap (3 missing
+  patches + parallel state) is closed across v0.16–v0.19.
