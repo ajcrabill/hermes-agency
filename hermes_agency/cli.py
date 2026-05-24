@@ -63,27 +63,9 @@ def cmd_status(args: argparse.Namespace) -> int:
 
 
 def cmd_init(args: argparse.Namespace) -> int:
-    """Stub: full wizard ships in Week 6. Today it copies the template and prints next steps."""
-    from _framework.constants import (
-        AGENCY_HOME,
-        DEPLOYMENT_YAML,
-        TEMPLATES_DIR,
-    )
-
-    if not AGENCY_HOME.exists():
-        AGENCY_HOME.mkdir(parents=True)
-    template = TEMPLATES_DIR / "deployment.yaml.template"
-    if DEPLOYMENT_YAML.exists() and not args.force:
-        print(f"deployment.yaml already exists at {DEPLOYMENT_YAML}.")
-        print("Pass --force to overwrite.")
-        return 1
-    DEPLOYMENT_YAML.write_text(template.read_text())
-    print(f"Wrote {DEPLOYMENT_YAML} from template.")
-    print()
-    print(f"Tier {args.tier} interactive wizard is not yet implemented (Week 6 deliverable).")
-    print("For now, open deployment.yaml in an editor and replace {{PLACEHOLDERS}} by hand.")
-    print(f"Then run: agency status")
-    return 0
+    """Three-tier interactive wizard."""
+    from _framework.ops.init import run_wizard
+    return run_wizard(tier=args.tier, force=args.force)
 
 
 def cmd_manifest_validate(args: argparse.Namespace) -> int:
@@ -303,9 +285,45 @@ def _print_event(r: dict) -> None:
 
 
 def cmd_upgrade(_args: argparse.Namespace) -> int:
-    """Framework version bump (Week 6 build target)."""
-    print("agency upgrade: not yet implemented (Week 6 of v0.1 build).")
+    """Framework version bump.
+
+    v0.1: prints current version and the recommended manual upgrade
+    flow. Full automated migration (schema bumps, manifest evolution)
+    ships in v0.2.
+    """
+    from _framework.constants import FRAMEWORK_VERSION_LOCK
+    print(f"hermes-agency {__version__}")
+    if FRAMEWORK_VERSION_LOCK.exists():
+        pinned = FRAMEWORK_VERSION_LOCK.read_text(encoding="utf-8").strip()
+        print(f"  deployment pinned at: {pinned}")
+    print("\nv0.1 upgrade flow (manual):")
+    print("  1. cd ~/HermesAgency && git pull")
+    print("  2. ./install.sh   # idempotent; preserves your deployment")
+    print("  3. agency manifest-validate   # confirm schema still passes")
+    print("  4. agency audit --self        # confirm no framework-level findings")
+    print("\nAutomated migration is a v0.2 deliverable.")
     return 0
+
+
+def cmd_panel(args: argparse.Namespace) -> int:
+    """Run the read-only control panel."""
+    try:
+        from _framework.ops.control_panel import main as _panel_main
+    except SystemExit as e:
+        # aiohttp not installed → re-raise the friendly message
+        print(str(e), file=sys.stderr)
+        return 1
+    import sys as _sys
+    saved = _sys.argv
+    _sys.argv = ["agency-panel"]
+    if args.port:
+        _sys.argv.extend(["--port", str(args.port)])
+    if args.host:
+        _sys.argv.extend(["--host", args.host])
+    try:
+        return _panel_main()
+    finally:
+        _sys.argv = saved
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -384,6 +402,12 @@ def build_parser() -> argparse.ArgumentParser:
     # upgrade
     p_upgrade = sub.add_parser("upgrade", help="Framework version bump")
     p_upgrade.set_defaults(func=cmd_upgrade)
+
+    # panel (control panel)
+    p_panel = sub.add_parser("panel", help="Run the read-only control panel at localhost:9118")
+    p_panel.add_argument("--port", type=int, default=None)
+    p_panel.add_argument("--host", default=None)
+    p_panel.set_defaults(func=cmd_panel)
 
     return parser
 

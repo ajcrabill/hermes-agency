@@ -681,7 +681,7 @@ _VENDOR_NAMES = [
     "google.com", "openrouter", "groq", "together.ai",
     "claude", "gpt-4", "gpt-3", "qwen", "llama-3", "deepseek-r1",
 ]
-_VENDOR_LEAK_SKIP_DIRS = {"docs", "tests", "templates", "examples"}
+_VENDOR_LEAK_SKIP_DIRS = {"docs", "tests", "templates", "examples", "init"}
 _VENDOR_LEAK_SKIP_FILES = {
     "invariants.yaml",
     "audit_alignment.py",            # this file enumerates them by necessity
@@ -689,6 +689,7 @@ _VENDOR_LEAK_SKIP_FILES = {
     "CHANGELOG.md",
     "README.md",
     "deployment.yaml.template",
+    "wizard.py",                      # operator-facing prompt with vendor examples
 }
 
 
