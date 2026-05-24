@@ -1,8 +1,8 @@
 # HermesAgency — Specification
 
-**Version:** v0.17.1 (2026-05-24)
+**Version:** v0.17.2 (2026-05-24) — *also: v0.04 of the 9th effort (see §0.5)*
 **Status:** Living spec — tracks shipped releases
-**Author:** Drafted with AJ
+**Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
 
 ---
@@ -51,6 +51,51 @@ architecture changes.
    and skills with Hermes' native registries, demote standalone
    `agency` CLI to a thin shim, replace bash wizard with an in-Hermes
    setup interview. See §13.6 for the explicit closure plan.
+
+### 0.5 Lineage — this is the 9th effort
+
+HermesAgency exists because the question *"how do I build an AI chief-
+of-staff who actually learns from me?"* has been refused by eight prior
+attempts. Each refusal taught something the next attempt absorbed.
+That accumulated learning is what makes the current architecture
+non-obvious in retrospect and obvious only after the long sequence of
+near-misses that produced it.
+
+**The visible / archived lineage** (public record):
+
+| # | Effort | Outcome |
+|---|---|---|
+| ... | (earlier internal explorations — names not yet recovered) | Each tried a different shape: assistant-style, vault-driven, voice-first, dashboard-centric. None held up under sustained personal use. |
+| 6 | **v7 Loriah** | The first long-running deployment AJ used personally for months. Lived at `~/.hermes/context/loriah/`. Taught: kanban as cross-profile channel; supervised correction-learning works in practice; v7 had no autonomy ladder, so trust-building was ad-hoc. |
+| 7 | **[dCoS](https://github.com/ajcrabill/dCoS)** *(archived deprecated)* | "Digital Chief of Staff" — first attempt at a clean re-architecture of v7 lessons. Single-agent, vault-driven, sqlite-backed. Taught: state-in-code beats state-in-instructions; the goal-directed-operation model is the right loop. |
+| 8 | **[agent-core](https://github.com/ajcrabill/agent-core)** *(archived deprecated)* | Generalization of dCoS into a multi-agent platform (`dcos-agent` + `ikb-agent`). Taught: parallel "platform" framework over a runtime is the wrong shape; what's needed is a *plugin* into a real agent runtime. |
+| 9a | **HermesAgency v0.1–v0.16** | First implementation of "Hermes plugin," but built as parallel infrastructure (text-anchor patches into Hermes' source; own state under `~/.agency/`; own CLI competing with `hermes`). Taught: the plugin-discipline rule has to be structurally enforced, not just stated as intent. |
+| **9b** | **HermesAgency v0.17+** | The architectural pivot. After discovering Hermes' documented plugin API (`pre_llm_call`, `pre_tool_call`, etc.), the framework re-wires every reliability system as a Hermes lifecycle hook. State is moving next to Hermes' own (`~/.hermes/agency-state/`, v0.20). Profiles will register via `ctx.register_agent`. Skills will conform to [agentskills.io](https://agentskills.io). This is finally what the spec said it would be from §1.1. |
+
+**Dual-version notation.** The spec carries two version numbers:
+
+- Public release version (e.g. v0.17.2): semver against the
+  HermesAgency repo on GitHub. This is what `pip install
+  hermes-agency==0.17.2` resolves to, and what shows up in
+  `agency --version`.
+- "Nth effort, version M" (e.g. *v0.04 of the 9th effort*): an
+  internal counter that resets when the architectural foundation
+  shifts. v0.17.0 is v0.01 of the 9th effort (the plugin-API pivot
+  was the new foundation); v0.17.1 was v0.02; this revision is
+  v0.04; v0.18 will be v0.05; etc.
+
+The 9th-effort numbering signals to readers what the v0.17+ work
+*is* relative to v0.1–v0.16: not a continuation, but a re-foundation.
+It also reminds anyone reading the spec that the simplicity of the
+current architecture is a hard-won simplicity — not the obvious-from-
+the-start design. Each of the 8 prior efforts contributed something.
+
+If you're new to HermesAgency, the practical answer to "is this
+production-ready?" is: **the runtime is** (Hermes itself, NousResearch's
+work, very production-ready); **the supervisory layer is in early
+release** (v0.17 just landed the plugin pivot; v0.18–v0.22 close the
+remaining structural gaps). The architectural shape is now the right
+shape; the code is steadily working its way into that shape.
 
 ---
 

@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
-    { name = "AJ Crabill", email = "aj@ajcrabill.com" },
+    { name = "AJ Crabill — AI Developer for Good Ancestor (www.GoodAncestor.com)", email = "aj@ajcrabill.com" },
 ]
 keywords = ["agent", "agency", "hermes", "multi-agent", "autonomy", "supervised-learning"]
 classifiers = [
