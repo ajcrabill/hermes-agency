@@ -2,6 +2,16 @@
 
 **A multi-agent framework for small-agency owners who refuse to re-teach their AI ten times.**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Hermes engine](https://img.shields.io/badge/built%20on-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
+
+> **Install in one line** (Python 3.11+, git):
+> ```
+> curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
+> ```
+> Don't have Hermes installed? Don't worry — the wizard installs it for you as Step 0.
+
 HermesAgency is built on top of [NousResearch's Hermes engine](https://github.com/NousResearch/hermes-agent) and gives small-agency owners and operators a working multi-agent agency — Chief of Staff, Knowledge Base, System Sentinel, Analyst Judge, Business Development, Writing Support — with a single architectural promise:
 
 > Every correction the owner gives is captured, tagged, propagated to every relevant agent across the agency, and applied without the owner repeating themselves. The autonomy ladder lets agents earn more independence over time — but only when the learning loop is provably working. The system tells the owner when it isn't.
@@ -24,38 +34,77 @@ If you have to re-teach the same correction across contexts, that's a system fai
 
 ## Quickstart
 
-> Requires Python 3.11+. **You do NOT need to install Hermes first** — the
-> wizard detects an existing install or installs Hermes for you as Step 0.
+> Requires Python 3.11+ and git. **You do NOT need Hermes installed first** —
+> the wizard's first step detects an existing install or installs Hermes for you.
+
+### One-command install
 
 ```bash
-# 1. Clone + install HermesAgency
-git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
-cd ~/HermesAgency
-./install.sh
-
-# 2. Initialize your deployment (interactive wizard — pick a tier)
-#    First question: Hermes engine
-#      [a] Already installed → detect + layer on top
-#      [b] Install Hermes for me now (~2-5 min, downloads ~150 MB)
-agency init                     # T1 (5-10 min): defaults across all 6 agents
-agency init --tier 2            # T2 (15-30 min): OAuth + ingress configuration
-agency init --tier 3            # T3 (45-60 min): deep interview, exemplar capture
-
-# 3. Verify the spine
-agency status                   # Hermes detected? profiles up? manifest valid?
-agency next                     # what to do next based on actual state
-agency capture "test correction"   # rule appears in _state/learning.db
-agency audit                    # framework self-audit + skill audits
-
-# 4. Open the control panel
-open https://localhost:9118/control-panel
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
 ```
 
-**If Hermes is missing on an existing deployment** (e.g. you installed
-HermesAgency separately from Hermes, or moved to a new machine):
+That single line:
+
+1. Clones HermesAgency to `~/HermesAgency`
+2. Creates a venv at `~/.agency-venv`
+3. `pip install -e` the framework + extras
+4. Runs `agency init` — wizard's **Branch A/B** step asks about Hermes first
+   (detect an existing install OR install Hermes fresh for you), then walks
+   you through the rest of setup
+
+**Fresh-install (wipes any prior `~/.agency`, `~/.agency-venv`, `~/.hermes`):**
 
 ```bash
-agency init --hermes-only       # just Branch A/B; doesn't touch your manifest
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --reset
+```
+
+**Deeper wipe (also blows away `~/HermesAgency` + the `hermes` symlink):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --reset-deep
+```
+
+### After the wizard
+
+```bash
+# Activate the venv in future shells (or add to ~/.zshrc)
+source ~/.agency-venv/bin/activate
+
+agency status                # Hermes detected? profiles up? manifest valid?
+agency next                  # actionable next-steps for your specific state
+agency audit                 # framework self-audit + skill audits
+agency panel                 # read-only control panel at localhost:9118
+```
+
+### Tier choices
+
+`agency init` defaults to **Tier 1** (5-10 min, sensible defaults). To pick:
+
+```bash
+agency init --tier 2         # T2 (15-30 min): OAuth + ingress + ingest sources
+agency init --tier 3         # T3 (45-60 min): deep interview, exemplar capture
+```
+
+### If you skipped Hermes earlier
+
+```bash
+agency init --hermes-only    # just Branch A/B; doesn't touch your manifest
+```
+
+### Starting over
+
+```bash
+agency reset                       # wipe ~/.agency (confirm with 'wipe')
+agency reset --include-hermes      # also wipe ~/.hermes
+agency reset --include-venv -y     # also wipe ~/.agency-venv, skip prompt
+```
+
+### Manual install (if you don't want to pipe curl into bash)
+
+```bash
+git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
+cd ~/HermesAgency
+bash bootstrap.sh            # same flags as the curl-pipe version
 ```
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for full setup.

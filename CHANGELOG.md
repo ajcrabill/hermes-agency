@@ -9,6 +9,48 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.13.2] — 2026-05-24
+
+Repo went public. Docs updated to lead with the curl-pipe
+one-liner now that auth isn't a barrier.
+
+### Repository visibility
+
+`github.com/ajcrabill/hermes-agency` flipped from private to public
+(MIT-licensed). The bootstrap.sh one-liner is now reachable without
+GitHub auth:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
+```
+
+### Updated docs
+
+- README: leads with the curl-pipe one-liner front-and-center,
+  followed by quickstart sections for after-the-wizard, tier
+  choices, hermes-only resume, reset, and a manual-install
+  fallback. License + Python + Hermes badges added.
+- bootstrap.sh header: documents all three invocation modes
+  (curl-pipe, git-clone-and-run, in-repo) since they all work
+  now.
+- DEPLOYMENT.md: "One-command (recommended)" section with the
+  curl-pipe lead; manual install demoted to a fallback section;
+  full flag reference moved here.
+
+### Pre-public secrets sweep
+
+Verified before flipping visibility — no API keys committed
+(no `sk-*`, `pk-*`, `xoxb-*`, `ghp_*`, `AIza*`, `AKIA*` shapes
+anywhere in tracked files). The only emails in the repo are AJ's
+public contact at `aj@ajcrabill.com` (pyproject.toml `authors`
+field) and a few `*@gmail.com` deployment examples in the spec
+doc that AJ wrote with his real addresses on purpose. No `.env`
+or credential files committed.
+
+### Tests
+
+208 passing. Audit clean.
+
 ## [0.13.1] — 2026-05-24
 
 One-command installer. AJ asked: "what's the single command for

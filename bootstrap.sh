@@ -9,15 +9,19 @@
 #   5. Run `agency init` — wizard's Branch A/B step asks about Hermes
 #      first (detect or install), then continues into T1 setup.
 #
-# Two invocation modes, same result:
+# Three invocation modes, same result:
 #
-# From inside an existing clone (e.g. you already git cloned):
+# A) curl | bash (fastest, no clone needed):
+#   curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --reset
+#
+# B) git clone + run from outside the repo:
+#   git clone https://github.com/ajcrabill/hermes-agency.git /tmp/ha \
+#     && bash /tmp/ha/bootstrap.sh --reset
+#
+# C) Run from inside an existing clone:
 #   bash bootstrap.sh                    # fresh install
 #   bash bootstrap.sh --reset            # wipe first, then install
-#
-# From a fresh shell with nothing installed:
-#   git clone https://github.com/ajcrabill/hermes-agency.git /tmp/ha-bootstrap \
-#     && bash /tmp/ha-bootstrap/bootstrap.sh --reset
 #
 # Flags:
 #   --reset             Wipe ~/.agency, ~/.agency-venv, ~/.hermes first

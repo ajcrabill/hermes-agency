@@ -21,23 +21,53 @@ running Hermes engine with HermesAgency provisioned on top of it.
 
 ## Install
 
+### One-command (recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
+```
+
+This runs `bootstrap.sh` which:
+
+1. Verifies Python 3.11+ and git
+2. Clones HermesAgency to `~/HermesAgency`
+3. Creates a venv at `~/.agency-venv` and `pip install -e` the framework
+4. Runs `agency init` — wizard's first step is **Branch A/B** (detect or
+   install Hermes), then continues into Tier 1 deployment setup.
+
+Useful flags (pass with `bash -s -- <flags>`):
+
+- `--reset` — wipe `~/.agency`, `~/.agency-venv`, `~/.hermes` first
+- `--reset-deep` — also wipe `~/HermesAgency`, `~/.local/bin/hermes`,
+  `~/agency-staging`
+- `--no-init` — install but don't run `agency init`
+- `--target=<dir>` — clone into a non-default location
+- `--venv=<dir>` — venv path (default `~/.agency-venv`)
+- `--hermes-home=<dir>` — Hermes engine home (default `~/.hermes`)
+- `--ref=<branch>` — install a specific HermesAgency ref
+- `--skip-deps` — don't run pip install (you have it)
+
+### Manual install (if you don't want curl-pipe)
+
 ```bash
 git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
 cd ~/HermesAgency
-./install.sh
+bash bootstrap.sh                # same flags as curl-pipe
 ```
 
-The installer:
-1. Verifies Python and pip
-2. Editable-installs `hermes-agency` (`agency` CLI now on PATH)
-3. Provisions `~/.agency/` with the standard skeleton
-4. Writes a placeholder `deployment.yaml` and a version-lock
-5. Copies `DEVELOPMENT_PLAYBOOK.md` into `~/.agency/framework-vault/`
+### Legacy installer (just the framework, no wizard)
+
+```bash
+git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
+cd ~/HermesAgency
+./install.sh                     # provisions ~/.agency/ skeleton only
+agency init                      # then run the wizard separately
+```
 
 You can set a different deployment location:
 
 ```bash
-AGENCY_HOME=/path/to/agency ./install.sh
+AGENCY_HOME=/path/to/agency bash bootstrap.sh
 ```
 
 ## Configure
