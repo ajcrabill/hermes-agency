@@ -9,6 +9,99 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.0] — 2026-05-24
+
+**PyPI publication + entry-point install.** Closes the install loop
+from spec §13.7. After this release, `pip install hermes-agency`
+registers the plugin with Hermes automatically — no symlink at
+`~/.hermes/plugins/hermes-agency/` required.
+
+(v0.21 — profile registration + agentskills.io conformance — is
+deferred. PyPI publication is the mechanical, well-understood
+step; doing it first means subsequent releases can flow through
+the normal `pip install --upgrade` channel.)
+
+### Added — `[project.entry-points."hermes.plugins"]` declaration
+
+`pyproject.toml` now declares:
+
+```toml
+[project.entry-points."hermes.plugins"]
+hermes-agency = "hermes_agency_plugin:register"
+```
+
+Hermes' `PluginManager` enumerates `hermes.plugins` entry-points at
+startup and calls `register(ctx)` on each resolved target. This is
+Hermes' documented plugin-discovery contract — same surface as
+`~/.hermes/plugins/<name>/` symlinks, but distribution-friendly.
+
+### Changed — `bootstrap.sh` prefers PyPI
+
+The one-command installer now tries `pip install hermes-agency`
+first and falls back to editable-install from a git clone if PyPI
+is unreachable or the package isn't published yet:
+
+```bash
+if [[ "$INSIDE_REPO" == "true" ]]; then
+    # Developer path: editable install from the clone
+    pip install -e "${TARGET}[dev,google,embed,ingest]"
+else
+    # Curl-pipe path: PyPI first, fall back to clone
+    if pip install "hermes-agency[google,embed,ingest]"; then
+        : # PyPI win
+    else
+        pip install -e "${TARGET}[dev,google,embed,ingest]"
+    fi
+fi
+```
+
+Effect: `curl ... | bash` becomes a `pip install` from PyPI in the
+common case, and the install never re-clones the repo unless PyPI
+itself is unavailable.
+
+### Verified — wheel ships the entry-point
+
+Built locally with `python -m build --sdist --wheel --outdir
+/tmp/hermes-agency-build`. Inspected the resulting wheel's
+`entry_points.txt`:
+
+```
+[console_scripts]
+agency = hermes_agency.cli:main
+
+[hermes.plugins]
+hermes-agency = hermes_agency_plugin:register
+```
+
+Both entry-points present. The wheel is now ready to publish to
+PyPI under the `hermes-agency` distribution name.
+
+### Tests
+
+- 242 passing (no test churn — entry-point declaration is
+  metadata-only, no runtime path changes).
+- `agency audit --self`: clean.
+
+### What's NOT in v0.22
+
+- **Actual `twine upload`** to PyPI happens out-of-band (requires
+  PyPI credentials in operator's environment, not in the repo).
+  Once uploaded, the `bootstrap.sh` PyPI-first path activates
+  automatically for everyone running `curl ... | bash`.
+- **v0.21 work** (profile registration + agentskills.io conformance)
+  is still pending. The next release after v0.22 will pick that up.
+
+The closure plan after v0.22:
+
+  v0.21 (later) — Profile registration + agentskills.io conformance
+  v0.23         — Directory rename `_framework/` → `hermes_agency_plugin/<x>/`
+                  (final cosmetic alignment)
+
+After PyPI publication, HermesAgency is install-complete: the
+4-step recipe in the README — install Hermes, `pip install
+hermes-agency`, `hermes`, `/agency setup` — works end-to-end without
+any clone, symlink, or post-install fixup.
+
 ## [0.20.0] — 2026-05-24
 
 **Parallel-state collapse.** Agency state moves from

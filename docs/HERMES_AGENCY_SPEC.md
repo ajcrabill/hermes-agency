@@ -1988,7 +1988,7 @@ Acceptance: a skill picked from `hermes_agency_plugin/skills/`
 loads cleanly under both Hermes and any other agentskills.io-
 compatible runtime, without modification.
 
-**v0.22.0 — PyPI publication + entry-point install**
+**v0.22.0 — PyPI publication + entry-point install (LANDED)**
 
 HermesAgency publishes to PyPI as `hermes-agency`. The package
 declares a Hermes plugin entry point in `pyproject.toml`:
@@ -1999,17 +1999,15 @@ hermes-agency = "hermes_agency_plugin:register"
 ```
 
 Hermes' `PluginManager` discovers pip-installed plugins via this
-group. bootstrap.sh becomes a 5-line wrapper:
+group automatically — no symlink at `~/.hermes/plugins/<name>/`
+required.
 
-```bash
-#!/bin/bash
-set -euo pipefail
-command -v hermes >/dev/null || { echo "install Hermes first"; exit 1; }
-pip install hermes-agency
-echo "✓ HermesAgency installed; run: hermes"
-```
+`bootstrap.sh` prefers a PyPI install for curl-pipe users and falls
+back to an editable install from a clone when run from inside the
+repo or when PyPI is unreachable.
 
-Acceptance: a user can install everything with two commands:
+Acceptance (post-publish): a user can install everything with two
+commands:
 
 ```bash
 curl -fsSL https://.../hermes-install.sh | bash
@@ -2018,13 +2016,18 @@ pip install hermes-agency
 
 And then `hermes` works with the plugin auto-discovered.
 
+(v0.21 — profile registration via `ctx.register_agent` and the
+agentskills.io conformance pass — is deferred and will land after
+v0.22 so it can flow through the normal `pip install --upgrade`
+channel.)
+
 After v0.22.0, HermesAgency is fully what the spec said it would
 be: a Hermes plugin (not a parallel framework), pip-installable
 (not git-clone-bootstrap), discovered via entry points (not
 filesystem convention), with all state living in `~/.hermes/`
 (not a separate `~/.agency/`), conversational setup inside
-`hermes` (not a bash wizard), and skills conformant to an open
-standard (not framework-proprietary). The structural drift from
+`hermes` (not a bash wizard). Skills-standard conformance (v0.21)
+is the remaining alignment work. The structural drift from
 v0.1 → v0.16 is fully repaid.
 
 ---

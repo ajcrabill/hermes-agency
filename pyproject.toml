@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hermes-agency"
-version = "0.20.0"
+version = "0.22.0"
 description = "Multi-agent framework built as a plugin to NousResearch's Hermes agentic engine. Designed for and by small-business owners. Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control. Get the advantages of companies many times your size — without surrendering ownership of your data or IP."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -57,6 +57,17 @@ Documentation = "https://github.com/ajcrabill/hermes-agency/tree/main/docs"
 
 [project.scripts]
 agency = "hermes_agency.cli:main"
+
+# Hermes plugin entry point — Hermes' PluginManager auto-discovers
+# plugins declared at this entry-point group. When a user runs
+# `pip install hermes-agency`, the plugin is registered with Hermes
+# the next time Hermes starts. No symlink at ~/.hermes/plugins/
+# required.
+#
+# Hermes' plugin loader calls register(ctx) on the resolved target.
+# See: hermes_agency_plugin/__init__.py
+[project.entry-points."hermes.plugins"]
+hermes-agency = "hermes_agency_plugin:register"
 
 [tool.setuptools.packages.find]
 where = ["."]

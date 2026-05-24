@@ -186,10 +186,32 @@ fi
 # shellcheck source=/dev/null
 source "$VENV/bin/activate"
 pip install --quiet --upgrade pip setuptools wheel
-pip install --quiet -e "${TARGET}[dev,google,embed,ingest]" || {
-    red "  ✗ pip install failed"
-    exit 2
-}
+
+# v0.22+: prefer PyPI install. Falls back to editable-install from
+# the git clone for development / pre-PyPI-release users.
+if [[ "$INSIDE_REPO" == "true" ]]; then
+    # We're running from a clone — use editable install so local edits
+    # apply immediately. This is the developer / hacker path.
+    pip install --quiet -e "${TARGET}[dev,google,embed,ingest]" || {
+        red "  ✗ pip install -e failed"
+        exit 2
+    }
+    green "  ✓ installed (editable from $TARGET)"
+else
+    # Curl-pipe path: try PyPI first; fall back to git clone if
+    # the package isn't published yet or PyPI is unreachable.
+    if pip install --quiet "hermes-agency[google,embed,ingest]" 2>/dev/null; then
+        green "  ✓ installed from PyPI"
+    else
+        yellow "  ! PyPI install unavailable — falling back to git clone"
+        pip install --quiet -e "${TARGET}[dev,google,embed,ingest]" || {
+            red "  ✗ pip install failed"
+            exit 2
+        }
+        green "  ✓ installed (editable from $TARGET)"
+    fi
+fi
+
 AGENCY_VERSION=$(agency --version 2>&1 | head -1)
 green "  ✓ $AGENCY_VERSION installed"
 
