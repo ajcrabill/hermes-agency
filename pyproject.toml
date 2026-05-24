@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hermes-agency"
-version = "0.18.0"
-description = "Powerful Agent Team. Continuous Context Learning. Complete Privacy & Data Control. A multi-agent plugin for Hermes Agent, built for small-business owners who want big-tech AI capabilities without surrendering their data, IP, or ideas."
+version = "0.19.0"
+description = "The Agent Team Designed for Solopreneurs & Small Businesses. Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control. A multi-agent plugin for Hermes Agent — get the AI capabilities big tech is rolling out without surrendering your data, IP, or ideas."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }

@@ -9,6 +9,100 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.19.0] — 2026-05-24
+
+`/agency setup` becomes a real interactive interview inside Hermes
+(v0.06 of the 9th version — see spec §0.5). The bash `agency init`
+wizard is no longer the primary configuration surface; first-run
+setup happens via `/agency setup` slash-command inside `hermes`.
+
+Also: tagline sharpened to "**HermesAgency: The Agent Team Designed
+for Solopreneurs & Small Businesses** — Powerful Autonomous Team.
+Continuous Context Learning. Complete Privacy & Data Control."
+
+### Added — `hermes_agency_plugin/setup/` module
+
+State-machine for the in-Hermes setup interview. Three files:
+
+- `state.py` — `SetupState` dataclass, `load_state` / `save_state` /
+  `clear_state` / `is_configured` / `mark_configured`. State
+  persisted at `~/.hermes/agency-state/.setup-state.json` (v0.20
+  target) with fallback to `~/.agency/.setup-state.json` for
+  pre-v0.20 deployments.
+- `interview.py` — `handle_setup_command(rest)` routes the
+  subcommands; 8-question clean-install flow; migration path that
+  invokes `migrate_v7_full(<path>)`.
+- `__init__.py` — public surface.
+
+### `/agency setup` subcommands
+
+```
+/agency setup                           Show the migration-or-clean menu
+/agency setup status                    Report current setup state
+/agency setup migrate <v7-path>         Pull data from a prior install
+/agency setup clean                     Start the clean-install interview
+/agency setup answer <text>             Answer the current question
+/agency setup reset                     Wipe in-progress state, start over
+/agency setup help                      Show menu (same as no args)
+```
+
+Mid-interview, calling `/agency setup` re-shows the current question.
+
+### Clean-install interview — 8 questions
+
+In order, each writing to a specific vault file at the end:
+
+1. Owner name             → `Personal.md`
+2. Organization name      → `Work.md`
+3. Role description       → `Work.md`
+4. Current goals          → `Goals.md`
+5. Values                 → `Values.md`
+6. Personal context       → `Personal.md`
+7. Clients                → `Clients.md`
+8. Voice notes            → `SOUL-voice-notes.md`
+
+Any question accepts `skip` to omit; the framework reads existing
+vault files and treats absence as "no constraints in this domain
+yet." Operators can edit any of these files directly afterward.
+
+### Migration path
+
+`/agency setup migrate <v7-path>` invokes `migrate_v7_full(<path>,
+profile=<current>)` — the same code path as the shell-side
+`agency migrate v7 apply`. Imports learning corpus + SOULs +
+standards + vault MDs + legacy DBs. On success, writes
+`.configured`. On failure, surfaces the error and preserves the
+in-progress state for re-run.
+
+### `.configured` marker
+
+Written to `~/.hermes/agency-state/.configured` (or `~/.agency/
+.configured` on pre-v0.20 deployments) when either path completes
+successfully. The marker prevents `/agency setup` from re-prompting
+and is read by `/agency status` and `agency next` to determine
+deployment readiness.
+
+### Tagline change
+
+The product tagline + positioning sharpened to the v0.18.2-spec
+formulation:
+
+- **Main:** "HermesAgency: The Agent Team Designed for Solopreneurs
+  & Small Businesses"
+- **Three pillars:** "Powerful Autonomous Team. Continuous Context
+  Learning. Complete Privacy & Data Control."
+- Updated in README, pyproject.toml description, plugin.yaml
+  description, and the spec.
+
+### Tests
+
+- New `tests/seams/test_setup.py` — 9 tests covering: initial
+  prompt, clean-install advance-through-all-8-questions, skip
+  answers, status, already-configured blocking, reset, migrate
+  needs path, mid-interview resume, /agency dispatch routing.
+- 235 passing total (was 226).
+- `agency audit --self`: clean.
+
 ## [0.18.0] — 2026-05-24
 
 Verifier enforcement + deprecated-patches removal (v0.05 of the 9th

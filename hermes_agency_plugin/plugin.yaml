@@ -1,5 +1,5 @@
 name: hermes-agency
-version: "0.18.0"
+version: "0.19.0"
 description: "HermesAgency plugin — wires 7 reliability systems into Hermes via lifecycle hooks: supervised learning loop, autonomy ladder, verifier (with enforcement via transform_tool_result), send-guard, Sentinel observer, kanban tracks-link, audit. v0.18 adds verifier-enforcement and removes the deprecated text-anchor patch module."
 author: "AJ Crabill — AI Developer for Good Ancestor (www.GoodAncestor.com)"
 hooks:

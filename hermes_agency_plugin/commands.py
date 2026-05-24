@@ -73,7 +73,7 @@ def handle_agency_command(raw_args: str) -> Optional[str]:
         if sub == "audit":
             return _cmd_audit()
         if sub == "setup":
-            return _cmd_setup()
+            return _cmd_setup(rest)
         return f"Unknown /agency subcommand: {sub}\n\n{_HELP_TEXT}"
     except Exception as e:
         return f"/agency {sub} failed: {e}"
@@ -264,38 +264,11 @@ def _cmd_audit() -> str:
         return f"audit failed: {e}"
 
 
-def _cmd_setup() -> str:
-    """Migration-or-clean-install interview. Stub in v0.17 — the
-    full interactive flow ships in v0.20. v0.17 just describes what's
-    coming + tells the user to use `agency migrate v7` in shell for now."""
-    from .context import is_configured
-
-    if is_configured():
-        return ("Deployment is already configured (~/.agency/.configured exists).\n"
-                "To re-configure, remove that marker and re-run this command.")
-
-    return """\
-/agency setup — migration-or-clean-install interview
-
-This is the post-install configuration step. In v0.20 it becomes a
-full interactive interview right here in Hermes. For v0.17, the
-options are:
-
-  [migration] If you have a prior v7 install:
-      In your shell:
-        agency migrate v7 apply --from <path-to-v7-home>
-
-  [clean install] If this is brand new:
-      Currently: edit ~/.agency/profiles/<id>/SOUL.md and
-      ~/.agency/profiles/<id>/vault/Goals.md (etc.) by hand.
-      v0.20 will conduct a full interactive interview here.
-
-When done (either path), mark the deployment configured:
-
-      touch ~/.agency/.configured
-
-After that, /agency status will show 'setup: ✓ configured'.
-"""
+def _cmd_setup(rest: str = "") -> str:
+    """Migration-or-clean-install interview. v0.19 ships the real
+    flow via the setup state machine."""
+    from .setup import handle_setup_command
+    return handle_setup_command(rest)
 
 
 __all__ = ["handle_agency_command"]

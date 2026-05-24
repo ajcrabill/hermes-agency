@@ -1,8 +1,8 @@
-# HermesAgency
+# HermesAgency: The Agent Team Designed for Solopreneurs & Small Businesses
 
-### Powerful Agent Team. Continuous Context Learning. Complete Privacy & Data Control.
+### Powerful Autonomous Team. Continuous Context Learning. Complete Privacy & Data Control.
 
-**A multi-agent plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent), built for small-business owners who want the AI capabilities big tech is rolling out — without surrendering their data, IP, or ideas to get them.**
+**A multi-agent plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent), built for solopreneurs and small-business owners who want the AI capabilities big tech is rolling out — without surrendering their data, IP, or ideas to get them.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

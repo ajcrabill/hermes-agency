@@ -306,7 +306,7 @@ The discipline:
 
 HermesAgency stands on three pillars:
 
-1. **Powerful Agent Team.** Six role-specialized agents (or seven,
+1. **Powerful Autonomous Team.** Six role-specialized agents (or seven,
    with FinanceAgent) — Chief of Staff, Knowledge Base, System
    Sentinel, Analyst Judge, Business Development, Writing Support,
    Finance — that route work through each other via Hermes' kanban,
@@ -2691,7 +2691,7 @@ shape.
   from previous §1.5) restructure the "what is this and why now"
   framing:
 
-  - **§1.5 The three pillars**: Powerful Agent Team / Continuous
+  - **§1.5 The three pillars**: Powerful Autonomous Team / Continuous
     Context Learning / Complete Privacy & Data Control. Each pillar
     grounded in the architectural commitment that makes it real.
   - **§1.6 Why this matters now**: every large platform is rolling
@@ -2707,7 +2707,7 @@ shape.
   - **§1.7 Seven reliability systems**: unchanged content, renumbered
     from §1.5.
 
-  README header: lead with "Powerful Agent Team. Continuous Context
+  README header: lead with "Powerful Autonomous Team. Continuous Context
   Learning. Complete Privacy & Data Control." subtitle + a "Why this
   exists" section that's the big-tech contrast condensed for the
   front page.
