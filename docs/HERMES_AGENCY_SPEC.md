@@ -68,8 +68,8 @@ current architectural foundation — is:
 ### 0.5 Lineage — this is the 9th version
 
 HermesAgency is the 9th major version of a personal chief-of-staff
-project that's been running, breaking, and getting rewritten on and
-off for years. Each rewrite kept the same ambition — *"a chief-of-
+project that's been running, breaking, and getting rewritten since
+November 2025 when OpenClaw came out. Each rewrite kept the same ambition — *"a chief-of-
 staff who actually learns my preferences and earns autonomy on them"*
 — and replaced the foundation under it: different hardware, different
 runtimes, different models, different architectural shapes. Each

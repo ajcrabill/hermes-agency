@@ -329,7 +329,7 @@ Why month/year (not "Q1 2027" or "FY2026"): quarters and fiscal
 years vary by business; month/year is unambiguous, sortable, and
 makes the time-bound dimension testable.
 
-Quick reference: **Outcomes and Interim Goals are SMART;
+Quick reference: **Goals and Interim Goals are SMART;
 Guardrails are NOT SMART** (they're prohibition statements about
 values, so the Measurable + Attainable + Time-bound letters
 don't apply); **Interim Guardrails are SMART** (they're the
@@ -958,7 +958,7 @@ Per spec §1.1, **`Goals.md` is part of the always-loaded
 background** at every skill load, alongside `Personal.md`,
 `Work.md`, `Clients.md`, and per-profile `SOUL.md`. The agency
 never reasons in a vacuum about *what* to aim at; the layered
-strategic structure (Outcomes → Interim Goals → Initiative refs)
+strategic structure (Goals → Interim Goals → Initiative refs)
 is part of the context every turn.
 
 **`Guardrails.md` is deliberately not in the always-loaded
@@ -1230,7 +1230,7 @@ are.
 ### Who decides what's in the strategic plan?
 
 In HermesAgency, the **Principal is the final adopter**. The CoS agent
-(and other profiles, when relevant) can propose Outcomes, Interim
+(and other profiles, when relevant) can propose Goals, Interim
 Goals, and Initiatives based on data from the agency's operations,
 sector signals, and the Principal's stated priorities. The Principal
 accepts, edits, or rejects.
@@ -1289,7 +1289,7 @@ restructuring.
 | Artifact | File / location |
 |---|---|
 | Framework doc (this file) | `docs/StrategicPlanning.md` |
-| Outcomes + Interim Goals + skill/script refs | `Goals.md` (vault root) |
+| Goals + Interim Goals + skill/script refs | `Goals.md` (vault root) |
 | Guardrails + Interim Guardrails + skill/script refs | `Guardrails.md` (vault root) |
 | Agentic Initiatives (Playbook = SKILL.md) | `~/.hermes/agency-state/profiles/<profile>/skills/<skill>/SKILL.md` |
 | Deterministic Initiatives (Playbook = script docstring) | `~/.hermes/agency-state/profiles/<profile>/scripts/<script>.py` |
