@@ -59,7 +59,308 @@ def cmd_status(args: argparse.Namespace) -> int:
         if args.verbose:
             for f in result.findings:
                 print(f"      {f}")
+
+    # Summarize integration state per profile
+    print()
+    print("  integrations:")
+    _print_integration_status()
+
+    # Always end with the actionable next-step hint
+    print()
+    print("  for actionable next steps:  agency next")
     return 0 if result.ok else 1
+
+
+def _print_integration_status() -> None:
+    """One-line-per-integration summary across all profiles."""
+    try:
+        from _framework.integrations.gmail import is_configured as gmail_ok
+    except ImportError:
+        gmail_ok = lambda _p: False  # noqa: E731
+    try:
+        from _framework.integrations.google_calendar import is_configured as cal_ok
+    except ImportError:
+        cal_ok = lambda _p: False  # noqa: E731
+    try:
+        from _framework.integrations.google_drive import is_configured as drive_ok
+    except ImportError:
+        drive_ok = lambda _p: False  # noqa: E731
+    try:
+        from _framework.integrations.signal import is_configured as signal_ok
+    except ImportError:
+        signal_ok = lambda _p: False  # noqa: E731
+    try:
+        from _framework.integrations.slack import is_configured as slack_ok
+    except ImportError:
+        slack_ok = lambda _p: False  # noqa: E731
+
+    profiles_dir = AGENCY_HOME / "profiles"
+    if not profiles_dir.exists():
+        print("    (no profiles)")
+        return
+
+    any_printed = False
+    for prof_dir in sorted(profiles_dir.iterdir()):
+        if not prof_dir.is_dir():
+            continue
+        pid = prof_dir.name
+        state = []
+        for name, fn in [
+            ("gmail", gmail_ok),
+            ("calendar", cal_ok),
+            ("drive", drive_ok),
+            ("signal", signal_ok),
+            ("slack", slack_ok),
+        ]:
+            try:
+                if fn(pid):
+                    state.append(f"{name}=✓")
+                else:
+                    state.append(f"{name}=–")
+            except Exception:
+                state.append(f"{name}=?")
+        print(f"    {pid:15s}  {'  '.join(state)}")
+        any_printed = True
+    if not any_printed:
+        print("    (no profiles)")
+
+
+def cmd_next(args: argparse.Namespace) -> int:
+    """Actionable next-steps based on the current deployment state.
+
+    Reads ~/.agency/deployment.yaml + per-profile integration state,
+    figures out what's missing or deferred, and prints concrete
+    commands to run. Designed to answer "what do I do now?" at any
+    point in a deployment's lifecycle.
+    """
+    from _framework.manifest import validate
+
+    print(f"HermesAgency {__version__} — next steps")
+    print()
+
+    if not AGENCY_HOME.exists():
+        print("  Deployment not initialized.")
+        print()
+        print("  Run:  agency init --tier 2")
+        return 0
+
+    steps: list[tuple[str, str, str]] = []  # (priority, headline, commands)
+
+    # ── 1. Manifest validity ──────────────────────────────────────────
+    result = validate(DEPLOYMENT_YAML) if DEPLOYMENT_YAML.exists() else None
+    if result is None:
+        steps.append((
+            "BLOCKER", "deployment.yaml missing",
+            "  agency init --tier 2",
+        ))
+    elif result.errors:
+        steps.append((
+            "BLOCKER", f"deployment.yaml has {len(result.errors)} error(s)",
+            "  agency status -v   # see the findings\n"
+            "  # edit ~/.agency/deployment.yaml accordingly",
+        ))
+
+    # ── 2. LLM provider check ────────────────────────────────────────
+    provider_state = _check_providers()
+    if provider_state == "unconfigured":
+        steps.append((
+            "BLOCKER",
+            "No LLM provider configured — agents can't think yet",
+            f"  open {DEPLOYMENT_YAML}\n"
+            "  # find `providers:` block; set base_url / api_key / model\n"
+            "  # local example:\n"
+            "  #   primary:\n"
+            "  #     type: openai-compatible\n"
+            "  #     base_url: http://localhost:11434/v1\n"
+            "  #     api_key: dummy\n"
+            "  #     model: <whatever-your-local-engine-serves>",
+        ))
+
+    # ── 3. Deferred integrations ─────────────────────────────────────
+    deferred = _list_deferred_integrations()
+    for prof, missing in deferred.items():
+        if missing:
+            cmds = []
+            for name in missing:
+                if name == "gmail":
+                    cmds.append(f"  agency integrations gmail setup "
+                                f"--profile {prof} "
+                                f"--client-secret <path>")
+                elif name == "calendar":
+                    cmds.append(f"  agency integrations google-calendar setup "
+                                f"--profile {prof} "
+                                f"--client-secret <path>")
+                elif name == "drive":
+                    cmds.append(f"  agency integrations google-drive setup "
+                                f"--profile {prof} "
+                                f"--client-secret <path>")
+                elif name == "signal":
+                    cmds.append(f"  agency integrations signal setup "
+                                f"--profile {prof} "
+                                f"--signal-number +1234567890")
+                elif name == "slack":
+                    cmds.append(f"  agency integrations slack setup "
+                                f"--profile {prof} "
+                                f"--token xoxb-...")
+            steps.append((
+                "SETUP",
+                f"profile '{prof}': {', '.join(missing)} not configured",
+                "\n".join(cmds),
+            ))
+
+    # ── 4. Learning corpus state ─────────────────────────────────────
+    rules_count = _count_learning_rules()
+    if rules_count == 0:
+        steps.append((
+            "SETUP",
+            "Learning corpus is empty — capture some rules or migrate from v7",
+            "  agency capture \"<your correction>\" --skill <skill-id>\n"
+            "  # or, to import a prior v7 deployment:\n"
+            "  agency migrate v7 plan --from <path-to-v7-loriah.db>\n"
+            "  agency migrate v7 apply --from <path-to-v7-loriah.db>",
+        ))
+
+    # ── 5. Cron jobs ─────────────────────────────────────────────────
+    if not _has_active_crons():
+        steps.append((
+            "OPTIONAL",
+            "No cron jobs synced — agency will be idle without scheduled runs",
+            "  agency cron list           # see what's available\n"
+            "  agency cron sync           # wire jobs into Hermes' scheduler",
+        ))
+
+    # ── 6. Audit findings ────────────────────────────────────────────
+    audit_findings = _audit_summary()
+    if audit_findings:
+        steps.append((
+            "REVIEW",
+            f"Audit has {audit_findings} finding(s)",
+            "  agency audit               # see them",
+        ))
+
+    # ── 7. Output ────────────────────────────────────────────────────
+    if not steps:
+        print("  ✓ deployment is healthy and active.")
+        print()
+        print("  Things you can do:")
+        print("    agency status         summary + integration state")
+        print("    agency audit          run the audit suite")
+        print("    agency learn list     browse the learning corpus")
+        print("    agency goals show     view tracked goals")
+        print("    agency events --tail  watch the event stream")
+        print("    agency panel          read-only web control panel")
+        return 0
+
+    print(f"  {len(steps)} thing(s) to address:")
+    print()
+    for i, (priority, headline, cmds) in enumerate(steps, 1):
+        marker = {
+            "BLOCKER": "✗",
+            "SETUP":   "○",
+            "OPTIONAL": "·",
+            "REVIEW":  "!",
+        }.get(priority, "·")
+        print(f"  {i}. [{marker} {priority}] {headline}")
+        for line in cmds.splitlines():
+            print(f"     {line}")
+        print()
+    return 0
+
+
+def _check_providers() -> str:
+    """Returns 'configured', 'unconfigured', or 'unknown'."""
+    if not DEPLOYMENT_YAML.exists():
+        return "unknown"
+    try:
+        import yaml
+        doc = yaml.safe_load(DEPLOYMENT_YAML.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return "unknown"
+    providers = doc.get("providers", {}) or {}
+    if not providers:
+        return "unconfigured"
+    for cfg in providers.values():
+        if isinstance(cfg, dict):
+            base = (cfg.get("base_url") or "").strip()
+            if not base or "your-" in base.lower() or "example" in base.lower():
+                return "unconfigured"
+    return "configured"
+
+
+def _list_deferred_integrations() -> dict[str, list[str]]:
+    """Per-profile, which integrations are NOT configured."""
+    try:
+        from _framework.integrations.gmail import is_configured as gmail_ok
+        from _framework.integrations.google_calendar import is_configured as cal_ok
+        from _framework.integrations.google_drive import is_configured as drive_ok
+    except ImportError:
+        return {}
+    result: dict[str, list[str]] = {}
+    profiles_dir = AGENCY_HOME / "profiles"
+    if not profiles_dir.exists():
+        return result
+    for prof_dir in sorted(profiles_dir.iterdir()):
+        if not prof_dir.is_dir():
+            continue
+        pid = prof_dir.name
+        missing = []
+        try:
+            if not gmail_ok(pid):
+                missing.append("gmail")
+        except Exception:
+            pass
+        try:
+            if not cal_ok(pid):
+                missing.append("calendar")
+        except Exception:
+            pass
+        try:
+            if not drive_ok(pid):
+                missing.append("drive")
+        except Exception:
+            pass
+        if missing:
+            result[pid] = missing
+    return result
+
+
+def _count_learning_rules() -> int:
+    """Count active learning rules; 0 if DB doesn't exist yet."""
+    try:
+        from _framework.constants import LEARNING_DB
+        if not LEARNING_DB.exists():
+            return 0
+        import sqlite3
+        with sqlite3.connect(LEARNING_DB) as cx:
+            row = cx.execute(
+                "SELECT COUNT(*) FROM learning_rules WHERE status='active'"
+            ).fetchone()
+            return int(row[0]) if row else 0
+    except Exception:
+        return 0
+
+
+def _has_active_crons() -> bool:
+    """True if there's at least one cron job synced."""
+    try:
+        from _framework.cron import list_jobs
+        for prof_dir in (AGENCY_HOME / "profiles").iterdir():
+            if prof_dir.is_dir():
+                if list_jobs(profile=prof_dir.name):
+                    return True
+        return False
+    except Exception:
+        return False
+
+
+def _audit_summary() -> int:
+    """Returns count of audit findings; 0 if clean or unavailable."""
+    try:
+        from _framework.audit import audit_alignment
+        report = audit_alignment.audit_self()
+        return len(report.findings) if hasattr(report, "findings") else 0
+    except Exception:
+        return 0
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -651,6 +952,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_status = sub.add_parser("status", help="Quick health summary")
     p_status.add_argument("-v", "--verbose", action="store_true")
     p_status.set_defaults(func=cmd_status)
+
+    # next — actionable next-steps based on deployment state
+    p_next = sub.add_parser(
+        "next",
+        help="Actionable next-steps based on the current deployment state",
+    )
+    p_next.set_defaults(func=cmd_next)
 
     # init
     p_init = sub.add_parser("init", help="Provision a deployment (interactive wizard)")

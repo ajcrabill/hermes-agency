@@ -237,11 +237,66 @@ The others are opt-in — they require additional setup beyond Tier 2.
     print("=" * 70)
     print("  Tier 2 complete")
     print("=" * 70)
-    if a.deferred_steps:
-        print(f"  Deferred (run later): {', '.join(a.deferred_steps)}")
     print(f"  Deployment manifest updated: {DEPLOYMENT_YAML}")
     print()
+
+    if a.deferred_steps:
+        print("Deferred — come back to these when ready:")
+        print()
+        _print_resume_commands(a)
+        print()
+
+    print("─" * 70)
+    print("  What to do next")
+    print("─" * 70)
+    print(f"""
+  1. Wire an LLM provider:
+       open {DEPLOYMENT_YAML}
+       # edit the `providers:` section to point at your inference
+       # endpoint (local Ollama / Hermes, or any OpenAI-compatible URL).
+       # vendor-neutral: no vendor name is required by the framework.
+
+  2. Verify the deployment is healthy:
+       agency status
+       agency audit
+       agency next        # actionable next-steps for your specific state
+
+  3. Optional: bring in v7 data:
+       agency migrate v7 plan --from <path-to-v7-loriah.db>
+       agency migrate v7 apply --from <path-to-v7-loriah.db>
+
+  4. Start the read-only control panel:
+       agency panel       # serves localhost:9118 (Tailscale-friendly)
+""")
     return a
+
+
+def _print_resume_commands(a: "Tier2Answers") -> None:
+    """For each deferred step, print the exact command to come back to."""
+    for step in a.deferred_steps:
+        if step == "gmail":
+            print(f"  • Gmail OAuth:")
+            print(f"      agency integrations gmail setup "
+                  f"--profile {a.gmail_profile} "
+                  f"--client-secret <path-to-client_secret.json>")
+            print(f"      (download from console.cloud.google.com → "
+                  f"APIs → Credentials)")
+        elif step == "calendar":
+            print(f"  • Google Calendar OAuth:")
+            print(f"      agency integrations google-calendar setup "
+                  f"--profile {a.calendar_profile} "
+                  f"--client-secret <path-to-client_secret.json>")
+        elif step == "drive":
+            print(f"  • Google Drive OAuth:")
+            print(f"      agency integrations google-drive setup "
+                  f"--profile {a.drive_profile} "
+                  f"--client-secret <path-to-client_secret.json>")
+        elif step == "ingest_sources":
+            print(f"  • Ingest sources:")
+            print(f"      agency init --tier 2     # re-run to add sources")
+        else:
+            print(f"  • {step}:")
+            print(f"      (see docs/INTEGRATIONS.md for the resume command)")
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────

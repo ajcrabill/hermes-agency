@@ -9,6 +9,47 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.12.1] — 2026-05-24
+
+UX patch from the first real install (AJ on esblaptop-m4).
+Two specific gaps closed: T2 wizard didn't tell users how to
+come back to deferred OAuth setup, and after init+migration
+completed there was no clear "what to do next" surface.
+
+### Added — `agency next` command
+
+A new top-level command that reads deployment state and prints
+actionable next-steps. Surfaces blockers (no LLM provider,
+manifest errors), setup gaps (deferred integrations, empty
+learning corpus), and optional steps (no cron jobs synced).
+Each item ships with the exact command to run.
+
+Designed to answer "what do I do now?" at any point in a
+deployment's lifecycle. Healthy deployments get a "things you
+can do" menu instead of blockers.
+
+### Improved — T2 wizard end-of-flow
+
+The wizard now prints, for every deferred integration, the
+*exact* command to resume setup later — with the right
+`--profile` value baked in. Previously it just listed deferred
+items by name, leaving users to guess the resume path. Adds a
+"What to do next" section with concrete first steps (wire LLM
+provider, verify deployment, optional v7 migration, control
+panel).
+
+### Improved — `agency status` integration summary
+
+Now prints per-profile integration state (gmail ✓ / calendar – /
+drive – / signal – / slack –) alongside manifest validity, plus
+a footer pointing at `agency next`.
+
+### Tests
+
+- 198 tests passing (no test regressions; new code paths are
+  CLI-surface and covered by smoke-testing).
+- `agency audit --self`: clean.
+
 ## [0.12.0] — 2026-05-24
 
 Polish-for-git release. Spec moves into the repo. Five new
