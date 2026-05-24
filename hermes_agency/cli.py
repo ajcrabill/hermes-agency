@@ -544,6 +544,76 @@ def cmd_goals(args: argparse.Namespace) -> int:
         print(f"Added active project to {GOALS_MD}")
         return 0
 
+    if args.action == "track":
+        # Define a metric for tracking progress
+        from _framework.goals import define_metric
+        if not args.metric_name or not args.text:
+            print("error: --metric and --text (the goal text) required for track",
+                  file=sys.stderr)
+            return 2
+        mid = define_metric(
+            goal_text=args.text,
+            metric_name=args.metric_name,
+            measurement_type=args.measurement_type or "counter",
+            unit=args.unit or "",
+            target_value=args.target,
+            target_at=args.target_at,
+            data_source=args.data_source or "manual",
+        )
+        print(f"Defined metric {args.metric_name} (id={mid}) for goal: {args.text[:60]}")
+        return 0
+
+    if args.action == "observe":
+        from _framework.goals import record_observation, list_metrics
+        if args.metric_name and not args.metric_id:
+            metrics = [m for m in list_metrics() if m.metric_name == args.metric_name]
+            if not metrics:
+                print(f"error: no metric named {args.metric_name!r}", file=sys.stderr)
+                return 1
+            if len(metrics) > 1:
+                print(f"error: multiple metrics named {args.metric_name!r}; pass --metric-id",
+                      file=sys.stderr)
+                return 1
+            args.metric_id = metrics[0].id
+        if args.metric_id is None or args.value is None:
+            print("error: --metric-id (or --metric) and --value required", file=sys.stderr)
+            return 2
+        record_observation(metric_id=args.metric_id, value=args.value,
+                            note=args.note or "")
+        print(f"Recorded value {args.value} for metric id={args.metric_id}")
+        return 0
+
+    if args.action == "status":
+        from _framework.goals import weekly_status_report
+        report = weekly_status_report()
+        print(f"Goal tracking status — {report['total_metrics']} metrics:")
+        print(f"  ✓ on-track:  {report['on_track']}")
+        print(f"  ⚠ at-risk:   {report['at_risk']}")
+        print(f"  ✗ missed:    {report['missed']}")
+        print(f"  ★ done:      {report['done']}")
+        print(f"  · no-data:   {report['no_data']}")
+        print()
+        # Show at-risk + missed first
+        priority = ("missed", "at-risk")
+        sorted_metrics = sorted(
+            report["metrics"],
+            key=lambda s: (s["status"] not in priority, s.get("metric_name", "")),
+        )
+        for s in sorted_metrics:
+            marker = {
+                "on-track": "✓", "at-risk": "⚠", "missed": "✗",
+                "done": "★", "no-data": "·", "in-progress": "→",
+                "no-target": "·",
+            }.get(s["status"], "?")
+            print(f"  {marker} [{s['status']:8s}] {s.get('metric_name', '?')}: {s.get('reason', '')}")
+        return 0
+
+    if args.action == "sync-milestones":
+        from _framework.goals import sync_milestones_from_goals_md
+        n = sync_milestones_from_goals_md()
+        print(f"Synced {n} milestone(s) from Goals.md")
+        return 0
+
     print(f"unknown action: {args.action}", file=sys.stderr)
     return 2
 
@@ -696,11 +766,14 @@ def build_parser() -> argparse.ArgumentParser:
     # goals
     p_goals = sub.add_parser(
         "goals",
-        help="Show/add/refine entries in Goals.md + SMART-check",
+        help="Show/add/refine Goals.md + SMART-check + tracking",
     )
     p_goals.add_argument(
         "action",
-        choices=["show", "smart-check", "add", "replace", "add-project"],
+        choices=[
+            "show", "smart-check", "add", "replace", "add-project",
+            "track", "observe", "status", "sync-milestones",
+        ],
         default="show",
         nargs="?",
     )
@@ -714,6 +787,23 @@ def build_parser() -> argparse.ArgumentParser:
         "--smart", action="store_true",
         help="(add) refuse if the text fails SMART criteria",
     )
+    # Tracking arguments
+    p_goals.add_argument(
+        "--metric", dest="metric_name",
+        help="(track / observe) metric name",
+    )
+    p_goals.add_argument(
+        "--measurement-type", dest="measurement_type",
+        choices=["counter", "gauge", "percentage", "binary"],
+        help="(track) measurement_type",
+    )
+    p_goals.add_argument("--unit", help="(track) unit string (clients / USD / %)")
+    p_goals.add_argument("--target", type=float, help="(track) target value")
+    p_goals.add_argument("--target-at", help="(track) target deadline ISO date")
+    p_goals.add_argument("--data-source", help="(track) data source description")
+    p_goals.add_argument("--metric-id", type=int, help="(observe) metric id")
+    p_goals.add_argument("--value", type=float, help="(observe) observed value")
+    p_goals.add_argument("--note", help="(observe) note")
     p_goals.set_defaults(func=cmd_goals)
 
     # migrate

@@ -11,8 +11,8 @@ integration + ingress configuration most agencies want:
   4. Ingest sources (RSS feeds, newsletter platforms, custom hooks)
   5. Daily digest schedule (when the morning briefing fires)
   6. Ingress channel selection (which channels the operator wants
-     to talk to CoS through — email + chat tab default; Signal /
-     Slack / OpenWebUI are opt-in)
+     to talk to CoS through — email + chat tab default; Signal +
+     Slack are opt-in)
 
 ~15-30 minutes. Each step is skippable — operator can defer
 integrations to later via `agency integrations gmail setup ...`.
@@ -63,7 +63,6 @@ class Tier2Answers:
     ingress_chat_tab: bool = True
     ingress_signal: bool = False
     ingress_slack: bool = False
-    ingress_openwebui: bool = False
 
     deferred_steps: list[str] = field(default_factory=list)
 
@@ -230,9 +229,6 @@ The others are opt-in — they require additional setup beyond Tier 2.
     a.ingress_slack = _yn(prompter,
         "Enable Slack ingress? (requires slack app setup later)",
         default="n")
-    a.ingress_openwebui = _yn(prompter,
-        "Enable OpenWebUI ingress? (requires OpenWebUI + ObligationBoard plugin)",
-        default="n")
 
     # ── Persist into deployment.yaml ────────────────────────────────────
     _persist_to_deployment_yaml(a)
@@ -306,7 +302,6 @@ def _persist_to_deployment_yaml(a: Tier2Answers) -> None:
         "chat_tab": a.ingress_chat_tab,
         "signal": a.ingress_signal,
         "slack": a.ingress_slack,
-        "openwebui": a.ingress_openwebui,
     })
 
     # tier2 metadata (digests, ingest sources, deferred steps)

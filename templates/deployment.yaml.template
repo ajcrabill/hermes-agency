@@ -153,4 +153,3 @@ ingress:
   chat_tab:  true          # dashboard chat at https://localhost:9118/chat
   signal:    false
   slack:     false
-  openwebui: false

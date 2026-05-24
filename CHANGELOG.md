@@ -9,6 +9,106 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.9.0] — 2026-05-24
+
+CoS gains the two things AJ called out: a **goal progress tracker**
+(since SMART goals are measurable, measure them) and a **weekly
+brainstorm** (3 actionable ideas per week for how HermesAgency
+can autonomously help move toward the goals). Plus cleanup of
+ObligationBoard + OpenWebUI references.
+
+### Added — Goal tracking subsystem
+
+- **`_framework/goals/tracking.py`** — `goal_tracking.db` with three
+  tables: `goal_metrics` (what to measure + target + deadline +
+  data source), `goal_observations` (recorded values over time),
+  `goal_milestones` (interim bullets from Goals.md with deadlines
+  + status).
+- **`define_metric()`** — idempotent setup (re-defining a metric
+  updates rather than duplicates).
+- **`record_observation()`** + **`latest_observation()`** +
+  **`observation_history()`** — append-only ledger.
+- **`metric_status()`** — computes on-track / at-risk / missed /
+  done / no-data per metric. Compares actual progress against
+  expected linear pace toward the deadline. At-risk threshold
+  defaults to 20% behind pace (operator-tunable via learning rule).
+- **`weekly_status_report()`** — aggregate view across all metrics.
+- **`sync_milestones_from_goals_md()`** — parses interim bullets
+  out of `Goals.md::ANNUAL_GOALS`, extracts date hints (Q1/Q2/Q3/Q4
+  → quarter-end, "by November 2026" → 2026-11-30, ISO dates
+  preserved), upserts to `goal_milestones`.
+
+### Added — Two new CoS skills
+
+- **`goal-progress-tracker`** — Q&A coaching to set up metrics per
+  goal (what's the measurable signal? what's the data source?),
+  records observations on cadence, produces weekly status report
+  with at-risk + missed surfaced first.
+- **`weekly-brainstorm`** — produces three actionable ideas weekly
+  for how HermesAgency can autonomously help reach the goals. One
+  new-capability, one pattern-from-corrections, one resource-
+  re-allocation. Each idea names the goal it serves, estimated
+  cost, the signal that surfaced it, and a first concrete step.
+  At least one must be about *stopping* something (not just
+  starting). Honors `Goals.md::EXPLICIT_NON_GOALS` as a filter +
+  the rejected-ideas list to avoid re-proposing.
+
+### Added — `agency goals` CLI tracking actions
+
+- `agency goals track --text "..." --metric ... --target N --target-at YYYY-MM-DD`
+- `agency goals observe --metric ... --value N`
+- `agency goals status` — colored on-track / at-risk / missed
+  report, sorted with attention-items first
+- `agency goals sync-milestones` — pull interim bullets from
+  Goals.md into the tracking DB
+
+Live-verified: created a goal, observed against it, status report
+correctly shows on-track verdict with computed pace.
+
+### Removed — deprecations
+
+- **OpenWebUI** references removed from manifest validator hint,
+  deployment.yaml.template, minimal-deployment example, T2 wizard
+  flow + answers struct + persistence, owner-channels-ingress
+  skill, wizard manifest renderer, test fixtures. Operators who
+  want OpenWebUI integration make that call themselves; the
+  framework doesn't pre-suggest it.
+- **ObligationBoard** reference removed (was already deprecated
+  before v7; the kanban handles obligation tracking via
+  `tenant=obligation`).
+
+### Tests
+
+171 passing (159 from v0.8 + 12 new goal tracking tests):
+- Define metric (basic + idempotent re-definition)
+- Record + latest + history observations
+- Status: on-track / at-risk / missed / done / no-data
+- Weekly status aggregate
+- Sync milestones from Goals.md (with date hint extraction)
+- Mark milestone done
+- Date hint variations (Q3, "November 2026", ISO date, vague)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### How the new skills compose
+
+The full intent→reality→improvement loop now closes:
+
+  smart-goal-coach     →  defines SMART goals + interim milestones
+  goal-progress-tracker→  measures progress against them
+  time-use-analyzer    →  measures whether calendar matches priority
+  weekly-brainstorm    →  proposes specific autonomous experiments
+
+All four land in the weekly review, with at-risk + missed
+surfaced first so they get attention rather than being buried.
+
+### Skipped this round (per AJ direction)
+
+- ObligationBoard re-introduction (deprecated; kanban handles it)
+- OpenWebUI integration (operator's call, not the framework's)
+- Multi-machine deployment + mesh layer (future)
+- Additional roles beyond Finance (future)
+
 ## [0.8.0] — 2026-05-24
 
 FinanceAgent role + finance subsystem. The seventh default role

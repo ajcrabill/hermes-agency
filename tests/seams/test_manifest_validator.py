@@ -57,7 +57,6 @@ ingress:
   chat_tab: true
   signal: false
   slack: false
-  openwebui: false
 """
 
 

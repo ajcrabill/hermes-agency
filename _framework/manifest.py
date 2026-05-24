@@ -384,7 +384,7 @@ def validate(yaml_path: Path | str) -> ValidationResult:
             "warn", "no-ingress",
             "All ingress methods are false — owner has no way to reach CoS.",
             location="ingress",
-            hint="Enable at least one of email / chat_tab / signal / slack / openwebui.",
+            hint="Enable at least one of email / chat_tab / signal / slack.",
         )
 
     return result

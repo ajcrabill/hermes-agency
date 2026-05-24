@@ -11,7 +11,7 @@ voice_tags: [direct, precise]
 # Owner channels ingress
 
 Unified triage across every inbound channel — email, dashboard chat,
-Signal, Slack, OpenWebUI. Inbound from any channel normalizes into a
+Signal, Slack. Inbound from any channel normalizes into a
 single triage surface so CoS handles them uniformly.
 
 ## What this skill does

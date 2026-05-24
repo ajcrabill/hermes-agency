@@ -33,10 +33,26 @@ from .goals_md import (
     SECTION_HEADERS,
 )
 from .smart import smart_check, SmartVerdict
+from .tracking import (
+    init_goal_tracking_db,
+    define_metric, list_metrics,
+    record_observation, latest_observation, observation_history,
+    metric_status, weekly_status_report,
+    upsert_milestone, mark_milestone, list_milestones,
+    sync_milestones_from_goals_md,
+    GoalMetric,
+)
 
 __all__ = [
     "ParsedGoals", "read_goals",
     "add_annual_goal", "replace_annual_goal", "add_active_project",
     "SECTION_HEADERS",
     "smart_check", "SmartVerdict",
+    "init_goal_tracking_db",
+    "define_metric", "list_metrics",
+    "record_observation", "latest_observation", "observation_history",
+    "metric_status", "weekly_status_report",
+    "upsert_milestone", "mark_milestone", "list_milestones",
+    "sync_milestones_from_goals_md",
+    "GoalMetric",
 ]
