@@ -530,24 +530,126 @@ criteria as Interim Goals (above), with two differences:
 
 ### 3.5 How the CoS uses this section in the setup interview
 
-During the `/agency setup clean` interview, the CoS:
+**Principle: the owner doesn't need to know any of this.** The
+strategic-planning framework — SMART, Outcomes vs Outputs vs
+Initiatives, leading vs lagging indicators, correlation arguments,
+the canonical *"increase from W on date Y to Z by date W"* form —
+is the CoS's working knowledge, not the owner's. The owner talks
+about their **vision** (*what does success look like in a year or
+two? what are you trying to accomplish?*) and their **values**
+(*what won't you trade off? what lines won't you cross?*); the
+CoS translates that into a structured `Goals.md` and
+`Guardrails.md`.
 
-1. Asks the owner for their first-pass Outcomes, Guardrails, and
-   ideas about Interim Goals.
-2. **Runs each candidate through the criteria above**, flagging
-   missing pieces (no end date, no measurement instrument named,
-   too aspirational, etc.) and proposing edits in real time.
-3. Drafts the `Goals.md` and `Guardrails.md` files with the
-   refined versions, plus comments naming any criterion that's
-   weak or still unresolved (so the owner can revisit during
-   weekly review).
-4. Suggests skill/script candidates for the Initiative layer
-   based on the owner's existing profile catalog.
+**Language level: 8th-grade by default.** The interview is a
+conversation, not a strategy seminar. The CoS uses plain language
+(*"a goal"*, *"something you won't do"*) — not specialized terms
+(*"Outcome"*, *"Guardrail"*, *"Interim Goal"*, *"SMART"*) — unless
+the owner explicitly asks for more depth or clearly has a
+strategic-planning background, in which case the CoS shifts up
+the register naturally.
 
-The point isn't to make the rough draft perfect — the framework
-is iterative and assumes weekly + quarterly revision. The point is
-to make the rough draft *good enough* that the strategic plan can
-start guiding the agency's behavior from day one.
+**Division of responsibility:**
+
+| Layer | Owner's role | CoS's role |
+|---|---|---|
+| **Outcomes** (top-level Goals) | Talks about vision; reviews + approves the rough draft | Translates vision into SMART statements; presents for approval |
+| **Guardrails** | Talks about values + lines they won't cross; reviews + approves the rough draft | Translates values into prohibition statements; presents for approval |
+| **Interim Goals** | *(doesn't appear in their conversation)* | Drafts behind the scenes; refines over time |
+| **Interim Guardrails** | *(doesn't appear in their conversation)* | Drafts behind the scenes; refines over time |
+| **Initiatives** (skills + scripts) | *(doesn't appear in their conversation)* | Proposes mappings from existing profile catalogs; refines over time |
+
+The owner owns **what the business is trying to accomplish** and
+**what the business won't do** to accomplish it. Everything else
+is operational — the CoS's job, not the owner's.
+
+**Conversation flow during `/agency setup`:**
+
+1. **Listen for vision.** *"Looking ahead a year or two, what
+   would success look like for your business? Tell me what you'd
+   want to be true that isn't true today."* The CoS asks
+   follow-ups until it has enough to translate.
+
+2. **Listen for values.** *"What matters to you about HOW you do
+   business — even when it might cost you in the short term?
+   What lines won't you cross?"* Same pattern: follow-ups until
+   the CoS can translate.
+
+3. **Translate to SMART (silently).** Behind the scenes, the CoS
+   runs each candidate Outcome and Guardrail through the criteria
+   in §3.1 and §3.2 — naming a starting point, an ending point,
+   starting and ending dates (month/year), a specific subject, a
+   measurement instrument, the right phrasing. If a piece is
+   missing (no number named, no timeline picked), the CoS asks a
+   follow-up — in plain language — to fill the gap. *"You said
+   you want more inbound inquiries — how many would feel like
+   enough? And by when?"*
+
+4. **Present the rough draft.** Before the setup interview is
+   marked complete, the CoS shows the owner the proposed
+   `Goals.md` and `Guardrails.md` in plain readable form:
+
+   > *"Here's what I heard. I'm proposing we aim for:*
+   >
+   > > **Goal 1**: ...
+   > >
+   > > **Goal 2**: ...
+   >
+   > *And we won't:*
+   >
+   > > **Line we won't cross 1**: ...
+   > >
+   > > **Line we won't cross 2**: ...
+   >
+   > *Want to revise anything before we make it official?"*
+
+5. **Owner revises and approves.** The owner can edit any of it.
+   The CoS re-translates after edits, runs the criteria again,
+   and presents again. This loops until the owner says "good."
+   **The `.configured` marker is not written until the owner
+   approves.**
+
+6. **CoS drafts the rest behind the scenes.** After approval, the
+   CoS drafts Interim Goals (per Outcome), Interim Guardrails
+   (per Guardrail), and proposes Initiative mappings to skills
+   and scripts from the active profiles' existing catalogs.
+   These don't require the owner's pre-approval — they're CoS's
+   working hypotheses, refined over time.
+
+**Ongoing revision (not just at setup):**
+
+The first draft of `Goals.md` and `Guardrails.md` from the
+interview isn't final. Changes come from three sources after
+setup:
+
+- **Daily implementation work** — when a skill keeps producing
+  output that doesn't quite fit, or a scheduled review surfaces
+  a pattern the owner cares about, the CoS proposes refinements
+  to the relevant layer.
+- **The supervised learning loop** — corrections the owner gives
+  accumulate into rules; when many rules cluster around the same
+  theme, the CoS proposes a goal or guardrail refinement.
+- **Weekly health check + quarterly review** — explicit cadences
+  for owner-facing review.
+
+**Refinements at layer 1 (Outcomes / Guardrails) always go back
+to the owner for approval.** Refinements at layers 2 and 3
+(Interims / Initiatives) are the CoS's working drafts and
+refresh continuously without owner approval — though the owner
+can override at any time by editing the file directly or by
+saying so in conversation.
+
+**Implementation note (for v0.23+ interview code):**
+
+For the CoS to do this job, the `/agency setup` interview's
+prompt must have **this document loaded as context** —
+specifically §3 (Quality criteria) and §7.1 (the three-layer
+structure of Goals.md and Guardrails.md). The interview code's
+job is the conversation flow; the strategic-planning expertise
+is supplied by reading this doc into the prompt. This is the
+same pattern used for skill-load context everywhere else in the
+framework: code carries control flow, the markdown carries
+knowledge.
 
 ---
 
@@ -774,6 +876,24 @@ files and script files — not at separate "Initiative" docs. The
 SKILL.md (or script docstring) carries the alignment metadata in
 its frontmatter (`outcome`, `interim_goal`, `outcome_metric`,
 `status`, etc.) — see §5.
+
+**Authorship of each layer** (the division of labor; full
+treatment in §3.5):
+
+| Layer | Authored by | Approved by |
+|---|---|---|
+| **Outcomes** (top-level Goals) | CoS drafts from owner's vision (interview) | **Owner** |
+| **Guardrails** | CoS drafts from owner's values (interview) | **Owner** |
+| **Interim Goals** | CoS | CoS (working hypotheses; owner can override anytime) |
+| **Interim Guardrails** | CoS | CoS (same) |
+| **Initiative refs** (skill + script entries) | CoS (proposes mappings from active profiles' catalogs) | CoS (same) |
+
+The owner doesn't write any of these layers directly. They talk
+about vision and values; the CoS does the translation and the
+structuring. The owner reviews and approves the **layer-1 draft**
+before setup completes; the **layer-2 and layer-3 drafts** are
+CoS's ongoing work, refreshed continuously without owner
+pre-approval (though always editable by the owner).
 
 The structure isn't decorative — it's load-bearing. When an agent
 fires a skill, it can ask: *which Initiative is this work in

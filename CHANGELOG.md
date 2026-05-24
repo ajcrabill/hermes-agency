@@ -9,6 +9,134 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.6-spec] — 2026-05-24
+
+**Spec revision: strategic-planning is the CoS's job, not the
+owner's.** Bundles three closely-related changes:
+
+1. **Quality criteria** (§3 of StrategicPlanning.md, added in
+   v0.22.5-spec but extended here): a reference section the CoS
+   loads during setup interviews.
+2. **Precise SMART definition** (per AJ's clarification): each
+   letter has a deliberate meaning, with starting/ending date
+   (month/year) and starting/ending point required for
+   Measurable. Examples throughout the doc cleaned up to
+   consistently use month/year (no FY / quarter shorthand) and
+   to have full start-point + start-date + end-point + end-date.
+3. **The setup-interview UX principle**: the owner doesn't need
+   to know the framework terminology, the conversation defaults
+   to 8th-grade reading level, and the owner only owns layer 1
+   (Outcomes / Guardrails) — Interim Goals, Interim Guardrails,
+   and Initiative mappings are all the CoS's behind-the-scenes
+   work.
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Changed — `docs/StrategicPlanning.md` §3 (Quality criteria)
+
+- **SMART definition rewritten precisely.** The brief 5-line
+  version is replaced with AJ's full definition:
+  - Specific = narrow focus of action, not trying to do
+    everything at once / be all things to all people
+  - Measurable = starting date (month/year) + ending date
+    (month/year) + starting point + ending point
+  - Attainable = ending point accomplishable by ending date
+    using time + talent + treasure
+  - Results-focused = tied to the larger vision and/or values
+    of the business
+  - Time-bound = starting date and ending date
+- Canonical SMART statement form made explicit: *"<Subject +
+  measure> will increase (or decrease) from <starting point> in
+  <starting month/year> to <ending point> by <ending month/year>."*
+- Note added explaining why month/year (not Q1/FY shorthand):
+  quarters and fiscal years vary by business; month/year is
+  unambiguous, sortable, makes time-bound testable.
+
+### Changed — `docs/StrategicPlanning.md` §3.5 (How the CoS uses this)
+
+Expanded substantially. The principle is now explicit: **the
+owner doesn't need to know any of the framework**. Conversation
+defaults to 8th-grade reading level. New division-of-responsibility
+table:
+
+- **Owner**: talks about vision (Outcomes) and values (Guardrails);
+  reviews + approves layer-1 rough draft.
+- **CoS**: translates vision into SMART Outcomes, translates
+  values into prohibition Guardrails, drafts Interim Goals,
+  Interim Guardrails, and Initiative mappings entirely behind
+  the scenes.
+
+Six-step conversation flow specified (listen for vision → listen
+for values → translate silently → present rough draft → owner
+revises and approves → CoS drafts the rest). The `.configured`
+marker is not written until the owner approves the layer-1 draft.
+
+Ongoing revision (post-setup) clarified: three sources — daily
+implementation, supervised learning loop, weekly/quarterly
+review. **Layer-1 refinements always go back to the owner for
+approval; layer-2 and layer-3 refinements are CoS's working
+drafts.**
+
+Implementation note added: for v0.23 interview code, the prompt
+must have StrategicPlanning.md §3 + §7.1 loaded as context. Same
+pattern as skill-load context everywhere else.
+
+### Changed — `docs/StrategicPlanning.md` §7.1 (file structure)
+
+Added authorship table making explicit who writes each layer:
+
+| Layer | Authored by | Approved by |
+|---|---|---|
+| Outcomes | CoS drafts from owner's vision | **Owner** |
+| Guardrails | CoS drafts from owner's values | **Owner** |
+| Interim Goals | CoS | CoS (working hypotheses) |
+| Interim Guardrails | CoS | CoS (working hypotheses) |
+| Initiative refs | CoS proposes mappings | CoS (working hypotheses) |
+
+### Changed — month/year date discipline across examples
+
+Fiscal-year ("FY2025") and quarterly ("Q1 2026") notation
+replaced with specific months throughout §8 worked example and
+§1.1 / §3.1 inline examples. Examples without proper
+start-point + start-date + end-point + end-date got cleaned up:
+
+- `lookalike-prospect-builder`: added "from 0 in February 2026
+  to 50 per quarter by June 2026"
+- `pipeline-watchdog.py`: added "from 20% in March 2026 to 90%
+  by June 2026"
+- Interim Guardrail 1.1: added "from 0% in February 2026 to
+  100% by March 2026"
+- `values-fit-screen-prepper`: added the same start/end framing
+
+Anti-pattern examples (§3.2, §3.3) intentionally left as
+fragments — those are illustrating what doesn't work.
+
+### Changed — spec §13.7 v0.23 plan (Thread B)
+
+The `/agency setup` interview bullet expanded with four explicit
+requirements:
+
+1. Interview prompt loads `StrategicPlanning.md` §3 + §7.1 as
+   context.
+2. Conversation defaults to 8th-grade reading level; register
+   shifts up only when warranted.
+3. Owner is only asked about vision (Outcomes) and values
+   (Guardrails) — Interim Goals, Interim Guardrails, and
+   Initiative mappings stay behind the scenes.
+4. Before `.configured` is written, the CoS presents the
+   rough-draft `Goals.md` and `Guardrails.md` (layer 1 only)
+   to the owner for revision and approval.
+
+### Spec header
+
+Bumped v0.22.5-spec → v0.22.6-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.5-spec] — 2026-05-24
 
 **Spec revision: Initiatives ARE skills and scripts.** Collapses

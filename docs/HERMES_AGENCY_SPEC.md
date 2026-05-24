@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.5-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.6-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -2213,12 +2213,34 @@ load-bearing scaffolding the strategic-planning doc describes,
   existing SKILL.md frontmatter (new optional keys: `outcome`,
   `interim_goal`, `outcome_metric`, `status`, `alignment_argument`,
   `output_metrics`, `input_metrics`) or script docstring.
-- The `/agency setup` clean-install interview restructures the
-  GOALS step into three sub-prompts that walk the owner through
-  Outcomes first, then Interim Goals under each, then proposed
-  skill+script mappings drawn from the active profiles' existing
-  catalogs. The CoS proposes drafts at each layer; the owner
-  accepts/edits.
+- The `/agency setup` clean-install interview is restructured
+  per `StrategicPlanning.md` §3.5. The strategic-planning framework
+  is **the CoS's working knowledge, not the owner's** — the owner
+  doesn't need to know SMART, Outcomes, Interim Goals, Initiatives,
+  leading/lagging indicators, or any of the framework terminology.
+  Specific requirements:
+
+  - **The interview prompt loads `docs/StrategicPlanning.md` §3
+    + §7.1 as context.** Same pattern as skill-load context
+    elsewhere in the framework: code carries control flow; the
+    markdown carries knowledge.
+  - **Conversation defaults to 8th-grade reading level.** The
+    CoS uses plain language ("a goal", "something you won't do")
+    not specialized terms. Register shifts up only if the owner
+    asks for depth or clearly has a strategic-planning background.
+  - **The owner is only asked about vision (Outcomes) and
+    values (Guardrails).** Interim Goals, Interim Guardrails, and
+    Initiative mappings are CoS's behind-the-scenes work — they
+    never appear in the owner's conversation.
+  - **Before `.configured` is written, the CoS presents the
+    rough-draft `Goals.md` and `Guardrails.md` (layer 1 only) to
+    the owner for revision and approval.** The marker is written
+    only after the owner approves. After approval, the CoS drafts
+    Interim Goals, Interim Guardrails, and Initiative mappings —
+    no owner pre-approval required for layers 2-3 (those are
+    CoS's working hypotheses, refined over time via daily
+    implementation + the supervised learning loop + weekly health
+    checks).
 - Audit rules (new):
   - `unaligned-skills` — strategic skills/scripts (those declaring
     an `interim_goal` in frontmatter) whose named Interim Goal
