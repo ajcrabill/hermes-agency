@@ -441,6 +441,49 @@ def cmd_integrations(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_migrate(args: argparse.Namespace) -> int:
+    """Plan or apply a migration from a prior deployment (v7 currently)."""
+    if args.source != "v7":
+        print(f"unknown migration source: {args.source}", file=sys.stderr)
+        return 2
+
+    from _framework.migration import (
+        plan_v7_learning_migration, apply_v7_learning_migration,
+    )
+
+    try:
+        plan = plan_v7_learning_migration(args.from_path)
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    print(plan.summary())
+    print()
+
+    if plan.to_migrate:
+        print(f"Sample of {min(5, len(plan.to_migrate))} rules to migrate:")
+        for t in plan.to_migrate[:5]:
+            mark = " (HARD)" if t.is_hard else ""
+            tags = ", ".join(t.skill_tags) if t.skill_tags else "(no tags)"
+            print(f"  · {t.v7_id}{mark}  [{tags}]  {t.correction_preview}")
+
+    if args.action == "plan":
+        print()
+        print("Plan only. Re-run with `apply` to write to HermesAgency.")
+        return 0
+
+    # apply
+    print()
+    result = apply_v7_learning_migration(plan)
+    print(result.summary())
+    if result.failures:
+        print()
+        print("Failures:")
+        for f in result.failures[:10]:
+            print(f"  · {f.v7_id}  {f.reason}")
+    return 0 if result.failed == 0 else 1
+
+
 def cmd_goals(args: argparse.Namespace) -> int:
     """Show / add / refine / smart-check entries in Goals.md."""
     from _framework.constants import GOALS_MD
@@ -672,6 +715,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="(add) refuse if the text fails SMART criteria",
     )
     p_goals.set_defaults(func=cmd_goals)
+
+    # migrate
+    p_migrate = sub.add_parser(
+        "migrate",
+        help="Migrate from a prior deployment (v7 learning corpus + more)",
+    )
+    p_migrate.add_argument(
+        "source", choices=["v7"],
+        help="Migration source (v7 = legacy Hermes/Loriah deployment)",
+    )
+    p_migrate.add_argument(
+        "action", choices=["plan", "apply"], default="plan", nargs="?",
+        help="plan (dry-run report) or apply (write to HermesAgency)",
+    )
+    p_migrate.add_argument(
+        "--from", dest="from_path",
+        default="~/.hermes/context/loriah/Admin/loriah.db",
+        help="Source v7 database path",
+    )
+    p_migrate.set_defaults(func=cmd_migrate)
 
     return parser
 

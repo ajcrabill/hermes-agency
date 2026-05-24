@@ -127,13 +127,16 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
     answers.sentinel_id = prompter("System Sentinel profile id", "sentinel")
 
     if tier >= 2:
-        print("\n─── Ingress channels (Tier 2) " + "─" * 35)
-        print("These configure HOW the owner reaches CoS. Email is always on;")
-        print("the others are opt-in. (v0.1: configures the manifest flag;")
-        print("actual channel wiring is per-integration.)")
-        for ch in ("chat_tab", "signal", "slack", "openwebui"):
-            on = prompter(f"Enable ingress channel '{ch}'? (y/n)", "n").lower().startswith("y")
-            answers.extras[f"ingress.{ch}"] = on
+        # Tier 2 captures defaults here; the substantive interactive
+        # flow (OAuth + ingest + cadence + ingress) runs after the
+        # manifest + base profiles are provisioned.
+        answers.extras["run_tier2"] = True
+        answers.extras["ingress.chat_tab"] = True
+        for ch in ("signal", "slack", "openwebui"):
+            answers.extras[f"ingress.{ch}"] = False
+        print("\n─── Tier 2 setup (queued) " + "─" * 39)
+        print("After provisioning, we'll walk through Gmail/Calendar/Drive")
+        print("OAuth, ingest sources, digest cadence, and ingress channels.")
 
     # Tier 3 runs the deep interview AFTER manifest + base profiles are
     # provisioned (the interview needs the cos_id to attach voice notes
@@ -203,16 +206,25 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
     else:
         print(f"  ⚠ {len(result.errors)} error(s) — review with `agency status -v`")
 
-    # ── Tier 3 deep interview (runs after base provisioning) ───────────
+    # ── Tier 2 interactive flow (runs after base provisioning) ─────────
+    if answers.extras.get("run_tier2"):
+        from .tier2_flow import run_tier2_flow
+        run_tier2_flow(cos_id=answers.cos_id)
+
+    # ── Tier 3 deep interview (runs after base + Tier 2) ───────────────
     if answers.extras.get("run_tier3"):
         from .tier3_interview import run_tier3_interview
-        # Pass interactive prompter only if we're using one ourselves.
         run_tier3_interview(
             owner_name=_natural_name(answers.owner),
             org_name=answers.org_name,
             cos_id=answers.cos_id,
-            prompter=None,  # interactive default
+            prompter=None,
             refresh=force,
+            profiles_to_personalize=[
+                (answers.cos_id, "chief-of-staff"),
+                (answers.kb_id, "knowledge-base"),
+                (answers.sentinel_id, "system-sentinel"),
+            ],
         )
 
     print("\n" + "=" * 70)

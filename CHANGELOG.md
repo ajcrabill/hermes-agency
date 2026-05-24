@@ -9,6 +9,102 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.7.0] — 2026-05-24
+
+Three foundational pieces that complete the "operator gets
+HermesAgency running with their real data" story.
+
+### Added — Gmail API integration
+
+- **`_framework/integrations/gmail.py`** — same pattern as
+  `google_drive` + `google_calendar`. Lazy-imported runtime
+  client, profile-local OAuth credentials, three scope presets
+  (`readonly` / `send` / `modify`).
+- Public API: `list_new_messages`, `list_message_ids`,
+  `get_message`, `send_message`, `create_draft`, `modify_labels`,
+  `archive_message`, `mark_read`.
+- MIME builder handles text-only, text+html alternative, and
+  attachments-mixed. Threading via `In-Reply-To` + `References`
+  headers or Gmail's `threadId`.
+- `setup_interactive()` walks the OAuth consent flow + stores
+  the refresh token at `profiles/<id>/credentials/gmail_token.json`.
+
+### Added — Tier 2 interactive wizard flow
+
+- **`_framework/ops/init/tier2_flow.py`** — the substantive
+  Tier 2 implementation (Tier 1 → manifest skeleton; Tier 2 →
+  integrations + ingest + ingress; Tier 3 → deep agency-vault
+  interview).
+- Walks the operator through Gmail/Calendar/Drive OAuth setup
+  (each skippable — deferred steps land in deployment.yaml as
+  `tier2.deferred_steps` so `agency status` surfaces them).
+- Captures ingest sources (RSS / atom / webhook).
+- Captures digest cadence (morning briefing / triage batches /
+  weekly review DOW+time).
+- Captures ingress channels (email / chat-tab / Signal / Slack /
+  OpenWebUI).
+- Persists everything to `deployment.yaml::ingress` +
+  `tier2.*` sections.
+- Wired into the wizard so `agency init --tier 2` (or `--tier 3`)
+  runs it after Tier 1 base provisioning.
+
+### Added — v7 migration tool
+
+- **`_framework/migration/v7_learning.py`** — read v7's
+  `loriah.db::learning_rules` + translate to HermesAgency's
+  `learning.db` schema. Operator-controlled (plan then apply),
+  traceable, idempotent, journaled.
+- **Plan mode** (`agency migrate v7 plan`) — reads source, classifies
+  each row's disposition (`migrate-fresh` / `already-present` /
+  `skip-superseded` / `skip-empty` / `skip-dedup`), prints summary
+  + sample of 5 to migrate. No writes.
+- **Apply mode** (`agency migrate v7 apply`) — runs each
+  `migrate-fresh` row through `capture_correction()` so embeddings
+  get generated freshly, then backfills the v7 id so audit
+  references stay intact. Idempotent: re-runs are safe.
+- Journal at `_health/migration-journal.jsonl` records per-row
+  outcome with v7 id, timestamp, preview, disposition, error (if
+  any).
+- **Live-verified against AJ's real v7 db** (304 rules, 270 ready
+  to migrate, 34 correctly skipped as superseded/empty).
+
+### CLI additions
+
+- `agency migrate v7 [plan|apply] --from /path/to/loriah.db`
+  (defaults to `~/.hermes/context/loriah/Admin/loriah.db`)
+- Existing Tier 2/3 wizard flows already auto-invoke the new
+  interactive paths
+
+### Tests
+
+142 passing (129 from v0.6 + 13 new):
+- 9 Gmail tests (configured-state, addr parsing, MIME builder
+  text-only / html / attachment / threading, scope presets,
+  require-configured guard)
+- 4 Tier 2 flow tests (defaults, manifest persistence, Gmail-setup-
+  when-yes, ingest-source capture)
+- 6 v7 migration tests (plan dispositions, apply correctness,
+  idempotency, journal, missing source, already-present-after-apply)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### What this enables
+
+After v0.7, an operator running `agency init --tier 3` gets:
+- A manifest + 3 scaffolded profiles (Tier 1)
+- Gmail/Calendar/Drive OAuth wired (Tier 2, if they say yes)
+- Ingest sources + digest cadence + ingress channels set (Tier 2)
+- Goals.md / Values.md / Personal.md / Work.md / Clients.md drafted
+  from interview (Tier 3)
+- Per-agent personalization applied to SOUL.md (Tier 3)
+
+Then: `agency migrate v7 plan` shows what migrates from their prior
+deployment; `agency migrate v7 apply` writes it. Their 270+ learning
+rules land in HermesAgency with v7 ids preserved for cross-system
+audit trails.
+
+That's the full "get running with my real data" flow.
+
 ## [0.6.0] — 2026-05-24
 
 Two core CoS functions AJ called out as missing: a **time-use
