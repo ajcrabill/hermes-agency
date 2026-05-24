@@ -32,6 +32,13 @@ from .goals_md import (
     add_active_project,
     SECTION_HEADERS,
 )
+from .three_layer import (
+    StrategicGoals,
+    Outcome,
+    InterimGoal,
+    InitiativeRef,
+    read_goals_strategic,
+)
 from .smart import smart_check, SmartVerdict
 from .tracking import (
     init_goal_tracking_db,
@@ -47,6 +54,8 @@ __all__ = [
     "ParsedGoals", "read_goals",
     "add_annual_goal", "replace_annual_goal", "add_active_project",
     "SECTION_HEADERS",
+    "StrategicGoals", "Outcome", "InterimGoal", "InitiativeRef",
+    "read_goals_strategic",
     "smart_check", "SmartVerdict",
     "init_goal_tracking_db",
     "define_metric", "list_metrics",
