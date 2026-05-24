@@ -11,6 +11,7 @@ Subcommands:
   /agency capture <text>           — capture a learning correction
   /agency learn list [<n>]         — list recent learning rules
   /agency audit                    — run the alignment audit
+  /agency health                   — weekly strategic-plan health check (v0.23.6)
   /agency setup                    — migration-or-clean-install interview
                                      (stub in v0.17; full flow in v0.20)
 """
@@ -33,6 +34,7 @@ Subcommands:
   capture "<correction>"      Capture a learning correction
   learn list [N]              List recent learning rules (default 10)
   audit                       Run the alignment audit
+  health                      Weekly strategic-plan health check (v0.23.6)
   setup                       Migration-or-clean-install (v0.20+)
   help                        Show this message
 
@@ -72,6 +74,8 @@ def handle_agency_command(raw_args: str) -> Optional[str]:
             return _cmd_learn(rest)
         if sub == "audit":
             return _cmd_audit()
+        if sub == "health":
+            return _cmd_health()
         if sub == "setup":
             return _cmd_setup(rest)
         return f"Unknown /agency subcommand: {sub}\n\n{_HELP_TEXT}"
@@ -262,6 +266,24 @@ def _cmd_audit() -> str:
         return "\n".join(out)
     except Exception as e:
         return f"audit failed: {e}"
+
+
+def _cmd_health() -> str:
+    """v0.23.6: weekly strategic-plan health check.
+
+    Reads the three-layer Goals.md + goal-tracking DB + firings DB +
+    audit findings, and produces a short plain-language summary that
+    names drift and proposes pivots. Cadence is intended to be weekly
+    but the command lets the Principal pull it manually any time.
+    """
+    try:
+        from _framework.strategic_health import (
+            run_health_check, render_report,
+        )
+        report = run_health_check()
+        return render_report(report)
+    except Exception as e:
+        return f"strategic-plan health check failed: {e}"
 
 
 def _cmd_setup(rest: str = "") -> str:
