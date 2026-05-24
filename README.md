@@ -8,7 +8,7 @@
 
 ## What HermesAgency does for you
 
-The Principal of a small business wears every hat. HermesAgency runs a team of agents that quietly takes the most repetitive, easily-lost, and easily-dropped work off your plate — without you having to surrender your data, your relationships, or your judgment. Here's a sample of what your agency can do:
+Small business owners wear every hat. HermesAgency runs a team of agents that quietly takes the most high leverage but repetitive, easily-lost, and easily-dropped work off your plate — without you having to surrender your data, your relationships, or your judgment. Here's a sample of what your HermesAgency can do:
 
 ### Win new business
 
