@@ -20,11 +20,15 @@ Given a workbook brief:
 
 1. Identify the audience (which kind of staff member uses this?)
 2. Identify the outcome (after this workbook, they can do X)
-3. Outline — one step per step, no combined steps
-4. Draft each step with: instruction + worked example +
+3. **Prototype fast.** Invoke `prototype-from-example` with any
+   prior workbooks of similar shape + the brief's audience +
+   purpose. Get the first-pass structure quickly; iterate from
+   there rather than over-outlining first.
+4. Outline — one step per step, no combined steps
+5. Draft each step with: instruction + worked example +
    common-mistake callout
-5. KB sends back alignment verdict; iterate as needed
-6. Deliver as markdown ready for designer (if formatting matters)
+6. KB sends back alignment verdict; iterate as needed
+7. Deliver as markdown ready for designer (if formatting matters)
    or staff intranet (if not)
 
 Workbooks are for execution, not inspiration. If a workbook reads
@@ -35,6 +39,9 @@ the right output, it failed.
 
 - `topic` + `audience` + `key_message`
 - Source methodology from KB
+- **Example sources** (`--example-source`): prior workbooks of
+  similar shape — fed to `prototype-from-example` so the format
+  + voice + step-density match what works for this agency
 
 ## Supervised learning
 

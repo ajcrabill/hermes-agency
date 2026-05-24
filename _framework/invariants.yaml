@@ -74,11 +74,13 @@ class_taxonomy:
 # ── Kanban tenants ────────────────────────────────────────────────────────
 kanban_tenants:
   - dossier
-  - hardware
+  - shopping             # generalized from "hardware" — any purchase research
   - red-team
   - cross-profile-msg
   - bizdev
   - book-coaching
+  - prototype            # iterative prototype rounds (writing/draft/outreach work)
+  - obligation           # principal's own commitments to others (CoS shepherds)
   - audit
   - audit-confirm
   - spec-review

@@ -26,6 +26,13 @@ The skill loads voice rules from `voice_tags` (`we-not-i`,
 `warm-not-flattering`) at every invocation. If the draft drifts into
 `I` voice or flattery, the rule fires and the model rewrites.
 
+**Example-driven option:** when the operator says "match the tone
+of this prior thread" or "this draft should sound like X", invoke
+`prototype-from-example` first with the cited examples + audience
+(usually `thread_context.sender`) + purpose (the reader-outcome).
+The first draft lands faster + already in the right register;
+iteration is recorded via `iteration-tracker`.
+
 ## Inputs
 
 - `inbound_message_id` (or full message text)

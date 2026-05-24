@@ -27,13 +27,19 @@ For each signal:
 
 1. Confirm the prospect/journalist isn't already on a stalled
    sequence
-2. Draft the outreach in the agency's voice (lead with the
+2. **Prototype fast.** Invoke `prototype-from-example` with 1-2
+   prior successful outreaches of the same shape (cold pitch /
+   warm intro / re-engage) + this specific prospect's context +
+   purpose ("get a 15-min call" / "earn a feature mention" / etc.).
+   First draft inside the hour, not the week.
+3. Draft the outreach in the agency's voice (lead with the
    triggering event — that's the "why now")
-3. Run draft past KB for IP alignment (if framework claims are made)
-4. Hand to CoS via kanban for review + send
+4. Run draft past KB for IP alignment (if framework claims are made)
+5. Hand to CoS via kanban for review + send
 
 Optimize for speed: a same-day draft is worth more than a perfect
-late one.
+late one. The prototyping flywheel + iteration-tracker are
+specifically designed to compress the draft cycle.
 
 ## Inputs
 

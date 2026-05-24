@@ -9,6 +9,94 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.5.0] — 2026-05-24
+
+Three AJ directives, each addressed:
+
+  1. "Is obligation-board needed if you have kanban?" → No.
+     Refactored to `obligation-extractor` (a sourcing skill that
+     creates kanban tasks); the tracking surface is just kanban
+     with `tenant=obligation`.
+  2. "hardware-research should be generic shopping-research" →
+     Renamed + rewritten to handle any purchase category with a
+     specifics interview (min/max price, constraints, use-case)
+     before searching.
+  3. "Writing skills should accept examples + audience + purpose
+     and produce a fast first draft, then iterate" → Built the
+     prototyping flywheel as a first-class subsystem.
+
+### Added — Prototyping flywheel
+
+- **`_framework/prototyping/`** module:
+  - `ingest.py` — examples from URL / file (.txt/.md/.docx/.pdf) /
+    raw text → normalized text. HTML stripper, format dispatcher,
+    swappable HTTP fetcher (tests pass a stub).
+  - `style.py` — `derive_style()` returns a `StyleSignature` with
+    sentence rhythm, paragraph density, register classification,
+    structural signals (headings/lists/quotes/code), distinctive
+    phrases, formatting notes. Renders into a markdown block the
+    LLM uses as drafting context.
+  - `iteration.py` — `prototypes.db` schema + CRUD:
+    `start_prototype` / `record_iteration` / `get_prototype` /
+    `list_prototypes` / `mark_shipped` / `convergence_diagnostic`.
+    The diagnostic flags 5+ rounds without shipping, feedback not
+    shortening, or single-reviewer blind spots.
+- **`prototype-from-example`** shared skill — cross-role
+  (Writing primary, also CoS/BD/Analyst). The flywheel entry
+  point.
+- **`iteration-tracker`** shared skill — generic feedback-round
+  recorder + stuck-loop diagnostic for any artifact.
+
+### Updated — Existing skills now reference the flywheel
+
+- `newsletter-drafting` — invokes prototyping with prior issues
+  + audience + purpose; iteration recorded
+- `workbook-drafting` — prior workbooks as examples; first-pass
+  structure quickly
+- `draft-composer` (CoS) — example-driven option when "match
+  this thread's voice" applies
+- `opportunistic-outreach` (BD) — prior successful outreaches as
+  examples for same-shape pitches
+
+### Refactored
+
+- **obligation-board → obligation-extractor**: the extractor pulls
+  commitments from messages and creates kanban tasks with the new
+  `tenant=obligation`. Kanban *is* the tracking surface (no
+  separate obligation-board DB or UI needed).
+- **hardware-research → shopping-research**: works for any purchase
+  category. Adds the specifics interview step (more detail is
+  better; ask min/max + constraints + use-case) before searching
+  multi-vendor sources.
+- **kanban_tenants** updated: `hardware` → `shopping`, added
+  `prototype` and `obligation`.
+
+### Tests
+
+119 passing (107 from v0.4 + 12 new prototyping tests):
+- 5 ingest tests (raw / file / HTTP via stub / HTML stripping /
+  batch error isolation)
+- 4 style tests (short-sentence detection, structural signals,
+  serialization, prompt-block rendering)
+- 3 iteration tests (lifecycle, convergence-stuck detection,
+  convergence-healthy detection)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### Decisions logged
+
+- Style signature is *coarse* by design (rhythm, structure,
+  register, top phrases). The fine work — "does this draft sound
+  like the examples?" — is the LLM's job at draft time, given
+  the signature *and* the raw example texts as context. Better
+  than dumping the texts in with no structured hints.
+- HTTP fetcher is pluggable (operators who need readability lib /
+  JS rendering / paywall handling swap by passing a `fetcher`
+  callable). Default is urllib + simple tag-stripper.
+- Stuck-loop diagnostic uses three signals (round count without
+  ship, feedback length trend, reviewer diversity). Need ≥2 of
+  3 to fire — single signal could be noise.
+
 ## [0.4.0] — 2026-05-24
 
 Addresses two direct AJ questions:

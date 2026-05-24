@@ -22,17 +22,31 @@ For each week:
    `operational-state.md::Recent operator decisions` + recent
    newsworthy moments)
 2. Pick ONE topic. Not a roundup.
-3. Draft in CoS's voice (because she's the agency to the world).
+3. **Prototype fast.** Invoke `prototype-from-example` with the
+   last 2-3 newsletter issues + audience ("subscribers", or
+   whichever specific segment) + purpose (the one-sentence
+   reader-outcome). Get a first draft inside the first session,
+   not after polishing.
+4. Draft in CoS's voice (because she's the agency to the world).
    Writing crafts the prose; CoS owns the voice the world sees.
-4. KB checks IP alignment
-5. Analyst red-teams (especially fact-checking)
-6. CoS reviews + sends
+5. KB checks IP alignment
+6. Analyst red-teams (especially fact-checking)
+7. CoS reviews + sends
+8. Each round of feedback recorded via `iteration-tracker` against
+   the prototype id — so we can see when we're converging vs.
+   stuck (and when we are stuck, the diagnostic tells us to
+   invite a second reviewer or ship as-is).
 
 ## Inputs
 
 - Editorial calendar
 - Recent activity (operator decisions, BD wins, content output)
 - Topic queue
+- **Example sources** (`--example-source`): URLs or file paths of
+  prior issues / target-style examples — fed to
+  `prototype-from-example`
+- **Audience** (`--audience`): specific segment
+- **Purpose** (`--purpose`): one-sentence reader-outcome
 
 ## Supervised learning
 
