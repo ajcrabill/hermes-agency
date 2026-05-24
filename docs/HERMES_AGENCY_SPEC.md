@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.17.2 (2026-05-24) — *also: v0.04 of the 9th effort (see §0.5)*
+**Version:** v0.18.1-spec (2026-05-24) — *also: v0.06 of the 9th version (see §0.5)*
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -28,9 +28,15 @@ architecture changes.
 
 ### Architectural arc (read this first if you're new)
 
-1. **v0.1–v0.14** — implementation grew as a "parallel framework that
-   layered on Hermes" via text-anchor patches into Hermes' source.
-   That approach proved fragile against Hermes refactors and meant
+HermesAgency is the 9th version of a personal AI chief-of-staff
+project. The 9-version lineage (with hardware, model, and runtime
+transitions per version) is in §0.5. The arc within v9 — the
+current architectural foundation — is:
+
+1. **v0.1–v0.14** (v8 of Loriah, parallel-framework era) —
+   implementation grew as a "parallel framework that layered on
+   Hermes" via text-anchor patches into Hermes' source. That
+   approach proved fragile against Hermes refactors and meant
    HermesAgency had its own CLI, state directory, panel, runtime —
    competing with Hermes rather than extending it.
 2. **v0.15** — narrative reset: §1.4 "Plugin discipline" added
@@ -39,63 +45,116 @@ architecture changes.
 3. **v0.16** — install simplified to 4 steps; bootstrap stopped
    installing Hermes for the user; migration extended to take a
    v7-home directory.
-4. **v0.17** — **architectural pivot**: Hermes' documented plugin API
-   was discovered. All 7 reliability systems re-wired as Hermes
-   lifecycle hooks (`pre_llm_call`, `pre_tool_call`, `post_tool_call`,
-   `on_session_start`, `on_session_end`). Text-anchor patches retired.
-   `/agency` slash command inside Hermes is the supervisory surface.
-5. **v0.18–v0.22** (this spec revision) — structural cleanup to bring
-   the codebase fully in line with "plugin-from-the-start" design:
-   flatten `_framework/<x>/` → `hermes_agency_plugin/<x>/`, move state
-   from `~/.agency/` to `~/.hermes/agency-state/`, register profiles
-   and skills with Hermes' native registries, demote standalone
-   `agency` CLI to a thin shim, replace bash wizard with an in-Hermes
-   setup interview. See §13.6 for the explicit closure plan.
+4. **v0.17 — architectural pivot (start of v9 of Loriah).**
+   Hermes' documented plugin API was discovered. All 7 reliability
+   systems re-wired as Hermes lifecycle hooks (`pre_llm_call`,
+   `pre_tool_call`, `post_tool_call`, `transform_tool_result`,
+   `on_session_start`, `on_session_end`). Text-anchor patches
+   retired. `/agency` slash command inside Hermes is the
+   supervisory surface.
+5. **v0.18** — verifier enforcement: `transform_tool_result` hook
+   runs ad-hoc verifier criteria against tool outputs; failures
+   become actionable LLM errors. Deprecated patches module deleted.
+6. **v0.19–v0.22** — remaining structural cleanup to bring the
+   codebase fully in line with "plugin-from-the-start" design:
+   in-Hermes setup interview, flatten `_framework/<x>/` →
+   `hermes_agency_plugin/<x>/`, move state from `~/.agency/` to
+   `~/.hermes/agency-state/`, register profiles + skills with
+   Hermes' native registries, demote standalone `agency` CLI to a
+   thin shim, agentskills.io conformance, PyPI distribution. See
+   §13.7 for the explicit closure plan.
 
-### 0.5 Lineage — this is the 9th effort
+### 0.5 Lineage — this is the 9th version
 
-HermesAgency exists because the question *"how do I build an AI chief-
-of-staff who actually learns from me?"* has been refused by eight prior
-attempts. Each refusal taught something the next attempt absorbed.
-That accumulated learning is what makes the current architecture
-non-obvious in retrospect and obvious only after the long sequence of
-near-misses that produced it.
+HermesAgency is the 9th major version of a personal AI chief-of-staff
+project that's been running, breaking, and getting rewritten on and
+off for years. Each rewrite kept the same ambition — *"a chief-of-
+staff who actually learns my preferences and earns autonomy on them"*
+— and replaced the foundation under it: different hardware, different
+runtimes, different models, different architectural shapes. Each
+rewrite was triggered by the previous version hitting a wall that
+couldn't be patched without redoing the foundation.
 
-**The visible / archived lineage** (public record):
+The simplicity of the current architecture is hard-won. v0.17+ is
+the first version that gets out of the way of itself — the seven
+reliability systems are documented hooks into a stable runtime
+contract — and that simplicity is only obvious in retrospect. Eight
+prior versions made the case for it the long way around.
 
-| # | Effort | Outcome |
-|---|---|---|
-| ... | (earlier internal explorations — names not yet recovered) | Each tried a different shape: assistant-style, vault-driven, voice-first, dashboard-centric. None held up under sustained personal use. |
-| 6 | **v7 Loriah** | The first long-running deployment AJ used personally for months. Lived at `~/.hermes/context/loriah/`. Taught: kanban as cross-profile channel; supervised correction-learning works in practice; v7 had no autonomy ladder, so trust-building was ad-hoc. |
-| 7 | **[dCoS](https://github.com/ajcrabill/dCoS)** *(archived deprecated)* | "Digital Chief of Staff" — first attempt at a clean re-architecture of v7 lessons. Single-agent, vault-driven, sqlite-backed. Taught: state-in-code beats state-in-instructions; the goal-directed-operation model is the right loop. |
-| 8 | **[agent-core](https://github.com/ajcrabill/agent-core)** *(archived deprecated)* | Generalization of dCoS into a multi-agent platform (`dcos-agent` + `ikb-agent`). Taught: parallel "platform" framework over a runtime is the wrong shape; what's needed is a *plugin* into a real agent runtime. |
-| 9a | **HermesAgency v0.1–v0.16** | First implementation of "Hermes plugin," but built as parallel infrastructure (text-anchor patches into Hermes' source; own state under `~/.agency/`; own CLI competing with `hermes`). Taught: the plugin-discipline rule has to be structurally enforced, not just stated as intent. |
-| **9b** | **HermesAgency v0.17+** | The architectural pivot. After discovering Hermes' documented plugin API (`pre_llm_call`, `pre_tool_call`, etc.), the framework re-wires every reliability system as a Hermes lifecycle hook. State is moving next to Hermes' own (`~/.hermes/agency-state/`, v0.20). Profiles will register via `ctx.register_agent`. Skills will conform to [agentskills.io](https://agentskills.io). This is finally what the spec said it would be from §1.1. |
+| # | Year | Foundation | Hardware | Model | What changed; what it taught |
+|---|---|---|---|---|---|
+| **1** | early | OpenClaw on a VPS | cloud VPS | Claude Sonnet | First long-running deployment. Cloud-hosted, single-agent, instruction-driven. Taught: instructions-only memory drifts. The chief-of-staff needs durable state, not just a long system prompt. |
+| **2** | | Claude Cowork | esb-m1 (64 GB) | Claude Opus | Moved off the VPS onto a local workstation. Bigger context, much faster iteration, but still instruction-only. Taught: hardware/model upgrades don't fix architectural debt — the same drift returns at a higher cost. |
+| **3** | | (complete rewrite, same stack) | esb-m1 | Claude Opus | First clean-slate redo. State written down to files the agent had to read explicitly. Taught: state-in-instructions ("remember to check X") is still drift; state has to be *loaded by code*, not by a remind-the-agent step. |
+| **4** | | **[dCoS](https://github.com/ajcrabill/dCoS)** *(archived)* | esb-m1 | Anthropic | "Digital Chief of Staff" — first version with a proper SQLite-backed state model, vault as canonical store, goal-directed operation. Single-agent. Taught: the goal-directed-loop pattern (every action traces back to an obligation) is the right shape. Single agent is the wrong shape — a CoS isn't a researcher, a librarian, and a writer all at once. |
+| **5** | | dCoS rebased onto **Hermes Agent** | esb-m1 | Anthropic | First version on a real agent runtime. Stopped reinventing the conversation loop, the tool-call layer, the skill system. Taught: the *runtime* should be NousResearch's problem, not mine. My value-add is the supervisory layer. |
+| **6** | | major revamp; Hermes update + **DeepSeek** | esb-m1 | DeepSeek | Hermes shipped a major update that changed the skill-load path; same time, moved off Anthropic to DeepSeek for cost. Taught: vendor-lock at the framework level is a trap. Anything baked-in about Anthropic's API shape had to be ripped out and abstracted. The vendor-neutral architectural commitment (spec §1.3) crystallized here. |
+| **7** | | major rewrite; Hermes profiles + kanban | esb-m1 | DeepSeek | Hermes shipped profiles (multi-identity per install) and a built-in kanban. The whole "one chief-of-staff" → "an agency of specialists" reframing happened here. Six (then seven, with Finance) agent roles. Cross-profile work via kanban tracks-links. Taught: the supervisory layer (learning loop / autonomy ladder / verifier / send-guard / sentinel / audit) IS the product; the agents themselves are differently-pointed instances of the same underlying machinery. This is the version AJ runs personally at `~/.hermes/context/loriah/` while v8 and v9 were under construction. |
+| **8** | 2026 | **HermesAgency** as a standalone soft-fork of Hermes | esb-m4 (128 GB) | DeepSeek + local (Qwen 3.6, Gemma 4) | Moved to a bigger workstation; same time, took everything v7 had learned and re-implemented it as a separate framework that *layered on* Hermes via text-anchor patches into its source. Sixteen public releases (v0.1–v0.16 of the repo) refined the seven reliability systems. Taught: "framework over runtime" is the wrong shape when the runtime has its own plugin API. The text-anchor patches turned out to be the symptom of trying to be a parallel framework instead of an actual plugin. |
+| **9** | 2026 | **HermesAgency** as a real **Hermes plugin** | esb-m4 | DeepSeek + local | The v0.17 architectural pivot. Discovered Hermes' documented plugin API (lifecycle hooks: `pre_llm_call`, `pre_tool_call`, `post_tool_call`, `transform_tool_result`, `on_session_start/end`) and re-wired every reliability system as a Hermes hook instead of a source patch. All 7 systems Hermes-extending. `/agency` slash command inside Hermes. Hermes-update-resilient (plugin API is a stable contract). v0.18+ continues the cleanup — verifier enforcement (shipped), in-Hermes setup interview (v0.19), structural rename + state collapse (v0.20), agentskills.io conformance (v0.21), PyPI distribution (v0.22). This is what the spec said HermesAgency would be from §1.1 of v0.1 — finally true in implementation. |
 
-**Dual-version notation.** The spec carries two version numbers:
+**Pattern across the 9 versions.** Each transition was triggered by
+one of three forces:
 
-- Public release version (e.g. v0.17.2): semver against the
-  HermesAgency repo on GitHub. This is what `pip install
-  hermes-agency==0.17.2` resolves to, and what shows up in
-  `agency --version`.
-- "Nth effort, version M" (e.g. *v0.04 of the 9th effort*): an
-  internal counter that resets when the architectural foundation
-  shifts. v0.17.0 is v0.01 of the 9th effort (the plugin-API pivot
-  was the new foundation); v0.17.1 was v0.02; this revision is
-  v0.04; v0.18 will be v0.05; etc.
+1. **Hardware ceiling.** v1 → v2 (VPS to local) and v7 → v8 (64 GB to
+   128 GB) both came from "the work outgrew the box." Each move
+   unlocked workflows the previous box couldn't run.
+2. **Runtime contract change.** v6 (Hermes major update) and v7
+   (Hermes profiles + kanban) are versions where NousResearch's
+   own roadmap broke the seams the previous version was built on.
+   These weren't AJ's choice — they were forced rewrites — but each
+   time they returned a better foundation than the one being
+   replaced.
+3. **Architectural mistake taught.** v1 (instructions-only memory),
+   v3 (state-in-instructions), v8 (parallel framework). Each of
+   these failures was inherent in the shape of the design; no patch
+   could fix them. They drove total redesigns toward state-in-code,
+   then goal-directed-loop, then real-plugin-discipline.
 
-The 9th-effort numbering signals to readers what the v0.17+ work
-*is* relative to v0.1–v0.16: not a continuation, but a re-foundation.
-It also reminds anyone reading the spec that the simplicity of the
-current architecture is a hard-won simplicity — not the obvious-from-
-the-start design. Each of the 8 prior efforts contributed something.
+The current shape — Hermes plugin with seven hooks — is the answer
+that survives all three forces:
 
-If you're new to HermesAgency, the practical answer to "is this
-production-ready?" is: **the runtime is** (Hermes itself, NousResearch's
-work, very production-ready); **the supervisory layer is in early
-release** (v0.17 just landed the plugin pivot; v0.18–v0.22 close the
-remaining structural gaps). The architectural shape is now the right
-shape; the code is steadily working its way into that shape.
+- Hardware ceilings: plugin is cheap to relocate; state moves with it.
+- Runtime contracts: the plugin API IS the contract; Hermes' internal
+  refactors don't break us.
+- Architectural mistakes: every reliability system is a Hermes hook,
+  not a parallel call path; there's no parallel-framework drift
+  pressure.
+
+Eight prior versions failed in instructive ways. v9 is the version
+where each failure mode has a structural answer rather than a
+patch.
+
+### Dual-version notation
+
+The spec carries two version numbers:
+
+- **Public release version** (e.g. `v0.18.0`): semver against the
+  `hermes-agency` repo on GitHub. This is what `pip install
+  hermes-agency==0.18.0` resolves to, and what `agency --version`
+  prints.
+- **"v0.M of the 9th version"** (e.g. *v0.05 of the 9th version*):
+  an internal counter that started fresh at v0.17 when the plugin-
+  API pivot reset the architectural foundation. v0.17.0 = v0.01;
+  v0.17.1 = v0.02; v0.17.2 = v0.03; v0.18.0 = v0.05; etc.
+
+The 9th-version counter signals what v0.17+ is *relative to* v0.1–v0.16:
+not a continuation, but a re-foundation on a different architectural
+contract. v0.1–v0.16 were v8 of Loriah (parallel-framework era).
+v0.17+ are v9 (proper-plugin era).
+
+### Practical answer for new readers
+
+"Is this production-ready?"
+
+- **The runtime is.** Hermes itself (NousResearch's work) is
+  production-grade and has been for many releases.
+- **The supervisory layer is in early plugin release.** v0.17 landed
+  the plugin pivot; v0.18 added verifier enforcement; v0.19–v0.22
+  close the remaining structural gaps. The architectural shape is
+  now the right shape; the code is steadily working its way into
+  that shape. The seven reliability systems are functioning today,
+  enforced via documented Hermes lifecycle hooks.
 
 ---
 
@@ -2519,3 +2578,41 @@ shape.
 
   No code changes in this revision — it's documentation alignment.
   Codebase work continues on the v0.18–v0.22 plan above.
+
+- **v0.17.2-spec (2026-05-24)** — *Spec-revision pass; no code change.*
+  Added §0.5 Lineage section + Good Ancestor attribution in spec
+  header. Dual-version notation introduced (public release version
+  + "v0.M of the Nth effort" internal counter).
+
+- **v0.18.0 (2026-05-24)** — Verifier enforcement + deprecated-
+  patches removal. Plugin's `transform_tool_result` hook runs ad-hoc
+  verifier criteria against tool outputs (file_exists / file_contains
+  for write_file / patch / edit_file); failures get rewritten as
+  actionable LLM errors. `_framework/hermes_patches/` deleted; tests
+  cut; `SYSTEM_INVENTORY` moved to `hermes_agency_plugin/
+  system_inventory.py`. Net -364 lines. 226 passing, zero skipped.
+
+- **v0.18.1-spec (2026-05-24)** — *Spec-revision pass; no code change.*
+  Fleshed out §0.5 Lineage with the real 9-version history AJ
+  provided. Each version now carries hardware / model / runtime
+  context and the architectural lesson that triggered the next
+  rewrite:
+
+  - v1: VPS + OpenClaw + Sonnet
+  - v2: esb-m1 (64 GB) + Claude Cowork + Opus
+  - v3: complete rewrite, same stack
+  - v4: dCoS (first SQLite-backed state model)
+  - v5: dCoS rebased onto Hermes Agent
+  - v6: Hermes update + DeepSeek (vendor-neutrality crystallized)
+  - v7: Hermes profiles + kanban (the multi-agent reframe)
+  - v8: HermesAgency standalone soft-fork on esb-m4 (128 GB) +
+       DeepSeek + local inference (Qwen 3.6, Gemma 4)
+  - v9: HermesAgency as proper Hermes plugin (the v0.17 pivot)
+
+  Added a "Pattern across the 9 versions" subsection naming the
+  three forces that drove each rewrite: hardware ceilings, runtime
+  contract changes, and architectural mistakes taught. The current
+  shape (Hermes plugin with seven hooks) is the answer that
+  survives all three forces. Architectural arc summary in §0 also
+  updated to reference the 9-version lineage. Spec version rolled
+  to v0.18.1.

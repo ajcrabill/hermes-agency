@@ -6,7 +6,7 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes engine](https://img.shields.io/badge/plugin%20for-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
 
-> By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th effort in a long lineage of attempts to build an AI chief-of-staff who actually learns. See spec §0.5 for the visible-record lineage.
+> By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal AI chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
 
 ---
 
