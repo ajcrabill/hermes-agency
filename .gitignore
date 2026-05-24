@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+.venv/
+venv/
+env/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Deployment artifacts (HermesAgency is the framework; deployments live elsewhere)
+~/.agency/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+_state/
+_health/
+*.log
+
+# Local-only test scratch
+/tmp/
+scratch/
+
+# Secrets — never commit
+*.env
+*.envrc
+secrets.yaml
+credentials.json
+auth.json

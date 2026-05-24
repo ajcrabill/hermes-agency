@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes-agency"
+version = "0.1.0.dev0"
+description = "A multi-agent framework for small-agency owners — a learning loop you can earn autonomy on."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "AJ Crabill", email = "aj@ajcrabill.com" },
+]
+keywords = ["agent", "agency", "hermes", "multi-agent", "autonomy", "supervised-learning"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+dependencies = [
+    "pyyaml>=6.0",
+    "aiohttp>=3.9",          # control panel + auth proxy
+]
+
+[project.optional-dependencies]
+# Vendor-neutral by design. The framework speaks OpenAI-compatible API.
+# Add whichever client lib your deployment needs.
+openai = ["openai>=1.0"]
+embed = ["numpy>=1.24"]      # for cosine similarity in recapture detector
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "ruff>=0.5",
+    "mypy>=1.7",
+]
+
+[project.urls]
+Homepage      = "https://github.com/ajcrabill/hermes-agency"
+Repository    = "https://github.com/ajcrabill/hermes-agency"
+Issues        = "https://github.com/ajcrabill/hermes-agency/issues"
+Documentation = "https://github.com/ajcrabill/hermes-agency/tree/main/docs"
+
+[project.scripts]
+agency = "hermes_agency.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["_framework*", "hermes_agency*"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-ra --strict-markers"
+markers = [
+    "smoke: end-to-end smoke tests that exercise the full deployment shape",
+    "seam: tests that exercise one of the five system seams (learning, autonomy, verifier, kanban, send-guard)",
+    "audit: tests for individual audit rules",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]
+ignore = ["E501"]            # line length is reported but not blocking
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+warn_redundant_casts = true
+no_implicit_optional = true

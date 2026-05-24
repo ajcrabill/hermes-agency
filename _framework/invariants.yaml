@@ -1,0 +1,227 @@
+# FRAMEWORK — owned by HermesAgency. Do not modify in a deployment.
+# This is the single source of truth for cross-subsystem constants.
+# Audit, manifest validator, autonomy gate, send-guard, and scaffolds
+# all read from this file. Edits here propagate everywhere.
+
+# ── Roles ─────────────────────────────────────────────────────────────────
+# The framework ships with these six roles. Deployments can add their
+# own (e.g. finance, legal, it-ops) — adding a role here makes the
+# framework-level audit aware of it. Custom deployment-private roles
+# can live in ~/.agency/custom-roles/ without touching this file.
+roles:
+  - id: chief-of-staff
+    keywords: [coordinate, communicate, triage, draft, send, schedule, calendar, briefing, route]
+    default_action_classes: [draft-only, send-batched, send-single]
+    default_cadence: real-time
+    sends_mail: true             # only role that sends by default
+  - id: knowledge-base
+    keywords: [classify, curate, validate, ip, alignment, methodology, prior-decision, archive]
+    default_action_classes: [draft-only, structural-change]
+    default_cadence: mixed
+    sends_mail: false
+  - id: system-sentinel
+    keywords: [watch, monitor, audit, drift, heartbeat, recapture, compliance, rollup]
+    default_action_classes: []   # read-only by design
+    default_cadence: frequent
+    sends_mail: false
+  - id: analyst-judge
+    keywords: [critique, red-team, dossier, research, judge, curate-learning, verifier, graduation]
+    default_action_classes: [draft-only, structural-change]
+    default_cadence: project-paced
+    sends_mail: false
+  - id: business-development
+    keywords: [prospect, outreach, lead, journalist, podcast, crm, opportunity, news]
+    default_action_classes: [draft-only, send-batched]
+    default_cadence: daily-weekly
+    sends_mail: false            # specialist drafts; CoS sends
+  - id: writing-support
+    keywords: [book, coaching, manuscript, workbook, newsletter, author-voice, multi-author]
+    default_action_classes: [draft-only, structural-change]
+    default_cadence: per-author
+    sends_mail: false            # author correspondence flows through CoS
+
+# Minimum-viable deployment: which roles MUST be enabled in deployment.yaml.
+required_roles:
+  - chief-of-staff
+  - knowledge-base
+  - system-sentinel
+
+# ── Action classes ────────────────────────────────────────────────────────
+# The L1-L5 ladder maps to action-class minimums.
+action_classes:
+  - id: draft-only
+    min_level: 1
+    description: "Drafts only; sends nothing."
+  - id: send-batched
+    min_level: 2
+    description: "Sends in supervised batches (owner reviews queue)."
+  - id: send-single
+    min_level: 3
+    description: "Sends single items, notifies owner."
+  - id: structural-change
+    min_level: 4
+    description: "Modifies DB rows, archives tasks, structural ops."
+  - id: auto-irreversible
+    min_level: 5
+    description: "Auto-send to new contacts; delete data."
+
+# Orthogonal class taxonomy from agent-core (Appendix A.5). Composes with L1-L5.
+class_taxonomy:
+  autonomous: [read, write-internal, ob-update, cross-agent-message, calendar-read, ingest, exemplar-capture]
+  gated:      [send-external-mail, publish-content, create-external-invite, modify-people-notes, install-skill]
+  forbidden:  [secret-access, financial-action, modify-safety-policy]
+
+# ── Kanban tenants ────────────────────────────────────────────────────────
+kanban_tenants:
+  - dossier
+  - hardware
+  - red-team
+  - cross-profile-msg
+  - bizdev
+  - book-coaching
+  - audit
+  - audit-confirm
+  - spec-review
+  - alert
+  - compliance
+  - recapture
+  - finance              # example for the future-FinanceAgent
+
+# Two link types — solves v7 umbrella-deadlock pattern (§6.3 of spec).
+kanban_link_types:
+  - id: blocks
+    description: "True ordering dependency; child waits for parent."
+    gates_completion: true
+  - id: tracks
+    description: "Soft tracking; parent shows aggregate without blocking."
+    gates_completion: false
+
+# ── Autonomy ladder ───────────────────────────────────────────────────────
+autonomy_levels:
+  - level: 1
+    id: draft-only
+    description: "Drafts everything, sends nothing. Starting level."
+  - level: 2
+    id: send-batched
+    description: "Sends in supervised batches (owner reviews queue)."
+  - level: 3
+    id: send-single
+    description: "Sends single items, notified to owner."
+  - level: 4
+    id: structural-change
+    description: "Modifies DB rows, archives tasks, structural ops."
+  - level: 5
+    id: auto-irreversible
+    description: "Auto-send to new contacts; delete data."
+
+# Three-input promotion thresholds (§4.3).
+autonomy_promotion:
+  consecutive_clean_runs: 5      # input 1
+  ## input 2 is structural compliance (audit --strict returns 0)
+  recapture_lookback_days: 14    # input 3
+  firings_lookback_days: 30
+  min_firings_when_rules_exist: 1
+  rules_threshold_for_firing_check: 3
+
+# ── Audit ─────────────────────────────────────────────────────────────────
+# ALWAYS_BLOCK rules — graduation gate refuses promotion if any of these fire.
+# General audit (non-strict) treats them as critical findings.
+always_block_rules:
+  - skill-no-autonomy-frontmatter
+  - skill-no-verifier
+  - skill-no-action-surface
+  - skill-no-supervised-learning              # promoted from warn (§10.3 spec)
+  - skill-no-untrusted-content                # for skills handling external input
+  - skill-injection-trigger                   # paraphrase-don't-quote linter
+  - skill-role-mismatch
+  - learning-loop-broken                       # NEW (§10.3): >3 rules + 0 firings/30d
+  - recapture-implicates-skill                 # NEW: recapture event in last 14d
+  - framework-vendor-leak                      # NEW (§1.3): vendor name in framework code
+  - script-no-shebang
+  - script-no-error-handling
+  - script-secrets-inline
+  - profile-missing-soul                       # critical: no identity = no agent
+  - profile-standards-source-not-found         # dangling standards.md reference
+
+# Warn-level rules (general audit reports; graduation gate ignores).
+warn_rules:
+  - skill-no-failure-mode                      # SKILL.md doesn't enumerate failure modes
+  - skill-no-self-check
+  - profile-missing-standards                  # warn only; agent can operate on persona alone
+  - learning-rule-untagged                     # rule has no skill_tags or only 'general'
+  - kanban-task-orphaned                       # task with no assignee or no tenant
+  - cron-no-heartbeat-emit                     # cron job doesn't publish a heartbeat
+  - doc-references-deprecated-path             # ref to ~/.loriah or v7 paths
+
+# ── Vendor / provider ─────────────────────────────────────────────────────
+# The framework speaks OpenAI-compatible API. This list is for VALIDATION
+# (deployment.yaml::provider must match one of these IDs) and is NOT a
+# preference list — every entry is equally first-class. Operators add
+# their own.
+#
+# This is the ONE place in the framework where vendor names are
+# permitted to appear, and only because manifest validation needs an
+# enumeration. Audit rule `framework-vendor-leak` skips this file.
+valid_providers:
+  - openai
+  - anthropic
+  - deepseek
+  - mistral
+  - cohere
+  - google
+  - openrouter
+  - groq
+  - together
+  - ollama
+  - llamacpp
+  - mlx
+  - lmstudio
+  - vllm
+  - custom    # for any other OpenAI-compatible endpoint
+
+# ── Skill anatomy ─────────────────────────────────────────────────────────
+required_skill_sections:
+  - autonomy           # frontmatter block: skill_id, action_classes, min_level
+  - what-this-skill-does
+  - inputs
+  - supervised-learning
+  - action-surface
+  - verifier
+  - failure-modes
+  - self-check
+
+# Optional but recommended (warn if missing on a skill that handles external content):
+recommended_skill_sections:
+  - untrusted-content
+  - prompt-injection-defense
+
+# ── Voice / persona attributes ────────────────────────────────────────────
+# Free-form; agents declare which voice tags apply via skill frontmatter.
+# This list documents the well-known ones. Deployments can extend freely.
+known_voice_tags:
+  - firm
+  - warm
+  - warm-not-flattering
+  - we-not-i
+  - direct
+  - precise
+  - laconic
+  - undramatic
+  - encouraging
+  - challenging
+
+# ── Hard send-guard ceilings (§4.5) ───────────────────────────────────────
+hard_send_ceilings:
+  - never-autonomous-send-per-recipient
+  - new-contact-first-message
+  - blacklist-recipient
+
+# ── Health intervals (cron expected cadence) ──────────────────────────────
+# Used by sentinel/heartbeat_watch.py to compute "stale" — 2x expected.
+expected_intervals_seconds:
+  learning-monitor: 300        # 5m
+  drift-monitor: 900           # 15m
+  heartbeat-watch: 300         # 5m
+  event-rollup: 3600           # hourly
+  playbook-audit: 604800       # weekly Sundays
+  compliance-report: 604800    # weekly Sundays
