@@ -201,13 +201,18 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
     print(f"  ✓ wrote {DEPLOYMENT_YAML}")
 
     # Scaffold the three required profiles
+    # v0.23: PRINCIPAL_NAME is the canonical key; OWNER_NAME is a
+    # backward-compat alias for any templates that still reference
+    # the older placeholder.
+    _principal_name = _natural_name(answers.owner)
     scaffold_profile(
         role="chief-of-staff",
         profile_id=answers.cos_id,
         substitutions={
             "COS_NAME": _natural_name(answers.cos_id),
             "ORG_NAME": answers.org_name,
-            "OWNER_NAME": _natural_name(answers.owner),
+            "PRINCIPAL_NAME": _principal_name,
+            "OWNER_NAME": _principal_name,  # legacy alias
             "COS_EMAIL": answers.cos_email,
         },
         force=force,

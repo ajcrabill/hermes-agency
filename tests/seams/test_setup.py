@@ -47,9 +47,9 @@ profiles:
 
     # Walk through all 8 questions with quick answers
     answers = [
-        "AJ Crabill",                    # owner_name
+        "AJ Crabill",                    # principal_name
         "Good Ancestor",                 # org_name
-        "AI Developer + governance writer",   # role_description
+        "Technological-intelligence developer + governance writer",   # role_description
         "Ship v0.19; finish manuscript; sleep 7+ hours/night",  # current_goals
         "honesty, craft, long-term thinking, being a good ancestor",  # values
         "Two kids, work-from-home, no meetings before 9am",  # personal_context

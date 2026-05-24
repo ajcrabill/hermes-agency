@@ -1,4 +1,4 @@
-# Personal — {{OWNER_NAME}}
+# Personal — {{PRINCIPAL_NAME}}
 
 _The non-work context the agency needs to be useful. Family,
 health, friends, commitments that aren't work but shape the work.
@@ -39,7 +39,7 @@ Agents respect these as protected time.)_
 
 {{HOBBIES_RESTORATION}}
 
-_(What {{OWNER_NAME}} does to restore. The agency should protect
+_(What {{PRINCIPAL_NAME}} does to restore. The agency should protect
 this time as fiercely as it protects family time. Burnout is the
 slowest goal-killer.)_
 
@@ -54,7 +54,7 @@ that affect scheduling and availability.)_
 
 {{PERSONAL_PROJECTS}}
 
-_(Things {{OWNER_NAME}} is working on that are not the agency's
+_(Things {{PRINCIPAL_NAME}} is working on that are not the agency's
 work but matter to them. The agency doesn't manage these but
 should know they exist when triaging time.)_
 
@@ -69,5 +69,5 @@ rules, not preferences.)_
 ---
 
 _This file is for the agency's benefit, not for sharing. If a
-client asks about {{OWNER_NAME}}'s availability, the answer comes
+client asks about {{PRINCIPAL_NAME}}'s availability, the answer comes
 from the calendar — not from this file._

@@ -8,7 +8,7 @@ carries its alignment metadata in its own frontmatter. See
 [`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md)
 for the framework._
 
-_Derived from a deep interview with {{OWNER_NAME}} on
+_Derived from a deep interview with {{PRINCIPAL_NAME}} on
 {{INTERVIEW_DATE}}. Edit freely. Both `Goals.md` and `Guardrails.md`
 are always part of HermesAgency's operating background context._
 
@@ -75,7 +75,7 @@ Initiatives (skills + scripts) serving Interim Goal 2.1:
 
 {{EXPLICIT_NON_GOALS}}
 
-_(Just as important as the Outcomes. The things {{OWNER_NAME}} has
+_(Just as important as the Outcomes. The things {{PRINCIPAL_NAME}} has
 explicitly decided are not the business's job — even when they
 look like they could be. This list protects focus.)_
 
@@ -86,7 +86,7 @@ look like they could be. This list protects focus.)_
 {{DECISION_PRINCIPLES}}
 
 _(When Outcome 1 and Outcome 2 both want the next hour, how does
-{{OWNER_NAME}} decide? Document the actual rules of thumb so the
+{{PRINCIPAL_NAME}} decide? Document the actual rules of thumb so the
 agency can apply them consistently. Per the strategic-planning
 doc, Outcomes are not all equal — usually one Outcome is the
 highest-priority claim on resources.)_
@@ -97,7 +97,7 @@ highest-priority claim on resources.)_
 
 - **Weekly:** CoS runs the strategic-plan health check (see
   `docs/StrategicPlanning.md` §5.4). Surfaces drift at any layer.
-- **Monthly:** {{OWNER_NAME}} reviews `Goals.md` itself —
+- **Monthly:** {{PRINCIPAL_NAME}} reviews `Goals.md` itself —
   reprioritize Interim Goals, churn Initiatives.
 - **Quarterly:** Strategic review — are the Outcomes still the
   right ones? Are the Interim Goals proving predictive?
@@ -106,6 +106,6 @@ highest-priority claim on resources.)_
 
 _When an agent isn't sure whether a request belongs to the
 business's work, the answer is here — either it traces up to an
-Outcome, or it doesn't and needs {{OWNER_NAME}}'s explicit
+Outcome, or it doesn't and needs {{PRINCIPAL_NAME}}'s explicit
 direction. `Guardrails.md` answers the parallel question: even
 if it traces to an Outcome, does pursuing it cross a line?_

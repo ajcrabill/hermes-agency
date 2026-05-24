@@ -34,10 +34,10 @@ from .state import (
 # writes the vault files + marker.
 _CLEAN_INSTALL_STEPS: list[tuple[str, str, str]] = [
     (
-        "OWNER",
-        "What's your name? (This is the principal — the person the "
+        "PRINCIPAL",
+        "What's your name? (This is the Principal — the person the "
         "agency serves. First name is fine; goes into Personal.md.)",
-        "owner_name",
+        "principal_name",
     ),
     (
         "ORG",
@@ -320,8 +320,11 @@ def _finalize_clean_install(state: SetupState) -> str:
         written.append("Values.md")
 
     personal_parts = []
-    if (o := ans.get("owner_name", "")) and o.lower() != "skip":
-        personal_parts.append(f"**Name:** {o}")
+    # principal_name is the v0.23+ field; owner_name is the legacy
+    # alias for backward-compat with in-flight setup state.
+    principal_name = ans.get("principal_name") or ans.get("owner_name", "")
+    if principal_name and principal_name.lower() != "skip":
+        personal_parts.append(f"**Name:** {principal_name}")
     if (p := ans.get("personal_context", "")) and p.lower() != "skip":
         personal_parts.append(p)
     if personal_parts:

@@ -434,8 +434,12 @@ def run_tier3_interview(
     STATE_VAULT.mkdir(parents=True, exist_ok=True)
 
     interview_date = datetime.now().strftime("%Y-%m-%d")
+    # v0.23: PRINCIPAL_NAME is the canonical key; OWNER_NAME is a
+    # backward-compat alias.
+    _principal_name = owner_name or "{{PRINCIPAL_NAME}}"
     common_subs = {
-        "OWNER_NAME": owner_name or "{{OWNER_NAME}}",
+        "PRINCIPAL_NAME": _principal_name,
+        "OWNER_NAME": _principal_name,  # legacy alias
         "ORG_NAME": org_name or "{{ORG_NAME}}",
         "INTERVIEW_DATE": interview_date,
     }

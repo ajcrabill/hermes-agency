@@ -44,7 +44,10 @@ def scaffold_profile(
 ) -> Path:
     """Create the profile dir + populate SOUL.md and standards.md from
     templates. Substitutions fill `{{KEY}}` placeholders in the
-    templates (e.g. {{COS_NAME}}, {{ORG_NAME}}, {{OWNER_NAME}})."""
+    templates (e.g. {{COS_NAME}}, {{ORG_NAME}}, {{PRINCIPAL_NAME}}).
+
+    v0.23+ uses {{PRINCIPAL_NAME}} as the canonical key; {{OWNER_NAME}}
+    is preserved as a backward-compat alias by callers."""
 
     role_templates = TEMPLATES_DIR / "profiles" / role
     if not role_templates.exists():

@@ -117,7 +117,7 @@ will become projects or decisions. Last 5-10.)_
 
 (none yet)
 
-## Open questions to {{OWNER_NAME}}
+## Open questions to {{PRINCIPAL_NAME}}
 
 _(Things an agent wanted to ask but parked. Surfaced at the next
 appropriate touch-point.)_
@@ -136,7 +136,7 @@ Update this file when:
 Pruning: weekly, move entries older than 14 days that didn't
 produce an outcome to `state-vault/archive/conversation-journal-{{YYYY-MM-DD}}.md`
 or convert them to learning rules.
-""".replace("{{OWNER_NAME}}", owner_name or "the principal"),
+""".replace("{{PRINCIPAL_NAME}}", owner_name or "the Principal"),
             encoding="utf-8",
         )
 

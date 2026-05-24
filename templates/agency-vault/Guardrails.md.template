@@ -1,13 +1,13 @@
 # Guardrails — {{ORG_NAME}}
 
-_The lines {{OWNER_NAME}} refuses to cross — values made
+_The lines {{PRINCIPAL_NAME}} refuses to cross — values made
 structurally enforceable. **Not part of the always-loaded
 background context.** Loaded by Sentinel (read-only watchdog),
 AnalystJudge (audit), and send-guard. See
 [`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md) §2
 for the framework._
 
-_Derived from a deep interview with {{OWNER_NAME}} on
+_Derived from a deep interview with {{PRINCIPAL_NAME}} on
 {{INTERVIEW_DATE}}. Edit freely. This doc replaces the older
 `Values.md` — the values-as-character-traits framing wasn't
 structurally enforceable; values expressed as Guardrails
@@ -18,7 +18,7 @@ structurally enforceable; values expressed as Guardrails
 ## What Guardrails are for
 
 A Guardrail is a **prohibition statement**: "the business will
-not do X." Each Guardrail captures one of {{OWNER_NAME}}'s core
+not do X." Each Guardrail captures one of {{PRINCIPAL_NAME}}'s core
 values, expressed as a line the business won't cross — even in
 pursuit of the Outcomes in `Goals.md`.
 
@@ -51,7 +51,7 @@ behavior.
 ## Guardrails (layer 1) — the non-negotiables
 
 _1-3 prohibition statements. Same horizon as the Outcomes (1-3
-years). Each captures one of {{OWNER_NAME}}'s core values
+years). Each captures one of {{PRINCIPAL_NAME}}'s core values
 expressed as a line the business won't cross._
 
 ### Guardrail 1 — {{GUARDRAIL_1_TITLE}}
@@ -59,7 +59,7 @@ expressed as a line the business won't cross._
 {{GUARDRAIL_1_STATEMENT}}
 
 _(Example: "Honesty" becomes: "The business will not publish,
-send, or sign content that misrepresents what {{OWNER_NAME}}
+send, or sign content that misrepresents what {{PRINCIPAL_NAME}}
 knows or believes.")_
 
 #### Interim Guardrails (layer 2) — leading indicators for Guardrail 1
@@ -106,7 +106,7 @@ Initiatives (skills + scripts) serving Interim Guardrail 3.1:
 
 {{NON_NEGOTIABLES}}
 
-_(Explicit anti-list. Things {{OWNER_NAME}} won't engage with no
+_(Explicit anti-list. Things {{PRINCIPAL_NAME}} won't engage with no
 matter how attractive the upside. In v0.22+, these get
 re-expressed as proper Guardrails with Interim Guardrails — the
 plain-anti-list form is a transitional shape. Agents enforce
@@ -118,7 +118,7 @@ level.)_
 ## Priority relative to Goals.md
 
 **Goals get the first claim on resources. Guardrails get the
-veto.** {{OWNER_NAME}} needs to see evidence that the Guardrails
+veto.** {{PRINCIPAL_NAME}} needs to see evidence that the Guardrails
 are being honored, but a Guardrail won't out-prioritize a Goal
 for resource allocation. A Guardrail will, however, stop a Goal
 from being pursued in a way that violates it.
@@ -135,7 +135,7 @@ needs to be re-examined for whether it's still load-bearing.
   Guardrail violations or Interim Guardrail drift from the past
   week. CoS includes any flags in the strategic-plan health
   check.
-- **Monthly:** {{OWNER_NAME}} reviews `Guardrails.md` directly —
+- **Monthly:** {{PRINCIPAL_NAME}} reviews `Guardrails.md` directly —
   reprioritize Interim Guardrails, churn Initiatives.
 - **Quarterly:** Are the Guardrails still the right lines? Is
   there a Guardrail that's never come up — and is it dormant

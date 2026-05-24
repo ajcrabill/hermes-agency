@@ -1,6 +1,6 @@
 # Work — {{ORG_NAME}}
 
-_The work context. What {{OWNER_NAME}} actually does, who they do
+_The work context. What {{PRINCIPAL_NAME}} actually does, who they do
 it for, what's currently in flight. The agency's working
 understanding of the business._
 
@@ -73,12 +73,12 @@ counterparts. The fabric the work is embedded in.)_
 
 {{LEARNING_GROWTH}}
 
-_(What {{OWNER_NAME}} is currently studying, exploring, or
+_(What {{PRINCIPAL_NAME}} is currently studying, exploring, or
 developing skill in. Helps agents know which inbound is signal
 vs. noise.)_
 
 ---
 
 _This file is the canonical "what the work IS." When Goals.md says
-what we're optimizing for and Values.md says what we refuse to do,
-Work.md says what we actually offer when someone asks._
+what we're optimizing for and Guardrails.md says what we refuse to
+do, Work.md says what we actually offer when someone asks._
