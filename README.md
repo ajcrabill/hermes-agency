@@ -1,12 +1,33 @@
 # HermesAgency
 
-**A continuously-learning, multi-agent plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent), built for small-business owners who refuse to re-teach their AI ten times.**
+### Powerful Agent Team. Continuous Context Learning. Complete Privacy & Data Control.
+
+**A multi-agent plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent), built for small-business owners who want the AI capabilities big tech is rolling out — without surrendering their data, IP, or ideas to get them.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes engine](https://img.shields.io/badge/plugin%20for-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
 
 > By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal AI chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
+
+## Why this exists
+
+Every large platform is rolling out the same feature set: AI assistants, multi-agent workflows, persistent memory, learning from corrections, integrated calendaring and email. The capability gap that used to favor enterprises is collapsing — fast. **A small business without these tools is at a real disadvantage against competitors that have them.**
+
+But the big-platform versions of these features come at a price:
+
+- **Ecosystem lock-in** — your obligations, contacts, IP, and drafting workflows live inside a platform; switching means abandoning your institutional memory
+- **Data exfiltration as the price of admission** — your IP, client information, private deliberations, unfinished ideas, strategic thinking all get uploaded
+- **Per-seat economics that scale with team size, not with the value the features unlock**
+
+HermesAgency gives small-business owners the same capabilities — **continuous learning, multi-agent workflows, integrated communication, autonomy-graded delegation** — without trading the data, IP, or ideas that make their business distinct. The architectural commitments that make this true:
+
+- **Runs on your hardware.** Hermes Agent + HermesAgency operate on your machine; the agency layer has no cloud dependency. State lives in `~/.hermes/agency-state/` on *your* filesystem.
+- **Vendor-neutral inference.** Pick your model. Mix providers. Run local-only with Ollama / Qwen / Gemma for zero data egress. The framework names no vendor (enforced by an audit rule); providers are configuration, not code.
+- **MIT-licensed, open source.** Full code visibility. No SaaS pricing curve. No telemetry. No phone-home.
+- **Your IP stays yours.** Corrections, learning rules, vault documents, drafts — all in your filesystem, under paths you control. The framework reads from them but never copies them anywhere.
+
+The competitive thesis is straightforward: **the small business that masters their own AI agency wins.** HermesAgency is the path that doesn't require trading ownership of your IP for the capability.
 
 ---
 

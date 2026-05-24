@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.18.1-spec (2026-05-24) — *also: v0.06 of the 9th version (see §0.5)*
+**Version:** v0.18.2-spec (2026-05-24) — *also: v0.07 of the 9th version (see §0.5)*
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -249,7 +249,7 @@ catches it.
 ### 1.4 Plugin discipline — Hermes is the runtime, always
 
 **HermesAgency is a plugin, not a parallel framework.** Every
-reliability system it adds (the 7 in §1.5) must be expressed as a
+reliability system it adds (the 7 in §1.7) must be expressed as a
 Hermes hook — a patch into Hermes' execution path, or a shim that
 reads/writes Hermes' own state. The agency CLI exists for setup,
 audit, capture, and supervision. It does not exist as an alternate
@@ -302,7 +302,99 @@ The discipline:
 - **`agency hermes-patches systems`** is the public source of
   truth for whether the discipline is being kept.
 
-### 1.5 The seven reliability systems
+### 1.5 The three pillars — and why this matters now
+
+HermesAgency stands on three pillars:
+
+1. **Powerful Agent Team.** Six role-specialized agents (or seven,
+   with FinanceAgent) — Chief of Staff, Knowledge Base, System
+   Sentinel, Analyst Judge, Business Development, Writing Support,
+   Finance — that route work through each other via Hermes' kanban,
+   with CoS as the single face to the world. Specialists draft, CoS
+   sends. Each agent carries its own SOUL.md, standards.md, and a
+   curated skill catalog. Not a gimmick — a small-business-shaped
+   organizational chart in software. (§2, §7)
+
+2. **Continuous Context Learning.** Every correction the operator
+   gives is captured to a learning corpus, tagged across skills and
+   roles, injected into every relevant prompt at load time, and
+   applied without the operator repeating themselves. The recapture
+   detector catches when a correction stops landing — the loop
+   breaking is itself a system signal, not silent drift. Autonomy
+   gates earn upward only when the learning loop is provably
+   working. (§1.1, §3, §4)
+
+3. **Complete Privacy & Data Control.** Every byte of state — the
+   learning corpus, the agency vault, conversation history, kanban,
+   sentinel events, audit findings — lives on your hardware under
+   `~/.hermes/agency-state/`. No cloud dependency for the agency
+   layer. Inference provider is your choice (local Ollama / Qwen /
+   Gemma / DeepSeek / OpenAI / Anthropic / any OpenAI-compatible
+   endpoint); the framework names no vendor and treats providers
+   as opaque strings (§1.3). You can swap providers, mix local
+   with hosted, or air-gap to local-only inference entirely at any
+   time. Your IP, your ideas, your corrections, your operational
+   memory: yours.
+
+### 1.6 Why this matters now — the big-tech contrast
+
+Every large platform is rolling out the same feature set: AI
+assistants, multi-agent workflows, persistent memory, learning
+from corrections, integrated calendaring and email. The capability
+that distinguishes small-business work from large-enterprise work
+is collapsing — fast. **A small-business owner without these tools
+is at a real disadvantage against competitors who have them.**
+
+But the big-platform versions of these features come at a price
+the spec is explicit about refusing:
+
+- **Ecosystem lock-in.** Once your obligations, contacts, IP, and
+  drafting workflows live inside a platform, switching means
+  abandoning the institutional memory you've built. The cost rises
+  monotonically with usage.
+- **Data exfiltration as the price of admission.** Your IP, your
+  client information, your private deliberations, your unfinished
+  ideas, your strategic thinking — all of it gets uploaded as the
+  cost of using the assistant. "We don't train on your data" is
+  the current promise; it's not architecturally enforced and the
+  terms can change.
+- **Per-seat economic model.** The features scale with your team
+  size, not with the value they unlock. Small businesses pay
+  proportionally more than large ones for the same capability.
+
+HermesAgency's position: **a small-business owner should be able to
+have all the same capabilities — continuous learning, multi-agent
+workflows, integrated communication, autonomy-graded delegation —
+without surrendering the data, IP, or ideas that make their business
+distinct.** Not by refusing the capability (that's losing the
+competitive race) but by owning the implementation.
+
+The architectural commitments that make this true:
+
+- **MIT-licensed, open source** — full code visibility; nothing
+  hidden, nothing under a SaaS pricing curve. (Spec entire.)
+- **Runs on your hardware** — Hermes Agent + HermesAgency operate
+  on your machine; the agency layer has no cloud dependency. Your
+  state never leaves your filesystem unless you explicitly
+  configure it to.
+- **Vendor-neutral inference** — pick your model, mix providers,
+  go local-only with Ollama / Qwen / Gemma if you want zero data
+  egress. §1.3 enforces this in code (`framework-vendor-leak`
+  audit rule).
+- **No telemetry, no phone-home** — the framework does not call
+  out to any AJC- or Good-Ancestor-controlled endpoint. Updates
+  are explicit `git pull` operations.
+- **Your IP stays yours** — corrections, learning rules, vault
+  documents, drafts, prior decisions all live in your filesystem
+  under paths *you* control. The framework reads from them but
+  never copies them anywhere.
+
+The competitive thesis is straightforward: **the small business
+that masters their own AI agency wins.** HermesAgency is the path
+that doesn't require trading ownership of their IP for the
+capability.
+
+### 1.7 The seven reliability systems
 
 The exhaustive list of what HermesAgency adds to Hermes:
 
@@ -2591,6 +2683,38 @@ shape.
   actionable LLM errors. `_framework/hermes_patches/` deleted; tests
   cut; `SYSTEM_INVENTORY` moved to `hermes_agency_plugin/
   system_inventory.py`. Net -364 lines. 226 passing, zero skipped.
+
+- **v0.18.2-spec (2026-05-24)** — *Spec-revision pass; no code change.*
+  Added the three-pillar tagline and the big-tech-contrast section.
+  Spec sections §1.5 (three pillars), §1.6 (why-this-matters-now /
+  big-tech contrast), §1.7 (seven reliability systems — renumbered
+  from previous §1.5) restructure the "what is this and why now"
+  framing:
+
+  - **§1.5 The three pillars**: Powerful Agent Team / Continuous
+    Context Learning / Complete Privacy & Data Control. Each pillar
+    grounded in the architectural commitment that makes it real.
+  - **§1.6 Why this matters now**: every large platform is rolling
+    out the same features (AI assistants, multi-agent workflows,
+    persistent memory, learning from corrections) — a small business
+    without these is at a real disadvantage; but the big-platform
+    versions come at a price (ecosystem lock-in, data exfiltration,
+    per-seat economics). HermesAgency gives small-business owners the
+    same capabilities without trading the data, IP, or ideas that make
+    their business distinct. Four architectural commitments enumerated:
+    runs on your hardware, vendor-neutral inference, MIT/open-source/
+    no-telemetry, your IP stays yours.
+  - **§1.7 Seven reliability systems**: unchanged content, renumbered
+    from §1.5.
+
+  README header: lead with "Powerful Agent Team. Continuous Context
+  Learning. Complete Privacy & Data Control." subtitle + a "Why this
+  exists" section that's the big-tech contrast condensed for the
+  front page.
+
+  pyproject.toml description updated to lead with the three pillars.
+
+  Spec version rolled to v0.18.2.
 
 - **v0.18.1-spec (2026-05-24)** — *Spec-revision pass; no code change.*
   Fleshed out §0.5 Lineage with the real 9-version history AJ
