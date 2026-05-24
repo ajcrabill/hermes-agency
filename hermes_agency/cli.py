@@ -457,15 +457,30 @@ def _print_engine_block(answers) -> None:
 
 
 def cmd_chat(args: argparse.Namespace) -> int:
-    """Interactive chat with a profile (default: CoS).
+    """DIAGNOSTIC chat — talks directly to the configured provider
+    with the profile's SOUL + standards + learning rules in context.
 
-    Loads the profile's SOUL.md + standards.md + applicable learning rules,
-    sends the user's input to the configured provider, prints the response.
+    This is NOT the daily-use surface. For normal use:
 
-    Supports either:
-      agency chat                       # interactive REPL
-      agency chat "your message"        # one-shot
+        hermes chat
+
+    `hermes chat` is the runtime; HermesAgency is meant to make it
+    smarter via the Hermes patches (`agency hermes-patches apply`).
+
+    This command exists because:
+      - You haven't applied the patches yet (or some are missing)
+      - You want to smoke-test the rule injection + SOUL loading
+        independently of Hermes
+      - You're debugging the prompt composer
     """
+    if not args.no_banner:
+        print("─" * 70)
+        print(" DIAGNOSTIC SURFACE — this is not how you normally use HermesAgency.")
+        print(" For daily use:  hermes chat  (with patches applied)")
+        print(" See:            agency hermes-patches systems")
+        print("─" * 70)
+        print()
+
     from _framework.runtime import (
         chat_once, repl, ChatError, ProviderResolveError,
     )
@@ -813,8 +828,16 @@ def cmd_upgrade(_args: argparse.Namespace) -> int:
 
 
 def cmd_hermes_patches(args: argparse.Namespace) -> int:
-    """Apply / status / list Hermes integration patches."""
-    from _framework.hermes_patches import apply_all, check_status, list_patches
+    """Apply / status / list / systems for Hermes integration patches.
+
+    `agency hermes-patches systems` is the honest answer to "is
+    HermesAgency actually a Hermes plugin?" — it prints the 7
+    reliability systems and which ones are wired into Hermes vs.
+    still parallel infrastructure.
+    """
+    from _framework.hermes_patches import (
+        apply_all, check_status, list_patches, system_inventory,
+    )
     from _framework.hermes_engine import is_installed as _hermes_present
 
     # The patches modify a running Hermes install — refuse if there isn't one.
@@ -823,6 +846,40 @@ def cmd_hermes_patches(args: argparse.Namespace) -> int:
         print("  Install Hermes first:")
         print("    agency init --hermes-only")
         return 1
+
+    if args.action == "systems":
+        # The honest 7-system view
+        print("HermesAgency — 7 reliability systems (integration state)")
+        print()
+        wired = 0
+        for s in system_inventory():
+            status = s["applied_status"]
+            if status == "applied":
+                marker, label = "✓", "wired into Hermes (patch applied)"
+                wired += 1
+            elif status == "unapplied":
+                marker, label = "—", "patch exists but NOT applied — run `agency hermes-patches apply`"
+            elif status == "n/a":
+                marker, label = "✓", "wired (Hermes-native shape — no patch needed)"
+                wired += 1
+            elif status == "anchor-missing":
+                marker, label = "⚠", "patch's anchor not found in Hermes — file may have changed"
+            elif status == "target-missing":
+                marker, label = "?", "patch target file not present"
+            elif status == "not-built":
+                marker, label = "✗", "PATCH NOT YET BUILT — system is parallel, not Hermes-extending"
+            else:
+                marker, label = "·", status
+            print(f"  {marker} {s['name']}")
+            print(f"      patch: {s['patch_id']}")
+            print(f"      state: {label}")
+            print(f"      note:  {s['note']}")
+            print()
+        total = len(system_inventory())
+        print(f"  {wired} / {total} systems are actually Hermes-extending.")
+        if wired < total:
+            print(f"  See CHANGELOG / DEVELOPMENT_PLAYBOOK for the roadmap on the missing patches.")
+        return 0 if wired == total else 1
 
     if args.action == "list":
         for p in list_patches():
@@ -1193,12 +1250,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_init.set_defaults(func=cmd_init)
 
-    # chat — interactive (or one-shot) chat with a profile
+    # chat — DIAGNOSTIC ONLY. The daily-use surface is `hermes chat`
+    # with `agency hermes-patches apply` having wired the integration.
     p_chat = sub.add_parser(
         "chat",
-        help="Talk to a profile (loads SOUL + standards + learning rules + "
-             "sends to configured provider). Default REPL; pass a message "
-             "as positional arg for one-shot.",
+        help="[diagnostic] Talk to a profile directly via the configured "
+             "provider, bypassing Hermes. Use `hermes chat` for normal "
+             "use after `agency hermes-patches apply`.",
     )
     p_chat.add_argument("message", nargs="?", default="",
                         help="One-shot message. If omitted, enters REPL.")
@@ -1212,6 +1270,8 @@ def build_parser() -> argparse.ArgumentParser:
                         help="Synthetic skill name for rule resolution (default: interactive-chat)")
     p_chat.add_argument("-v", "--verbose", action="store_true",
                         help="Print provider/model/token-counts after the response")
+    p_chat.add_argument("--no-banner", action="store_true",
+                        help="Suppress the 'diagnostic surface' banner")
     p_chat.set_defaults(func=cmd_chat)
 
     # reset — wipe state for a clean re-init
@@ -1309,7 +1369,12 @@ def build_parser() -> argparse.ArgumentParser:
         "hermes-patches",
         help="Apply/check the Hermes integration patches (injection, etc.)",
     )
-    p_patches.add_argument("action", choices=["apply", "status", "list"], default="status", nargs="?")
+    p_patches.add_argument(
+        "action",
+        choices=["apply", "status", "list", "systems"], default="status", nargs="?",
+        help="status (per-patch) | apply | list | "
+             "systems (the 7-system integration inventory)",
+    )
     p_patches.add_argument("--dry-run", action="store_true")
     p_patches.set_defaults(func=cmd_hermes_patches)
 

@@ -245,13 +245,18 @@ header "Done"
 echo
 echo "  Activate the agency venv in future shells with:"
 echo "      source $VENV/bin/activate"
+echo "  Or add to your shell init:"
+echo "      echo 'source $VENV/bin/activate' >> ~/.zshrc"
 echo
-echo "  Or add to your shell init (~/.zshrc):"
-echo "      alias agency-on='source $VENV/bin/activate'"
+echo "  Next: wire HermesAgency into Hermes, then USE Hermes."
 echo
-echo "  Useful commands:"
-echo "      agency status         summary + Hermes detection"
-echo "      agency next           actionable next steps for your state"
-echo "      agency audit          run the audit suite"
-echo "      agency panel          read-only control panel"
+echo "      agency hermes-patches apply    # one-time per Hermes upgrade"
+echo "      agency hermes-patches systems  # see which of the 7 are wired"
+echo "      hermes chat                    # this is how you run it"
+echo
+echo "  Supervisory commands:"
+echo "      agency status         deployment health"
+echo "      agency next           actionable next steps"
+echo "      agency audit          alignment audit"
+echo "      agency capture \"...\"  capture a correction (opens the learning loop)"
 echo

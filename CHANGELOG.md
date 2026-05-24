@@ -9,6 +9,111 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.15.0] — 2026-05-24
+
+Plugin framing restored. AJ pointed out that the project had
+drifted from "Hermes plugin that adds 7 reliability systems" into
+"parallel framework with its own chat, panel, state, and runtime."
+The spec's first sentence said *layered on top of Hermes* — what
+got built was *next to Hermes*.
+
+This release doesn't ship new features. It corrects the narrative
++ the surfaces. The next two releases (v0.16+) will close the
+actual integration gaps (missing patches for autonomy gate,
+verifier, send-guard).
+
+### Added — `agency hermes-patches systems`
+
+The honest 7-system integration inventory. Output for a fresh
+install today:
+
+```
+HermesAgency — 7 reliability systems (integration state)
+
+  ✓ Supervised learning loop          wired into Hermes (patch)
+  ✗ Autonomy ladder (L1–L5)           PATCH NOT YET BUILT — parallel
+  ✗ Verifier (per-skill criteria)     PATCH NOT YET BUILT — parallel
+  ✓ System Sentinel                   wired (Hermes-native shape)
+  ✓ Kanban tracks-link type           wired (Hermes-native shape)
+  ✗ Send-guard (outbound mail gate)   PATCH NOT YET BUILT — parallel
+  ✓ Audit (weekly alignment check)    wired (Hermes-native shape)
+
+  4 / 7 systems are actually Hermes-extending.
+```
+
+The `SYSTEM_INVENTORY` constant in `_framework/hermes_patches/
+apply.py` is now the source of truth for "what does HermesAgency
+*claim* to extend, and is each claim actually wired?"
+
+### Changed — README restructured around plugin framing
+
+Tagline changed from "A multi-agent framework for small-agency
+owners..." to "A Hermes plugin that adds 7 reliability systems
+for small-agency owners..."
+
+"How you use it" section leads with `hermes chat`, not `agency
+chat`. Three commands in the canonical order:
+
+```
+agency hermes-patches apply     # one-time wiring
+agency hermes-patches systems   # see what's wired
+hermes chat                     # use the engine — now enriched
+```
+
+### Demoted — `agency chat`
+
+Marked as **diagnostic surface**, not daily-use. Prints a banner
+on every invocation:
+
+```
+─────────────────────────────────────────────────────────────
+ DIAGNOSTIC SURFACE — this is not how you normally use HermesAgency.
+ For daily use:  hermes chat  (with patches applied)
+ See:            agency hermes-patches systems
+─────────────────────────────────────────────────────────────
+```
+
+`--no-banner` suppresses the banner for scripted use. The command
+still works (it's useful for testing rule injection / SOUL loading
+without going through Hermes), but the README + CLI help direct
+users to `hermes chat` for normal use.
+
+### Demoted — `agency panel`
+
+Reframed in docs as a read-only diagnostic UI, not a primary
+surface. (No code changes — just no longer the answer to "how do
+I use the framework.")
+
+### Changed — bootstrap.sh post-install message
+
+The "Done" footer now points users at the canonical sequence:
+
+```
+agency hermes-patches apply    # one-time per Hermes upgrade
+agency hermes-patches systems  # see which of the 7 are wired
+hermes chat                    # this is how you run it
+```
+
+### Architectural roadmap (the actual fix is v0.16+)
+
+v0.15.0 closes the *narrative* gap. The 3 missing patches still
+need to be built — those are real engineering, each one a
+release-sized chunk:
+
+- **v0.16.0** — `autonomy-gate` patch: pre-action hook in Hermes'
+  skill executor that calls `_framework.autonomy.allowed(...)`
+  before consequential actions
+- **v0.17.0** — `post-completion-verifier` patch: post-skill hook
+  that runs `_framework.verifier.run(...)` on the output
+- **v0.18.0** — `outbound-mail-guard` patch: pre-send hook on
+  Hermes' email path that calls `_framework.send_guard.check(...)`
+- **v0.19.0** — collapse parallel state where possible (learning
+  rules, events) into sidecar tables Hermes can read directly
+
+### Tests
+
+218 passing. Audit clean.
+
 ## [0.14.0] — 2026-05-24
 
 `agency chat` — the framework's first built-in inference path.

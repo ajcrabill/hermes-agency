@@ -25,6 +25,12 @@ Upstream plan: file PRs proposing official hook points so the patches
 become unnecessary. Until then, this is the path.
 """
 
-from .apply import apply_all, list_patches, check_status
+from .apply import (
+    apply_all, list_patches, check_status,
+    SYSTEM_INVENTORY, system_inventory,
+)
 
-__all__ = ["apply_all", "list_patches", "check_status"]
+__all__ = [
+    "apply_all", "list_patches", "check_status",
+    "SYSTEM_INVENTORY", "system_inventory",
+]

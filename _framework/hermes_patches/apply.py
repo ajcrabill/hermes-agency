@@ -26,6 +26,76 @@ REGISTRY: list = [
 ]
 
 
+# The 7 reliability systems HermesAgency is meant to add to Hermes.
+# Each entry says: what's the system, which patch wires it in, and
+# whether that patch exists yet.
+#
+# This list is the honest source of truth for "how much of HermesAgency
+# is actually Hermes-extending vs. parallel infrastructure." Display
+# this via `agency hermes-patches status --systems`.
+SYSTEM_INVENTORY: list[dict] = [
+    {
+        "id": "learning-loop",
+        "name": "Supervised learning loop",
+        "patch_id": "skill-load-injection",
+        "patch_exists": True,
+        "note": "Injects applicable learning rules into Hermes' skill-load.",
+    },
+    {
+        "id": "autonomy-ladder",
+        "name": "Autonomy ladder (L1–L5)",
+        "patch_id": "autonomy-gate",
+        "patch_exists": False,
+        "note": "TODO: pre-action gate in Hermes' skill executor. "
+                "Currently parallel — agency tracks autonomy state but "
+                "Hermes doesn't consult it before consequential actions.",
+    },
+    {
+        "id": "verifier",
+        "name": "Verifier (per-skill criteria)",
+        "patch_id": "post-completion-verifier",
+        "patch_exists": False,
+        "note": "TODO: post-completion hook in Hermes' skill exit. "
+                "Currently parallel — agency has verifier criteria but "
+                "Hermes never runs them.",
+    },
+    {
+        "id": "sentinel",
+        "name": "System Sentinel (read-only observer)",
+        "patch_id": "(no patch — Sentinel reads Hermes state via shim)",
+        "patch_exists": True,
+        "note": "Already shaped correctly: Sentinel observes Hermes "
+                "state.db / event log without modifying. No patch needed.",
+    },
+    {
+        "id": "kanban-tracks",
+        "name": "Kanban tracks-link type",
+        "patch_id": "(no patch — agency adds tracks rows to Hermes' kanban.db)",
+        "patch_exists": True,
+        "note": "Already shaped correctly: kanban shim writes to Hermes' "
+                "own kanban.db with the 'tracks' link type. Hermes-native.",
+    },
+    {
+        "id": "send-guard",
+        "name": "Send-guard (outbound mail gate)",
+        "patch_id": "outbound-mail-guard",
+        "patch_exists": False,
+        "note": "TODO: pre-send hook on Hermes' email-send. "
+                "Currently parallel — agency has send-guard logic but "
+                "Hermes' email path doesn't call it.",
+    },
+    {
+        "id": "audit",
+        "name": "Audit (weekly alignment check)",
+        "patch_id": "(no patch — audit runs as a script over Hermes state)",
+        "patch_exists": True,
+        "note": "Already shaped correctly: audit-alignment runs as a "
+                "scheduled script reading Hermes state + agency state. "
+                "Cron-fired.",
+    },
+]
+
+
 JOURNAL_PATH = HEALTH_DIR / "hermes-patches.jsonl"
 
 
@@ -121,4 +191,26 @@ def _journal(patch_id: str, target: Path, status: str, **extra) -> None:
         pass
 
 
-__all__ = ["apply_all", "check_status", "list_patches", "PatchStatus", "REGISTRY"]
+def system_inventory() -> list[dict]:
+    """Return the 7-system inventory with current applied/unapplied
+    status overlaid for systems that have a patch built."""
+    statuses_by_patch_id = {s.id: s for s in check_status()}
+    out: list[dict] = []
+    for system in SYSTEM_INVENTORY:
+        entry = dict(system)  # copy
+        if entry["patch_exists"] and entry["patch_id"] in statuses_by_patch_id:
+            ps = statuses_by_patch_id[entry["patch_id"]]
+            entry["applied_status"] = ps.status      # applied / unapplied / target-missing / anchor-missing
+        elif entry["patch_exists"]:
+            entry["applied_status"] = "n/a"          # built-in (sentinel, kanban, audit) — no patch to apply
+        else:
+            entry["applied_status"] = "not-built"    # the gap — TODO patches
+        out.append(entry)
+    return out
+
+
+__all__ = [
+    "apply_all", "check_status", "list_patches",
+    "PatchStatus", "REGISTRY",
+    "SYSTEM_INVENTORY", "system_inventory",
+]
