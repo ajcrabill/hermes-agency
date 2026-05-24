@@ -1098,6 +1098,83 @@ def _check_agency_context_injection(**_) -> list[AuditFinding]:
     return findings
 
 
+@_rule("goal-attribution-rate", category=3, scope="deployment")
+def _check_goal_attribution_rate(**_) -> list[AuditFinding]:
+    """v0.23.8: observational metric — what fraction of recent
+    learning rules carry a `goal_keys` attribution?
+
+    The flag is opt-in (most stylistic corrections won't use it), so
+    a low rate isn't a violation. We emit an info-level finding with
+    the current rate so the audit's render shows it. A rate of zero
+    over 50+ rules MIGHT mean the flag is being ignored — that
+    finding upgrades to warn, since the Principal probably intended
+    to be using strategic-alignment captures.
+    """
+    try:
+        from _framework.constants import LEARNING_DB
+        from _framework.learning.learning_db import decode_json_col
+    except ImportError:
+        return []
+    if not LEARNING_DB.exists():
+        return []
+    import sqlite3
+    from datetime import datetime, timedelta, timezone
+
+    since = (
+        datetime.now(timezone.utc) - timedelta(days=90)
+    ).isoformat(timespec="seconds")
+    try:
+        conn = sqlite3.connect(str(LEARNING_DB))
+        conn.row_factory = sqlite3.Row
+        try:
+            rows = conn.execute(
+                "SELECT goal_keys FROM learning_rules "
+                "WHERE created_at >= ? AND status='active'",
+                (since,),
+            ).fetchall()
+        finally:
+            conn.close()
+    except sqlite3.DatabaseError:
+        return []
+
+    total = len(rows)
+    if total == 0:
+        return []
+    with_keys = sum(
+        1 for r in rows
+        if (r["goal_keys"] and decode_json_col(r["goal_keys"]))
+    )
+    rate = (with_keys / total) * 100
+
+    findings: list[AuditFinding] = []
+    if total >= 50 and with_keys == 0:
+        findings.append(AuditFinding(
+            code="goal-attribution-rate", category=3, level="warn",
+            message=(
+                f"goal-attribution rate is 0% over {total} recent rules. "
+                f"The --goal flag is available but unused — strategic "
+                f"corrections aren't being tied to Outcomes/Interim Goals."
+            ),
+            location="learning_rules",
+            hint=(
+                "Try `/agency capture \"...\" --goal IG1.1` next time a "
+                "correction maps to a specific Outcome / Interim Goal / "
+                "Initiative. Stylistic corrections don't need it; "
+                "structural ones benefit."
+            ),
+        ))
+    else:
+        findings.append(AuditFinding(
+            code="goal-attribution-rate", category=3, level="info",
+            message=(
+                f"goal-attribution rate: {rate:.0f}% ({with_keys}/{total} "
+                f"recent rules carry a --goal key)"
+            ),
+            location="learning_rules",
+        ))
+    return findings
+
+
 # ── CLI ──────────────────────────────────────────────────────────────────
 
 

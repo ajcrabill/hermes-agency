@@ -43,6 +43,11 @@ class CaptureResult:
     embedding_model: str
     recapture: RecaptureResult | None
     tag_issues: list[str]
+    goal_keys: list[str] = None  # type: ignore[assignment]
+
+    def __post_init__(self):
+        if self.goal_keys is None:
+            self.goal_keys = []
 
 
 def capture_correction(
@@ -53,6 +58,7 @@ def capture_correction(
     voice_tags: list[str] | None = None,
     is_hard: bool = False,
     notes: str | None = None,
+    goal_keys: list[str] | None = None,
     db_path=None,
 ) -> CaptureResult:
     """
@@ -62,6 +68,19 @@ def capture_correction(
     detection. Callers are responsible for acting on the recapture
     (demoting skills, filing kanban alerts) — capture itself only
     persists + detects.
+
+    `goal_keys` (v0.23.8+) — optional list of strategic-alignment keys
+    the correction is tied to. Keys take three forms:
+
+      - `O<N>`             — an Outcome (e.g. "O1")
+      - `IG<N.M>`          — an Interim Goal (e.g. "IG1.1")
+      - `skill:<path>`     — an Initiative skill (e.g. "skill:devon/lookalike-prospect-builder")
+      - `script:<path>`    — an Initiative script (e.g. "script:devon/pipeline-watchdog.py")
+
+    Most corrections are stylistic and won't carry goal_keys. The
+    flag is for corrections where the link matters (e.g. "stop CCing
+    Spencer on outreach emails" specifically applies to Initiative
+    `devon/cold-outreach-sender`).
 
     Raises ValueError on malformed input (empty correction, empty
     skill_tags after normalization, etc.).
@@ -81,6 +100,8 @@ def capture_correction(
             f"At least one skill_tag is required (use 'general' for cross-skill). Issues: {tags.issues}"
         )
 
+    normalized_goal_keys = _normalize_goal_keys(goal_keys)
+
     rule_id = _make_rule_id(correction, source)
     now = _now_iso()
 
@@ -94,10 +115,10 @@ def capture_correction(
             """
             INSERT INTO learning_rules (
                 id, correction, source,
-                skill_tags, role_tags, voice_tags,
+                skill_tags, role_tags, voice_tags, goal_keys,
                 is_hard, status, embedding, embedding_model,
                 created_at, updated_at, notes
-            ) VALUES (?, ?, ?,  ?, ?, ?,  ?, 'active', ?, ?,  ?, ?, ?)
+            ) VALUES (?, ?, ?,  ?, ?, ?, ?,  ?, 'active', ?, ?,  ?, ?, ?)
             ON CONFLICT(id) DO NOTHING
             """,
             (
@@ -105,6 +126,7 @@ def capture_correction(
                 encode_json_col(tags.skill_tags),
                 encode_json_col(tags.role_tags),
                 encode_json_col(tags.voice_tags),
+                encode_json_col(normalized_goal_keys) if normalized_goal_keys else None,
                 1 if is_hard else 0,
                 embedding_blob, embedder.name,
                 now, now, notes or "",
@@ -127,6 +149,7 @@ def capture_correction(
         embedding_model=embedder.name,
         recapture=recapture,
         tag_issues=tags.issues,
+        goal_keys=normalized_goal_keys,
     )
 
 
@@ -168,6 +191,35 @@ def capture_from_chat(session_id: str, turn_index: int, correction: str, skill_t
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+_GOAL_KEY_PREFIXES = ("O", "IG", "skill:", "script:")
+
+
+def _normalize_goal_keys(raw: list[str] | None) -> list[str]:
+    """Strip + deduplicate + validate the prefix shape.
+
+    Accepts None or []; returns []. Accepts a list of keys; returns
+    them deduplicated (preserving first occurrence). Keys that don't
+    match the four known prefixes are kept verbatim — the audit's
+    `goal-attribution-shape` rule can flag them; we don't reject at
+    capture time (would lose corrections to a typo).
+    """
+    if not raw:
+        return []
+    seen = set()
+    out = []
+    for k in raw:
+        if not k or not isinstance(k, str):
+            continue
+        k = k.strip()
+        if not k:
+            continue
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append(k)
+    return out
 
 
 def _make_rule_id(correction: str, source: str) -> str:

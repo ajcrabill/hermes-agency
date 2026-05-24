@@ -26,7 +26,7 @@ from typing import Any
 
 from _framework.constants import LEARNING_DB, STATE_DIR
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # ── Schema ───────────────────────────────────────────────────────────────
 
@@ -44,6 +44,9 @@ CREATE TABLE IF NOT EXISTS learning_rules (
     skill_tags      TEXT NOT NULL,        -- JSON array of skill tags + optional 'general'
     role_tags       TEXT,                 -- JSON array: chief-of-staff, analyst-judge, etc.
     voice_tags      TEXT,                 -- JSON array: firm, warm-not-flattering, we-not-i
+    goal_keys       TEXT,                 -- v0.23.8+: JSON array of Outcome / Interim Goal /
+                                          -- Initiative keys this correction is attached to
+                                          -- (e.g. ["O1", "IG1.1", "skill:devon/lookalike-prospect-builder"])
     is_hard         INTEGER NOT NULL DEFAULT 0,    -- 1 = deterministically checkable
     status          TEXT NOT NULL DEFAULT 'active', -- active | suspended | superseded
     replaced_by     TEXT,
@@ -121,7 +124,11 @@ def get_db(path: Path | None = None) -> sqlite3.Connection:
 
 
 def init_learning_db(path: Path | None = None) -> Path:
-    """Create the database + schema if absent. Idempotent. Returns DB path."""
+    """Create the database + schema if absent. Idempotent. Returns DB path.
+
+    Migrations:
+      v1 → v2 (v0.23.8): add `goal_keys` column to learning_rules.
+    """
     target = path or LEARNING_DB
     target.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(target))
@@ -134,6 +141,7 @@ def init_learning_db(path: Path | None = None) -> Path:
                 "INSERT INTO meta(key,value) VALUES('schema_version',?)",
                 (str(SCHEMA_VERSION),),
             )
+            stored = SCHEMA_VERSION
         else:
             stored = int(row[0])
             if stored > SCHEMA_VERSION:
@@ -141,7 +149,24 @@ def init_learning_db(path: Path | None = None) -> Path:
                     f"learning.db schema_version={stored} is newer than framework supports ({SCHEMA_VERSION}). "
                     "Upgrade hermes-agency before opening this deployment."
                 )
-            # forward migrations would run here (none yet)
+
+        # Forward migrations
+        if stored < 2:
+            # v1 → v2: add goal_keys column (v0.23.8 strategic alignment)
+            existing_cols = {
+                r[1] for r in conn.execute(
+                    "PRAGMA table_info(learning_rules)"
+                ).fetchall()
+            }
+            if "goal_keys" not in existing_cols:
+                conn.execute(
+                    "ALTER TABLE learning_rules ADD COLUMN goal_keys TEXT"
+                )
+            conn.execute(
+                "UPDATE meta SET value=? WHERE key='schema_version'",
+                (str(SCHEMA_VERSION),),
+            )
+
         conn.commit()
     finally:
         conn.close()
@@ -173,6 +198,9 @@ def row_to_rule(row: sqlite3.Row) -> dict[str, Any]:
     d["skill_tags"] = decode_json_col(d.get("skill_tags"))
     d["role_tags"] = decode_json_col(d.get("role_tags"))
     d["voice_tags"] = decode_json_col(d.get("voice_tags"))
+    # v0.23.8+: optional strategic-alignment keys.
+    # Older rows (pre-migration) won't have this column; treat as [].
+    d["goal_keys"] = decode_json_col(d.get("goal_keys"))
     return d
 
 

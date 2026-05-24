@@ -32,7 +32,11 @@ Subcommands:
   status                      Deployment health + Hermes detection
   next                        Actionable next-steps for current state
   systems                     7-system integration inventory
-  capture "<correction>"      Capture a learning correction
+  capture "<correction>" [--goal <key>]...
+                              Capture a learning correction; optionally
+                              attach Outcome / Interim Goal / Initiative
+                              keys (v0.23.8+: --goal O1, --goal IG1.1,
+                              --goal skill:devon/lookalike-prospect-builder)
   learn list [N]              List recent learning rules (default 10)
   audit                       Run the alignment audit
   health                      Weekly strategic-plan health check (v0.23.6)
@@ -194,27 +198,70 @@ def _cmd_systems() -> str:
 
 def _cmd_capture(text: str) -> str:
     """Capture a learning correction. Hermes' text comes in raw —
-    accept either quoted or unquoted forms."""
+    accept either quoted or unquoted forms.
+
+    v0.23.8: accepts `--goal <key>` (repeatable) for attaching the
+    correction to a strategic-alignment key:
+
+      /agency capture "stop CCing Spencer on outreach" --goal IG1.1
+      /agency capture "be more direct" --goal O1 --goal IG1.1
+
+    Keys may take any of these forms (audit's `goal-attribution-shape`
+    rule will flag malformed ones later):
+      - O<N>           — Outcome
+      - IG<N.M>        — Interim Goal
+      - skill:<path>   — Initiative skill
+      - script:<path>  — Initiative script
+    """
     text = text.strip()
-    if text.startswith('"') and text.endswith('"'):
-        text = text[1:-1]
-    if text.startswith("'") and text.endswith("'"):
-        text = text[1:-1]
     if not text:
-        return "Usage: /agency capture \"<correction text>\""
+        return "Usage: /agency capture \"<correction text>\" [--goal <key>]..."
+
+    # v0.23.8: parse trailing --goal <key> flags before unquoting.
+    # We find them at the END of the string so the correction itself
+    # can contain `--` if needed.
+    correction_text, goal_keys = _split_capture_args(text)
+
+    if correction_text.startswith('"') and correction_text.endswith('"'):
+        correction_text = correction_text[1:-1]
+    if correction_text.startswith("'") and correction_text.endswith("'"):
+        correction_text = correction_text[1:-1]
+    if not correction_text:
+        return "Usage: /agency capture \"<correction text>\" [--goal <key>]..."
+
     try:
         from _framework.learning import capture_correction
         result = capture_correction(
-            correction=text,
+            correction=correction_text,
             source="hermes-session",
             skill_tags=["general", "interactive-chat"],
+            goal_keys=goal_keys or None,
         )
-        msg = f"✓ Captured rule {result.rule_id}: {text[:80]}{'…' if len(text) > 80 else ''}"
+        msg = f"✓ Captured rule {result.rule_id}: {correction_text[:80]}{'…' if len(correction_text) > 80 else ''}"
+        if result.goal_keys:
+            msg += f"\n  Attached to: {', '.join(result.goal_keys)}"
         if result.recapture is not None:
             msg += "\n  ⚠ Re-capture detected — the learning loop broke somewhere."
         return msg
     except Exception as e:
         return f"capture failed: {e}"
+
+
+def _split_capture_args(text: str) -> tuple[str, list[str]]:
+    """Parse `correction text --goal A --goal B` into
+    (`correction text`, ['A', 'B']).
+
+    Scan from the right, peeling off `--goal <key>` pairs until we
+    hit text that isn't a flag pair. Order-insensitive on the
+    `--goal` flags themselves, but the correction stays leftmost.
+    """
+    tokens = text.split()
+    goal_keys: list[str] = []
+    # Greedy peel from the right
+    while len(tokens) >= 2 and tokens[-2] == "--goal":
+        goal_keys.insert(0, tokens[-1])
+        tokens = tokens[:-2]
+    return " ".join(tokens).strip(), goal_keys
 
 
 def _cmd_learn(rest: str) -> str:
