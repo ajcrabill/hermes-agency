@@ -9,6 +9,79 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.6.0] — 2026-05-24
+
+Two core CoS functions AJ called out as missing: a **time-use
+analyzer** (calendar reality vs Goals.md stated priorities) and a
+**SMART goal coach** (Q&A → drafted goals + interim milestones,
+round-tripped to Goals.md).
+
+### Added — _framework/goals/
+
+- **`goals_md.py`** — round-trip parsing + structured editing of
+  `Goals.md`. `read_goals()` returns `ParsedGoals` with sections
+  + a structured `annual_goals` list (each goal + its interim
+  milestones as sub-bullets). `add_annual_goal()`,
+  `replace_annual_goal()`, `add_active_project()` preserve every
+  section the operator hasn't asked to touch.
+- **`smart.py`** — heuristic SMART criteria checker. Scores
+  Specific / Measurable / Relevant / Time-bound (Achievable is
+  operator-asserted — depends on resources). Returns a
+  `SmartVerdict` with per-dimension pass/fail + specific
+  follow-up questions for any failing dimension.
+  Renders into a readable block.
+
+### Added — two CoS skills
+
+- **`time-use-analyzer`** — pulls calendar events + kanban completions
+  for a window, maps each to `Goals.md::ANNUAL_GOALS` /
+  `Active strategic projects` / unmapped (free), produces a drift
+  report: hours per goal, stated-priority-vs-actual gap, protected-
+  time check (`Personal.md::WORK_LIFE_BOUNDARIES`), unstructured-time
+  pockets, recommended re-allocations.
+- **`smart-goal-coach`** — Q&A coaching to refine vague aspirations
+  into SMART goals. Runs `smart_check`, identifies missing dimensions,
+  asks specific follow-up questions ("By when? What specifically?"),
+  drafts the goal in SMART form, proposes interim milestones, and on
+  operator confirmation writes to `Goals.md` via the goals module.
+
+### Added — `agency goals` CLI
+
+- `agency goals show` — display current Goals.md
+- `agency goals smart-check --text "..."` — runs the SMART checker,
+  prints per-dimension verdict + follow-up questions
+- `agency goals add --text "..." [--interim ... --interim ...] [--smart]`
+  — adds an annual goal; `--smart` refuses if SMART fails
+- `agency goals replace --index N --text "..."` — replace existing
+- `agency goals add-project --text "..."` — append to Active projects
+
+### Tests
+
+129 passing (119 from v0.5 + 10 new):
+- 4 SMART tests (vague fail, clear pass, binary outcomes, missing-T
+  surfaces specific question)
+- 6 Goals.md tests (read empty, parse sections w/ interim, add
+  appends, replace works, replace OOB raises, write-back preserves
+  untouched sections)
+
+Framework self-audit: 0 blocking, 0 warnings.
+
+### How the two new functions compose
+
+`smart-goal-coach` *defines* what matters. `time-use-analyzer`
+*measures* whether the calendar matches. Together they close the
+intent→reality loop:
+
+  vague aspiration  →  SMART goal in Goals.md  →  calendar drift report
+                            ↑                            ↓
+                            └─ refine the goal when reality diverges
+                               (or accept the goal isn't really
+                               priority and re-rank in Goals.md)
+
+The CoS's weekly review will now include both: "here's where time
+went; here's how Goals.md says it should have gone; here's the
+delta + what to do about it."
+
 ## [0.5.0] — 2026-05-24
 
 Three AJ directives, each addressed:

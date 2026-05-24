@@ -441,6 +441,70 @@ def cmd_integrations(args: argparse.Namespace) -> int:
     return 2
 
 
+def cmd_goals(args: argparse.Namespace) -> int:
+    """Show / add / refine / smart-check entries in Goals.md."""
+    from _framework.constants import GOALS_MD
+    from _framework.goals import (
+        read_goals, add_annual_goal, replace_annual_goal,
+        add_active_project, smart_check,
+    )
+
+    if args.action == "show":
+        if not GOALS_MD.exists():
+            print(f"(no Goals.md yet at {GOALS_MD} — run `agency init --tier 3`)")
+            return 0
+        print(GOALS_MD.read_text(encoding="utf-8"))
+        return 0
+
+    if args.action == "smart-check":
+        if not args.text:
+            print("error: --text required for smart-check", file=sys.stderr)
+            return 2
+        v = smart_check(args.text)
+        print(f"Goal: {args.text}\n")
+        print(v.render())
+        print(f"\n  Overall: {'SMART ✓' if v.is_smart else 'not yet SMART ✗'}")
+        return 0 if v.is_smart else 1
+
+    if args.action == "add":
+        if not args.text:
+            print("error: --text required for add", file=sys.stderr)
+            return 2
+        if args.smart:
+            v = smart_check(args.text)
+            if not v.is_smart:
+                print("Refusing to add — goal isn't SMART yet:\n")
+                print(v.render())
+                print("\n  Drop --smart to add anyway.")
+                return 1
+        add_annual_goal(args.text, interim=args.interim or [])
+        print(f"Added annual goal to {GOALS_MD}")
+        return 0
+
+    if args.action == "replace":
+        if args.index is None or not args.text:
+            print("error: --index and --text required for replace", file=sys.stderr)
+            return 2
+        try:
+            replace_annual_goal(args.index, args.text, interim=args.interim or [])
+        except IndexError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        print(f"Replaced goal #{args.index} in {GOALS_MD}")
+        return 0
+
+    if args.action == "add-project":
+        if not args.text:
+            print("error: --text required for add-project", file=sys.stderr)
+            return 2
+        add_active_project(args.text, details=args.interim or [])
+        print(f"Added active project to {GOALS_MD}")
+        return 0
+
+    print(f"unknown action: {args.action}", file=sys.stderr)
+    return 2
+
+
 def cmd_panel(args: argparse.Namespace) -> int:
     """Run the read-only control panel."""
     try:
@@ -585,6 +649,29 @@ def build_parser() -> argparse.ArgumentParser:
     p_int.add_argument("--profile", help="Profile to configure")
     p_int.add_argument("--client-secret", help="Path to OAuth client_secret.json")
     p_int.set_defaults(func=cmd_integrations)
+
+    # goals
+    p_goals = sub.add_parser(
+        "goals",
+        help="Show/add/refine entries in Goals.md + SMART-check",
+    )
+    p_goals.add_argument(
+        "action",
+        choices=["show", "smart-check", "add", "replace", "add-project"],
+        default="show",
+        nargs="?",
+    )
+    p_goals.add_argument("--text", help="Goal or project text")
+    p_goals.add_argument("--index", type=int, help="(replace) 0-based index")
+    p_goals.add_argument(
+        "--interim", action="append",
+        help="Interim milestone bullet (repeatable)",
+    )
+    p_goals.add_argument(
+        "--smart", action="store_true",
+        help="(add) refuse if the text fails SMART criteria",
+    )
+    p_goals.set_defaults(func=cmd_goals)
 
     return parser
 
