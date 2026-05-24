@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.2-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.3-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -209,10 +209,22 @@ of insight that re-direct the work*. Neither alone is enough for a
 small business to compete against operations many times its size.
 Together — with the right learning loop binding them — they can.
 
-### 1.1 The seven-step learning loop
+### 1.1 The seven-step learning loop — the input-layer testability mechanism
 
-For HermesAgency to deliver on its promise, an unbroken chain must hold
-for every owner correction:
+The 7-step learning loop has a precise role in HermesAgency's
+strategic-planning architecture: it's the **input-layer
+testability mechanism** in the three-layer model (see
+[`docs/StrategicPlanning.md`](./StrategicPlanning.md) §5). Every
+correction the owner gives, every rule the agency injects, every
+firing recorded — together these answer the most-frequent
+testability question: *are we implementing the strategies?* The
+weekly health check then asks the mid-tier question (are inputs
+moving outputs?), and the quarterly review asks the top-tier
+question (are outputs moving outcomes?). Three nested testability
+layers, three cadences, the same underlying data structure.
+
+For HermesAgency to deliver on the input-layer test, an unbroken
+chain must hold for every owner correction:
 
 1. **Capture** — the correction lands in the learning corpus
    (`_state/learning.db.learning_rules`).
@@ -489,7 +501,7 @@ The exhaustive list of what HermesAgency adds to Hermes:
 
 | # | System | Hook into Hermes |
 |---|---|---|
-| 1 | Supervised learning loop | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the agency-level context docs (Goals.md, Values.md, Personal.md, Work.md, Clients.md) are part of the always-loaded background |
+| 1 | Supervised learning loop (input-layer testability) | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the agency-level context docs (Goals.md, Guardrails.md, Values.md, Personal.md, Work.md, Clients.md) are part of the always-loaded background. This is the continuous-cadence test in the three-layer testability model (StrategicPlanning.md §5) |
 | 2 | Autonomy ladder (L1–L5) | Plugin's `pre_tool_call` hook consults `_framework.autonomy` and blocks tool calls the skill lacks authority for |
 | 3 | Verifier (per-skill criteria) | Plugin's `post_tool_call` hook records completions; v0.18 adds `transform_tool_result` to enforce verifier criteria |
 | 4 | System Sentinel (read-only) | Plugin's `on_session_start` / `on_session_end` hooks record session events; Sentinel reads from there + Hermes' own state |
@@ -505,6 +517,30 @@ change log entry). The remaining work (v0.18+) is policy depth, not
 integration shape: verifier enforcement, send-guard hard-rule expansion,
 and the migration-or-clean-install setup interview that runs as a Hermes
 slash command (`/agency setup`).
+
+**Testability across the three strategic-planning layers.** The 7
+reliability systems above operate at the input layer. Two additional
+mechanisms — neither novel reliability systems, both built on top of
+the same data substrate — round out the three-layer testability
+model from [`StrategicPlanning.md`](./StrategicPlanning.md) §5:
+
+- **Mid-tier (weekly): strategic-plan health check** — a CoS skill
+  that tests Initiatives against Interim Goal metrics and surfaces
+  alignment drift. Reads from `firings`, the audit's findings, and
+  Goals.md's Interim Goal metrics. Cadence: weekly.
+- **Top-tier (quarterly): strategic review** — an owner-led review
+  that tests Interim Goal trends against Outcomes. The agency
+  proposes the data summary; the owner adjudicates whether the
+  Interim Goals were the right ones. Cadence: quarterly or aligned
+  to the Outcome horizon.
+
+The three layers don't introduce new code paths; they read the same
+data structure (rules, firings, audit findings, alignment
+correlations) at three different time horizons. The owner can ask
+*"are we implementing?"* (input test, continuous), *"are we
+deploying resources wisely?"* (mid-tier test, weekly), or *"do we
+have the right strategies?"* (top-tier test, quarterly) at any
+time, and get a data-grounded answer.
 
 ---
 

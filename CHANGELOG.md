@@ -9,6 +9,80 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.3-spec] — 2026-05-24
+
+**Spec revision: three nested testability layers.** Makes explicit
+the precise role of the 7-step learning loop in the strategic-
+planning architecture: it's the **input-layer testability
+mechanism**, answering *"are we implementing the strategies?"* at
+continuous cadence. The weekly strategic-plan health check
+answers the mid-tier question *"are we deploying resources
+wisely?"* (testing inputs against Interim Goals). The quarterly
+strategic review answers the top-tier question *"do we have the
+right strategies to get the results the owner wants?"* (testing
+Interim Goals against Outcomes). Three layers, three cadences,
+one underlying data structure. Spec-only revision; does not
+advance the 9th-version milestone counter.
+
+### Added — `docs/StrategicPlanning.md` §5 "Three nested testability layers"
+
+New top-level section between the Initiative Playbook (§4) and
+the operationalization (§6). Defines:
+
+- §5.1 — Input-layer testability (the 7-step learning loop)
+- §5.2 — Mid-tier testability (weekly health check, inputs against
+  Interim Goals)
+- §5.3 — Top-tier testability (quarterly review, Interim Goals
+  against Outcomes)
+- §5.4 — Why nested testability is load-bearing (most "AI
+  assistant" tools work at the input layer only; most
+  strategic-planning tools work at the outcome layer only;
+  HermesAgency connects both through one data structure read at
+  three time horizons)
+
+Renumbered the rest of the doc accordingly (former §5 →
+"operationalization" → §6; §6 worked example → §7; etc.). The
+final-paragraph summary rewritten to surface the three
+testability questions.
+
+### Changed — spec §1.1 title and lead paragraph
+
+Section title becomes "**The seven-step learning loop — the
+input-layer testability mechanism**." New lead paragraph names
+the loop's precise role in the three-layer model and points to
+StrategicPlanning.md §5.
+
+### Changed — spec §1.7 systems table
+
+Row 1 updated to flag the supervised learning loop as the
+continuous-cadence test in the three-layer testability model.
+
+### Added — spec §1.7 testability paragraph
+
+New paragraph after the seven-systems table explains that the
+mid-tier and top-tier testability mechanisms are not additional
+reliability systems — they're the same data substrate (rules,
+firings, audit findings, alignment correlations) read at three
+different time horizons.
+
+### Changed — README
+
+Intro adds a second paragraph naming the three-layer strategic-
+planning model and the three testability questions. The
+intro paragraph wasn't extended; instead a new paragraph
+follows it, calling out: "the daily work and the long-term
+direction are structurally connected, not just culturally linked."
+Links to `docs/StrategicPlanning.md`.
+
+### Spec header
+
+Bumped v0.22.2-spec → v0.22.3-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.2-spec] — 2026-05-24
 
 **Spec revision: three-layer strategic-planning model.** Adds
