@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-# HermesAgency one-command bootstrapper.
+# HermesAgency plugin installer.
 #
-# What this does, end-to-end:
-#   1. (optional --reset) wipe ~/.agency, ~/.agency-venv, ~/.hermes
-#   2. Clone HermesAgency (if not run from a checkout)
-#   3. Create the agency venv at ~/.agency-venv
-#   4. pip install -e the framework with [dev,google,embed,ingest] extras
-#   5. Run `agency init` — wizard's Branch A/B step asks about Hermes
-#      first (detect or install), then continues into T1 setup.
+# HermesAgency is a PLUGIN for NousResearch's Hermes engine. It does
+# NOT install Hermes — you install Hermes first via NousResearch's
+# official installer, then run this to add the 7 reliability systems
+# on top.
 #
-# Three invocation modes, same result:
+# The 4-step install roadmap:
+#
+#   1. curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+#   2. curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash    ← you are here
+#   3. agency migrate v7 --from <path-to-v7-home>     (optional, if migrating)
+#   4. hermes                                          ← daily use
+#
+# Three invocation modes for THIS installer:
 #
 # A) curl | bash (fastest, no clone needed):
 #   curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
@@ -17,53 +21,45 @@
 #
 # B) git clone + run from outside the repo:
 #   git clone https://github.com/ajcrabill/hermes-agency.git /tmp/ha \
-#     && bash /tmp/ha/bootstrap.sh --reset
+#     && bash /tmp/ha/bootstrap.sh
 #
 # C) Run from inside an existing clone:
-#   bash bootstrap.sh                    # fresh install
-#   bash bootstrap.sh --reset            # wipe first, then install
+#   bash bootstrap.sh
 #
 # Flags:
-#   --reset             Wipe ~/.agency, ~/.agency-venv, ~/.hermes first
-#   --reset-deep        Also wipe ~/HermesAgency, ~/.local/bin/hermes,
-#                       and any v7 snapshots — full clean slate
-#   --no-init           Stop before running `agency init` (just install)
-#   --target=<dir>      Where to clone the repo (default: ~/HermesAgency)
-#   --venv=<dir>        Where to make the venv (default: ~/.agency-venv)
-#   --hermes-home=<dir> Where Hermes' HERMES_HOME will live (default: ~/.hermes)
-#   --ref=<branch>      Which HermesAgency ref to install (default: main)
-#   --skip-deps         Skip pip dependency installation (you have it)
+#   --reset         wipe ~/.agency + ~/.agency-venv first (does NOT touch Hermes)
+#   --no-init       install but don't run `agency init`
+#   --no-patches    install but don't auto-apply hermes-patches
+#   --target=<dir>  where to clone HermesAgency (default: ~/HermesAgency)
+#   --venv=<dir>    where to make the venv (default: ~/.agency-venv)
+#   --ref=<branch>  which HermesAgency ref to install (default: main)
 #
 # Exit codes:
 #   0 — success
-#   1 — preflight failed (python, git, etc.)
+#   1 — Hermes not installed (Step 1 not done)
 #   2 — install step failed
-#   3 — agency init aborted by user
+#   3 — agency init aborted
 
 set -euo pipefail
 
 # ── Defaults ─────────────────────────────────────────────────────────────
 RESET=false
-RESET_DEEP=false
 RUN_INIT=true
+APPLY_PATCHES=true
 TARGET="${HOME}/HermesAgency"
 VENV="${HOME}/.agency-venv"
-HERMES_HOME_TARGET="${HOME}/.hermes"
 REF="main"
-SKIP_DEPS=false
 GIT_URL="https://github.com/ajcrabill/hermes-agency.git"
 
 # ── Parse args ───────────────────────────────────────────────────────────
 for arg in "$@"; do
     case "$arg" in
         --reset)         RESET=true ;;
-        --reset-deep)    RESET=true; RESET_DEEP=true ;;
         --no-init)       RUN_INIT=false ;;
+        --no-patches)    APPLY_PATCHES=false ;;
         --target=*)      TARGET="${arg#*=}" ;;
         --venv=*)        VENV="${arg#*=}" ;;
-        --hermes-home=*) HERMES_HOME_TARGET="${arg#*=}" ;;
         --ref=*)         REF="${arg#*=}" ;;
-        --skip-deps)     SKIP_DEPS=true ;;
         -h|--help)
             sed -n '2,40p' "$0"
             exit 0
@@ -90,47 +86,51 @@ if [[ -n "$SCRIPT_DIR" && -f "$SCRIPT_DIR/pyproject.toml" ]] \
     TARGET="$SCRIPT_DIR"
 fi
 
-# ── Step 1: Reset (if requested) ─────────────────────────────────────────
-if [[ "$RESET" == "true" ]]; then
-    header "Wiping prior install"
+# ── Step 0: Verify Hermes is installed (the prerequisite) ───────────────
+header "Checking for Hermes engine"
 
-    # Always-wiped on --reset
-    for d in "${HOME}/.agency" "${HOME}/.agency-venv" "${HOME}/.hermes" \
-             "${HOME}/.hermes-v7-snapshot" "${HOME}/.hermes-engine-venv"; do
+if ! command -v hermes >/dev/null 2>&1; then
+    red ""
+    red "  ✗ Hermes is not installed."
+    red ""
+    red "  HermesAgency is a plugin — it requires Hermes (NousResearch's"
+    red "  agent engine) to already be installed and on PATH."
+    red ""
+    red "  Install Hermes first:"
+    red ""
+    red "      curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash"
+    red ""
+    red "  Then reload your shell and re-run this installer:"
+    red ""
+    red "      source ~/.zshrc  # or ~/.bashrc"
+    red "      curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash"
+    red ""
+    red "  Hermes docs: https://hermes-agent.nousresearch.com/docs/"
+    red ""
+    exit 1
+fi
+
+HERMES_VERSION=$(hermes --version 2>&1 | head -1)
+green "  ✓ $HERMES_VERSION ($(command -v hermes))"
+
+# ── Optional reset ───────────────────────────────────────────────────────
+if [[ "$RESET" == "true" ]]; then
+    header "Wiping prior HermesAgency state"
+    echo "  (Hermes itself is NOT touched — only the agency plugin's state)"
+    for d in "${HOME}/.agency" "${VENV}"; do
         if [[ -e "$d" || -L "$d" ]]; then
             rm -rf "$d"
-            echo "  removed: $d"
+            echo "    removed: $d"
         fi
     done
-
-    # Also wiped on --reset-deep
-    if [[ "$RESET_DEEP" == "true" ]]; then
-        for d in "${HOME}/HermesAgency" "${HOME}/.local/bin/hermes" \
-                 "${HOME}/agency-staging"; do
-            if [[ -e "$d" || -L "$d" ]]; then
-                rm -rf "$d"
-                echo "  removed: $d"
-            fi
-        done
-        # If we wiped the repo we're running from, abort — can't continue
-        if [[ "$INSIDE_REPO" == "true" && ! -f "$SCRIPT_DIR/pyproject.toml" ]]; then
-            red "  --reset-deep wiped the repo we're running from — re-run via:"
-            red "    git clone $GIT_URL /tmp/ha-bootstrap && \\"
-            red "      bash /tmp/ha-bootstrap/bootstrap.sh"
-            exit 0
-        fi
-    fi
     green "  ✓ wiped"
 fi
 
-# ── Step 2: Preflight ────────────────────────────────────────────────────
+# ── Preflight ────────────────────────────────────────────────────────────
 header "Preflight"
 
-# Python 3.11+
 if ! command -v python3 >/dev/null 2>&1; then
     red "  ✗ python3 not on PATH. Install Python 3.11+ first."
-    red "    macOS:  xcode-select --install  (or brew install python@3.11)"
-    red "    Linux:  apt/dnf install python3.11"
     exit 1
 fi
 PYV=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
@@ -140,123 +140,106 @@ if [ "$PYMAJOR" -lt 3 ] || { [ "$PYMAJOR" -eq 3 ] && [ "$PYMINOR" -lt 11 ]; }; t
     red "  ✗ Python 3.11+ required (found $PYV)."
     exit 1
 fi
-green "  ✓ python $PYV ($(command -v python3))"
+green "  ✓ python $PYV"
 
-# git
 if ! command -v git >/dev/null 2>&1; then
     red "  ✗ git not on PATH. Install git first."
-    red "    macOS:  xcode-select --install"
     exit 1
 fi
-green "  ✓ git ($(command -v git))"
+green "  ✓ git"
 
-# ── Step 3: Clone (if needed) ────────────────────────────────────────────
+# ── Clone HermesAgency (if not run from a checkout) ─────────────────────
 if [[ "$INSIDE_REPO" == "true" ]]; then
-    header "Using existing repo checkout"
+    header "Using existing HermesAgency checkout"
     echo "  $TARGET"
 else
-    header "Cloning HermesAgency"
+    header "Fetching HermesAgency"
     if [[ -d "$TARGET" ]]; then
         if [[ -d "$TARGET/.git" ]]; then
-            echo "  $TARGET already a git repo — fetching latest..."
-            git -C "$TARGET" fetch --quiet origin || {
-                red "  ✗ git fetch failed"; exit 2;
-            }
-            git -C "$TARGET" checkout --quiet "$REF" || {
-                red "  ✗ git checkout $REF failed"; exit 2;
-            }
+            echo "  $TARGET already cloned — fetching latest..."
+            git -C "$TARGET" fetch --quiet origin
+            git -C "$TARGET" checkout --quiet "$REF"
             git -C "$TARGET" pull --ff-only --quiet || true
         else
-            red "  ✗ $TARGET exists but isn't a git repo. Remove or pick a different --target."
+            red "  ✗ $TARGET exists but isn't a git repo. Pick a different --target or remove it."
             exit 2
         fi
     else
-        git clone --quiet --branch "$REF" "$GIT_URL" "$TARGET" 2>&1 || {
-            # If branch wasn't valid (e.g. a commit), retry without --branch
-            git clone --quiet "$GIT_URL" "$TARGET" 2>&1 || {
-                red "  ✗ git clone failed. Check network + repo access."
-                red "    URL: $GIT_URL"
-                red "    If the repo is private, configure SSH or a PAT first."
-                exit 2
-            }
-            git -C "$TARGET" checkout --quiet "$REF" 2>&1 || true
+        git clone --quiet --branch "$REF" "$GIT_URL" "$TARGET" 2>/dev/null || {
+            git clone --quiet "$GIT_URL" "$TARGET"
+            git -C "$TARGET" checkout --quiet "$REF" 2>/dev/null || true
         }
     fi
     green "  ✓ $TARGET (ref: $REF)"
 fi
 
-# ── Step 4: venv ─────────────────────────────────────────────────────────
-header "Setting up venv"
-if [[ -d "$VENV" ]]; then
-    yellow "  ! $VENV already exists — reusing"
-else
+# ── Set up venv + pip install plugin ─────────────────────────────────────
+header "Installing HermesAgency plugin"
+
+if [[ ! -d "$VENV" ]]; then
     python3 -m venv "$VENV"
-    green "  ✓ created $VENV"
+    green "  ✓ created venv at $VENV"
+else
+    green "  ✓ venv already at $VENV"
 fi
 
 # shellcheck source=/dev/null
 source "$VENV/bin/activate"
-green "  ✓ activated"
+pip install --quiet --upgrade pip setuptools wheel
+pip install --quiet -e "${TARGET}[dev,google,embed,ingest]" || {
+    red "  ✗ pip install failed"
+    exit 2
+}
+AGENCY_VERSION=$(agency --version 2>&1 | head -1)
+green "  ✓ $AGENCY_VERSION installed"
 
-# ── Step 5: pip install ──────────────────────────────────────────────────
-if [[ "$SKIP_DEPS" == "true" ]]; then
-    header "Skipping pip install (--skip-deps)"
-else
-    header "Installing HermesAgency + dependencies"
-    pip install --quiet --upgrade pip setuptools wheel
-    pip install --quiet -e "${TARGET}[dev,google,embed,ingest]" || {
-        red "  ✗ pip install failed"
-        exit 2
-    }
-    green "  ✓ installed (editable)"
-    AGENCY_VERSION=$(agency --version 2>&1 | head -1)
-    green "  ✓ $AGENCY_VERSION"
+# ── Run agency init (deployment skeleton) ───────────────────────────────
+if [[ "$RUN_INIT" == "true" ]]; then
+    header "Configuring deployment"
+    if [[ -f "${HOME}/.agency/deployment.yaml" ]]; then
+        yellow "  ! deployment.yaml exists — skipping init wizard"
+        yellow "    (use 'agency reset' + re-run if you want a fresh deployment)"
+    else
+        echo "  Running agency init — this creates ~/.agency/ with your profiles"
+        echo "  + deployment.yaml. Provider config (which LLM to use) is stored"
+        echo "  in your Hermes config (see 'hermes model' / 'hermes setup')."
+        echo
+        agency init || {
+            rc=$?
+            if [[ $rc -eq 3 ]]; then
+                yellow "  ! agency init aborted (user quit)"
+                yellow "    Re-run when ready:  source $VENV/bin/activate && agency init"
+                exit 3
+            fi
+            red "  ✗ agency init failed (exit $rc)"
+            exit 2
+        }
+    fi
 fi
 
-# ── Step 6: run agency init (Branch A/B + T1) ────────────────────────────
-if [[ "$RUN_INIT" == "true" ]]; then
-    header "Running agency init"
-    echo "  The wizard's first step (Branch A/B) handles Hermes:"
-    echo "  - If Hermes is already installed somewhere, it'll detect it."
-    echo "  - Otherwise it'll offer to install Hermes for you."
-    echo
-    echo "  After Hermes is set up, the wizard walks through the rest"
-    echo "  of the deployment setup (owner, provider, profiles, etc.)."
-    echo
-    agency init || {
-        rc=$?
-        if [[ $rc -eq 3 ]]; then
-            yellow "  ! agency init aborted (user chose to quit)"
-            yellow "    Re-run when ready:  source $VENV/bin/activate && agency init"
-            exit 3
-        fi
-        red "  ✗ agency init failed (exit $rc)"
-        exit 2
+# ── Apply hermes-patches (wire the plugin into Hermes) ──────────────────
+if [[ "$APPLY_PATCHES" == "true" ]]; then
+    header "Wiring patches into Hermes"
+    agency hermes-patches apply 2>&1 || {
+        yellow "  ! patch application reported issues — review with:"
+        yellow "    agency hermes-patches systems"
     }
-else
-    header "Skipping agency init (--no-init)"
-    echo "  When ready, run:"
-    echo "    source $VENV/bin/activate"
-    echo "    agency init"
 fi
 
 # ── Done ─────────────────────────────────────────────────────────────────
 header "Done"
 echo
-echo "  Activate the agency venv in future shells with:"
+echo "  Activate the venv in future shells:"
 echo "      source $VENV/bin/activate"
 echo "  Or add to your shell init:"
 echo "      echo 'source $VENV/bin/activate' >> ~/.zshrc"
 echo
-echo "  Next: wire HermesAgency into Hermes, then USE Hermes."
+echo "  See which of the 7 reliability systems are wired into Hermes:"
+echo "      agency hermes-patches systems"
 echo
-echo "      agency hermes-patches apply    # one-time per Hermes upgrade"
-echo "      agency hermes-patches systems  # see which of the 7 are wired"
-echo "      hermes chat                    # this is how you run it"
+echo "  Migrate v7 data (if you have a prior install):"
+echo "      agency migrate v7 --from <path-to-v7-home>"
 echo
-echo "  Supervisory commands:"
-echo "      agency status         deployment health"
-echo "      agency next           actionable next steps"
-echo "      agency audit          alignment audit"
-echo "      agency capture \"...\"  capture a correction (opens the learning loop)"
+green "  Use Hermes — it's now enriched by HermesAgency's patches:"
+green "      hermes"
 echo

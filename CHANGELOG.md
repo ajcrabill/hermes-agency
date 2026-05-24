@@ -9,6 +9,100 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.16.0] — 2026-05-24
+
+The 4-step install. AJ asked for the simplest possible install
+roadmap: (1) install Hermes, (2) install plugin, (3) migrate v7,
+(4) type `hermes` and it works. v0.16.0 delivers exactly that.
+
+### The new install path
+
+```bash
+# 1. Install Hermes (NousResearch's official installer)
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+
+# 2. Install HermesAgency plugin (auto-applies patches)
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
+
+# 3. Migrate v7 (optional)
+agency migrate v7 apply --from ~/.hermes-v7-backup
+
+# 4. Use it
+hermes
+```
+
+### Changed — bootstrap.sh is plugin-only
+
+The bootstrap script no longer installs Hermes. Plugin discipline
+(§1.4 of the spec): the framework does not install its own
+runtime. If `hermes` isn't on PATH, bootstrap.sh prints a clear
+error pointing at NousResearch's installer and exits 1.
+
+Removed: `--reset-deep` (no longer relevant — the bootstrap doesn't
+install Hermes, so there's nothing "deep" to reset).
+
+Added: `--no-patches` flag to skip the auto-apply step (for users
+who want to inspect patch status before applying).
+
+The bootstrap's "Done" footer now leads with the canonical sequence:
+`agency hermes-patches systems` → `agency migrate v7 ...` → `hermes`.
+
+### Changed — wizard drops the install-Hermes path
+
+`_framework/ops/init/wizard.py::_hermes_step` no longer offers to
+install Hermes for the user. Branch B (install fresh) is removed.
+Only Branch A (detect existing) remains. If Hermes isn't detected,
+the wizard refuses with a pointer to NousResearch's installer and
+returns exit code 3.
+
+The legacy `_framework/hermes_engine/installer.py` module is kept
+(used by `agency init --hermes-only` recovery + tests) but no
+wizard path invokes it. It will be deprecated and removed in v0.17.
+
+### Added — `agency migrate v7 --from <directory>` (full migration)
+
+The migrate command now accepts a v7 home DIRECTORY in addition to
+a `loriah.db` file:
+
+```bash
+# Full migration (directory mode — new in v0.16)
+agency migrate v7 apply --from ~/.hermes-v7-backup --profile loriah
+
+# Legacy mode (file argument) still works
+agency migrate v7 apply --from ~/.hermes-v7-backup/.hermes/context/loriah/Admin/loriah.db
+```
+
+In directory mode, the migration does:
+
+1. Learning corpus migration (the existing v0.7 behavior)
+2. Copy `Soul.md` → `~/.agency/profiles/<id>/SOUL.md`
+3. Copy `standards.md` / `stewardship.md` → `~/.agency/profiles/<id>/standards.md`
+4. Copy `Goals.md` / `Values.md` / `Personal.md` / `Work.md` /
+   `Client.md` / `Loriah.md` / `Governance.md` → `~/.agency/
+   profiles/<id>/vault/`
+5. Copy `book_coaching.db` / `bizdev.db` / `quality.db` /
+   `hardware-watch.db` → `~/.agency/_state/v7-legacy/`
+
+Auto-discovers the v7 layout under several common shapes:
+`<v7_home>/.hermes/context/<profile>/Admin/`,
+`<v7_home>/context/<profile>/Admin/`,
+or `<v7_home>/Admin/`.
+
+New `_framework/migration/v7_full.py` module carries
+`migrate_v7_full()`, `discover_v7_admin_dir()`, and
+`V7FullMigrationResult`.
+
+### Changed — README is the 4-step recipe
+
+The README's first content (after the badges) is now the literal
+4-command install path. Everything else — architectural framing,
+plugin discipline, supervisory commands, advanced options — is
+below the fold.
+
+### Tests
+
+218 passing. Audit clean.
+
 ## [0.15.0] — 2026-05-24
 
 Plugin framing restored. AJ pointed out that the project had

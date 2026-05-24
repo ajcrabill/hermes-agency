@@ -31,6 +31,11 @@ from .v7_learning import (
     V7MigrationResult,
     V7RuleTranslation,
 )
+from .v7_full import (
+    migrate_v7_full,
+    discover_v7_admin_dir,
+    V7FullMigrationResult,
+)
 
 __all__ = [
     "plan_v7_learning_migration",
@@ -38,4 +43,7 @@ __all__ = [
     "V7MigrationPlan",
     "V7MigrationResult",
     "V7RuleTranslation",
+    "migrate_v7_full",
+    "discover_v7_admin_dir",
+    "V7FullMigrationResult",
 ]

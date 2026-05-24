@@ -1021,11 +1021,32 @@ def cmd_integrations(args: argparse.Namespace) -> int:
 
 
 def cmd_migrate(args: argparse.Namespace) -> int:
-    """Plan or apply a migration from a prior deployment (v7 currently)."""
+    """Plan or apply a migration from a prior deployment (v7 currently).
+
+    `--from` accepts either:
+      - A `loriah.db` file path (learning corpus only — original v0.7 behavior)
+      - A v7 home directory (full migration: learning + SOULs + standards +
+        vault MDs + legacy DBs — v0.16+)
+    """
     if args.source != "v7":
         print(f"unknown migration source: {args.source}", file=sys.stderr)
         return 2
 
+    from pathlib import Path as _Path
+    src = _Path(args.from_path).expanduser()
+    if not src.exists():
+        print(f"error: {src} does not exist", file=sys.stderr)
+        return 1
+
+    # Directory → full migration; file → learning-only (back-compat)
+    if src.is_dir():
+        return _cmd_migrate_full(src, args)
+    return _cmd_migrate_learning_only(args)
+
+
+def _cmd_migrate_learning_only(args: argparse.Namespace) -> int:
+    """Original v0.7 behavior: --from points at loriah.db. Only the
+    learning corpus migrates."""
     from _framework.migration import (
         plan_v7_learning_migration, apply_v7_learning_migration,
     )
@@ -1038,7 +1059,6 @@ def cmd_migrate(args: argparse.Namespace) -> int:
 
     print(plan.summary())
     print()
-
     if plan.to_migrate:
         print(f"Sample of {min(5, len(plan.to_migrate))} rules to migrate:")
         for t in plan.to_migrate[:5]:
@@ -1049,9 +1069,10 @@ def cmd_migrate(args: argparse.Namespace) -> int:
     if args.action == "plan":
         print()
         print("Plan only. Re-run with `apply` to write to HermesAgency.")
+        print("Tip: pass a v7 home DIRECTORY to --from for a full migration")
+        print("     (learning corpus + SOULs + vault MDs + legacy DBs).")
         return 0
 
-    # apply
     print()
     result = apply_v7_learning_migration(plan)
     print(result.summary())
@@ -1061,6 +1082,55 @@ def cmd_migrate(args: argparse.Namespace) -> int:
         for f in result.failures[:10]:
             print(f"  · {f.v7_id}  {f.reason}")
     return 0 if result.failed == 0 else 1
+
+
+def _cmd_migrate_full(v7_home, args: argparse.Namespace) -> int:
+    """v0.16+ directory mode: --from points at a v7 home dir. Full
+    migration — learning corpus + SOULs + standards + vault MDs +
+    legacy DBs."""
+    from _framework.migration import migrate_v7_full, discover_v7_admin_dir
+
+    profile = args.profile or "loriah"
+
+    # Plan-only mode: render what would happen without writing
+    if args.action == "plan":
+        try:
+            admin_dir = discover_v7_admin_dir(v7_home, profile=profile)
+        except Exception as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        if admin_dir is None:
+            print(f"error: no v7 layout found under {v7_home}", file=sys.stderr)
+            print(f"  Expected: <v7_home>/.hermes/context/{profile}/Admin/loriah.db", file=sys.stderr)
+            return 1
+        # Render the learning plan
+        from _framework.migration import plan_v7_learning_migration
+        plan = plan_v7_learning_migration(str(admin_dir / "loriah.db"))
+        print(f"Full v7 migration PLAN for profile '{profile}':")
+        print(f"  source admin dir: {admin_dir}")
+        print()
+        print(plan.summary())
+        print()
+        print("Plan only. Re-run with `apply` to write everything:")
+        print("  - learning corpus → ~/.agency/_state/learning.db")
+        print("  - SOUL.md / standards.md → profile dir")
+        print("  - Goals.md / Values.md / etc → profile vault/")
+        print("  - book_coaching.db / bizdev.db / quality.db → _state/v7-legacy/")
+        return 0
+
+    # apply
+    try:
+        result = migrate_v7_full(v7_home, profile=profile, apply=True)
+    except FileNotFoundError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    print(result.summary())
+    if result.learning_result and result.learning_result.failures:
+        print()
+        print("Learning migration failures:")
+        for f in result.learning_result.failures[:10]:
+            print(f"  · {f.v7_id}  {f.reason}")
+    return 0
 
 
 def cmd_goals(args: argparse.Namespace) -> int:
@@ -1468,8 +1538,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_migrate.add_argument(
         "--from", dest="from_path",
-        default="~/.hermes/context/loriah/Admin/loriah.db",
-        help="Source v7 database path",
+        default="~/.hermes",
+        help="Source v7 path. Accepts either a v7 home directory (full "
+             "migration: learning corpus + SOULs + standards + vault MDs + "
+             "legacy DBs) OR a loriah.db file (learning corpus only — "
+             "legacy v0.7-style invocation). Default: ~/.hermes",
+    )
+    p_migrate.add_argument(
+        "--profile", default="loriah",
+        help="Which profile to migrate into (default: loriah)",
     )
     p_migrate.set_defaults(func=cmd_migrate)
 

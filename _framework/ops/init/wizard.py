@@ -286,64 +286,58 @@ def run_wizard(tier: int = 1, prompter: Callable[[str, str], str] | None = None,
 
 
 def _hermes_step(answers: WizardAnswers, prompter: Callable[[str, str], str]) -> bool:
-    """The first wizard step. Detects an existing Hermes install OR
-    installs one fresh. Populates `answers.hermes_*` fields on success.
+    """The first wizard step — detect an existing Hermes install.
 
-    Returns False if the user aborts or install fails irrecoverably —
-    the caller should propagate exit code 3.
+    Plugin discipline (§1.4 of the spec): HermesAgency is a plugin,
+    not a runtime, and not an installer of runtimes. If Hermes is
+    absent, this step refuses and tells the user to install it via
+    NousResearch's official installer first.
+
+    Returns False if Hermes isn't installed or the user aborts —
+    caller should propagate exit code 3.
     """
-    from _framework.hermes_engine import detect, install, InstallPlan
-    from _framework.hermes_engine.installer import shell_init_lines
+    from _framework.hermes_engine import detect
 
     print("─── Hermes engine " + "─" * 49)
     print(
         "\n"
-        "HermesAgency layers on top of NousResearch's Hermes engine.\n"
-        "Without Hermes, the agency has nothing to run skills, no\n"
-        "scheduler for cron jobs, and no shared kanban.\n"
+        "HermesAgency is a plugin for NousResearch's Hermes engine.\n"
+        "We're checking that Hermes is already installed and on PATH.\n"
     )
 
-    # Auto-detect first
     info = detect()
-    if info.installed:
-        print(f"  ✓ Hermes detected (via {info.detected_via}):")
-        if info.version:
-            print(f"      version: {info.version}")
-        print(f"      home:    {info.home}")
-        if info.binary:
-            print(f"      binary:  {info.binary}")
-        confirm = prompter(
-            "Use this Hermes install? (y / n=skip detection, install fresh)", "y",
-        ).strip().lower()
-        if confirm.startswith("y"):
-            answers.hermes_home = str(info.home) if info.home else ""
-            answers.hermes_binary = str(info.binary) if info.binary else ""
-            answers.hermes_version = info.version or ""
-            answers.hermes_install_source = "existing"
-            print(f"  ✓ Layering on top of existing Hermes at {info.home}\n")
-            return True
 
-    # Branch B: install fresh
-    print()
-    print("Choose one:")
-    print("  [a] I have Hermes installed at a non-default location — let me specify")
-    print("  [b] Install Hermes for me now (downloads ~150 MB; takes 2-5 min)")
-    print("  [q] Quit; I'll install Hermes manually and re-run `agency init`")
-    print()
-    choice = prompter("Choice (a / b / q)", "b").strip().lower()
-
-    if choice.startswith("q"):
-        print("\n  Aborted. Install Hermes (https://github.com/NousResearch/hermes-agent)")
-        print("  and re-run `agency init` when ready.\n")
+    if not info.installed:
+        print("  ✗ Hermes is not installed.")
+        print()
+        print("  HermesAgency is a plugin — it requires Hermes to be installed")
+        print("  first. Install Hermes via NousResearch's official installer:")
+        print()
+        print("      curl -fsSL https://raw.githubusercontent.com/NousResearch/\\")
+        print("        hermes-agent/main/scripts/install.sh | bash")
+        print()
+        print("  Then reload your shell and re-run `agency init`.")
+        print()
+        print("  Hermes docs: https://hermes-agent.nousresearch.com/docs/")
         return False
 
-    if choice.startswith("a"):
-        # Manual path: user points us at an existing install
+    # Detected. Confirm and record.
+    print(f"  ✓ Hermes detected (via {info.detected_via}):")
+    if info.version:
+        print(f"      version: {info.version}")
+    print(f"      home:    {info.home}")
+    if info.binary:
+        print(f"      binary:  {info.binary}")
+
+    confirm = prompter(
+        "Use this Hermes install?", "y",
+    ).strip().lower()
+    if not confirm.startswith("y"):
         custom = prompter(
-            "Path to existing HERMES_HOME (e.g. ~/.hermes-custom)", "",
+            "Path to a different HERMES_HOME (leave empty to abort)", "",
         ).strip()
         if not custom:
-            print("  No path given — aborting.")
+            print("  Aborted.")
             return False
         custom_path = Path(custom).expanduser().resolve()
         import os as _os
@@ -351,57 +345,24 @@ def _hermes_step(answers: WizardAnswers, prompter: Callable[[str, str], str]) ->
         info = detect()
         if not info.installed:
             print(f"  ✗ Couldn't find Hermes at {custom_path}.")
-            print(f"    Expected one of: state.db, kanban.db, scheduler.db, or hermes-agent/")
+            print("    Expected one of: state.db, kanban.db, scheduler.db, hermes-agent/")
             return False
-        answers.hermes_home = str(info.home)
-        answers.hermes_binary = str(info.binary) if info.binary else ""
-        answers.hermes_version = info.version or ""
-        answers.hermes_install_source = "existing"
-        print(f"  ✓ Using Hermes at {info.home}\n")
-        return True
 
-    # choice == "b" (or empty default): full install
-    print()
-    print("─── Installing Hermes " + "─" * 45)
-    target_str = prompter(
-        "Target HERMES_HOME directory", str(Path.home() / ".hermes"),
-        # default is the conventional location
-    ).strip()
-    target = Path(target_str).expanduser().resolve()
-    ref = prompter("Git ref (branch / tag / commit) to install", "main").strip() or "main"
-
-    plan = InstallPlan(target_dir=target, ref=ref)
-    print()
-    result = install(plan, verbose=True)
-
-    if not result.success:
-        print()
-        print(f"  ✗ Install failed at step '{result.failed_step}':")
-        for line in result.error.splitlines()[:8]:
-            print(f"    {line}")
-        print()
-        print("  Re-run `agency init` after addressing the error,")
-        print("  or install Hermes manually:")
-        print(f"    git clone {plan.git_url} {plan.target_dir}/hermes-agent")
-        print(f"    cd {plan.target_dir}/hermes-agent && python3 -m venv venv")
-        print("    source venv/bin/activate && pip install -e .")
-        return False
-
-    answers.hermes_home = str(result.home)
-    answers.hermes_binary = str(result.binary)
-    answers.hermes_version = result.version or ""
-    answers.hermes_install_source = f"fresh-clone:{plan.git_url}@{plan.ref}"
-
-    print()
-    print(f"  ✓ Hermes {result.version or 'installed'} at {result.home}")
-    print()
-    print("  Add these to your shell init (~/.zshrc or ~/.bashrc) so the")
-    print("  install persists across sessions:")
-    print()
-    for line in shell_init_lines(plan):
-        print(f"      {line}")
-    print()
+    answers.hermes_home = str(info.home) if info.home else ""
+    answers.hermes_binary = str(info.binary) if info.binary else ""
+    answers.hermes_version = info.version or ""
+    answers.hermes_install_source = "existing"
+    print(f"  ✓ Layering on top of Hermes at {info.home}\n")
     return True
+
+
+# NOTE: Through v0.13 the wizard had a "Branch B" path that would
+# git-clone NousResearch/hermes-agent and pip-install it into a
+# user-specified location. That was removed in v0.16 per the plugin
+# discipline (§1.4): HermesAgency does not install its own runtime.
+# Hermes is installed via NousResearch's `install.sh`, full stop.
+# The hermes_engine.installer module is kept for now (used by tests +
+# `agency init --hermes-only` recovery) but no wizard path invokes it.
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────

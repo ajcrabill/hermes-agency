@@ -6,15 +6,38 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Hermes engine](https://img.shields.io/badge/plugin%20for-Hermes%20Agent-purple)](https://github.com/NousResearch/hermes-agent)
 
-> **Install in one line** (Python 3.11+, git):
-> ```
-> curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
-> ```
-> Don't have Hermes installed yet? The installer handles it.
+---
+
+## The 4-step install
+
+```bash
+# 1. Install Hermes (NousResearch's agent engine — the runtime)
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+source ~/.zshrc   # or ~/.bashrc — reload to pick up the `hermes` binary
+
+# 2. Install HermesAgency (the plugin — adds the 7 reliability systems on top)
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
+
+# 3. Migrate v7 data (skip if you don't have a prior install)
+agency migrate v7 apply --from ~/.hermes-v7-backup --profile loriah
+
+# 4. Use it
+hermes
+```
+
+That's the whole install. After step 2, HermesAgency's patches are already
+wired into your Hermes — `hermes chat` and `hermes run <skill>` pick up the
+learning loop, sentinel observation, kanban tracks-link type, and audit
+automatically.
+
+---
 
 ## What this is
 
-[NousResearch's Hermes engine](https://github.com/NousResearch/hermes-agent) is the runtime. You run it via `hermes chat` and `hermes run <skill>`. HermesAgency is a **plugin** that makes Hermes more reliable in 7 specific ways:
+[NousResearch's Hermes engine](https://github.com/NousResearch/hermes-agent)
+is the runtime. You run it via `hermes` (interactive), `hermes chat`, or
+`hermes run <skill>`. HermesAgency is a **plugin** that makes Hermes more
+reliable in 7 specific ways:
 
 1. **Supervised learning loop** — captures every correction you give, propagates it to every relevant skill across the agency, and tells you when the loop breaks (so you stop repeating yourself)
 2. **Autonomy ladder (L1–L5)** — agents earn more independence over time, gated on track record + structural compliance + learning fidelity
@@ -26,23 +49,25 @@
 
 Each system is meant to wire into Hermes' own execution path — not run alongside it. See **`agency hermes-patches systems`** for the honest integration state on your install.
 
-> **Architectural honesty:** As of v0.15.0, the patches for the autonomy gate, verifier, and send-guard are not yet built. Those three systems exist as parallel infrastructure that the framework calls itself, but Hermes doesn't currently consult them during skill execution. Sentinel, kanban-tracks, audit, and the learning loop are Hermes-native. The roadmap to close the gap is in `docs/HERMES_AGENCY_SPEC.md` §13.
+> **Architectural honesty:** As of v0.16.0, the patches for the autonomy gate, verifier, and send-guard are not yet built. Those three systems exist as parallel infrastructure that the framework calls itself, but Hermes doesn't currently consult them during skill execution. Sentinel, kanban-tracks, audit, and the learning loop are Hermes-native. The roadmap to close the gap is in `docs/HERMES_AGENCY_SPEC.md` §13.6.
 
-## How you use it
+## How you use it (after the 4-step install)
 
 ```bash
-hermes chat                    # The runtime. Always was. Always will be.
-                               # HermesAgency invisibly enriches what Hermes does.
+hermes                         # The runtime. HermesAgency invisibly enriches it.
 
-agency hermes-patches systems  # See which of the 7 systems are actually wired into Hermes
-agency hermes-patches apply    # Wire (or reapply) the patches into your Hermes install
-agency status                  # HermesAgency-specific health (loop integrity, audit)
-agency next                    # Actionable next-steps for your specific state
-agency capture "..."           # Capture a correction (how the learning loop opens)
+agency hermes-patches systems  # See which of the 7 systems are actually wired
+agency status                  # HermesAgency-specific health
+agency next                    # actionable next-steps for your specific state
+agency capture "..."           # Capture a correction (opens the learning loop)
 agency audit                   # Run the alignment audit
+agency migrate v7 apply --from <path>  # Pull a prior install's data in
 ```
 
-There is no `agency chat` for daily use. `agency chat-debug` exists as a diagnostic when you want to test the prompt composer / rule injection without going through Hermes — but the real chat is always `hermes chat`.
+There is no `agency chat` for daily use. `agency chat` exists as a diagnostic
+when you want to test the prompt composer / rule injection without going
+through Hermes — it prints a banner reminding you that the real chat is
+always `hermes chat` (or just `hermes`).
 
 ---
 
@@ -62,112 +87,70 @@ Each role has a persona stub (`SOUL.md`) and a professional-standards floor (`st
 
 ---
 
-## Quickstart
+## Installer reference
 
-> Requires Python 3.11+ and git. **You do NOT need Hermes installed first** —
-> the wizard's first step detects an existing install or installs Hermes for you.
+The 4-step install above is the recommended path. This section covers
+options + alternatives.
 
-### One-command install
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash
-```
-
-That single line:
-
-1. Clones HermesAgency to `~/HermesAgency`
-2. Creates a venv at `~/.agency-venv`
-3. `pip install -e` the framework + extras
-4. Runs `agency init` — wizard's **Branch A/B** step asks about Hermes first
-   (detect an existing install OR install Hermes fresh for you), then walks
-   you through the rest of setup
-
-**Fresh-install (wipes any prior `~/.agency`, `~/.agency-venv`, `~/.hermes`):**
+### Step 2: bootstrap.sh flags
 
 ```bash
+# Fresh install (wipes any prior ~/.agency + ~/.agency-venv — does NOT touch Hermes)
 curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --reset
+
+# Don't run the agency init wizard automatically (you'll run it manually later)
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --no-init
+
+# Don't auto-apply the Hermes patches at end of install
+curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --no-patches
 ```
 
-**Deeper wipe (also blows away `~/HermesAgency` + the `hermes` symlink):**
+Full flag list: `--target=<dir>`, `--venv=<dir>`, `--ref=<branch>`.
+
+### Step 3: migrate options
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ajcrabill/hermes-agency/main/bootstrap.sh | bash -s -- --reset-deep
+# Plan-only (dry run; nothing written)
+agency migrate v7 plan --from ~/.hermes-v7-backup --profile loriah
+
+# Apply — the directory mode (full migration: corpus + SOULs + standards + vault MDs + legacy DBs)
+agency migrate v7 apply --from ~/.hermes-v7-backup --profile loriah
+
+# Legacy mode: --from points at a loriah.db file (learning corpus only)
+agency migrate v7 apply --from ~/.hermes-v7-backup/.hermes/context/loriah/Admin/loriah.db
 ```
 
-### After the wizard
+### Manual install (no curl-pipe)
 
 ```bash
-# Activate the venv in future shells (or add to ~/.zshrc)
-source ~/.agency-venv/bin/activate
+# Step 1: install Hermes per NousResearch's docs (link above)
 
-# Wire HermesAgency into Hermes (one-time per Hermes upgrade)
-agency hermes-patches apply
-
-# See what's actually wired vs. still parallel infrastructure
-agency hermes-patches systems
-
-# Use Hermes — now invisibly enriched by HermesAgency's patches
-hermes chat
+# Step 2: clone + install HermesAgency
+git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
+cd ~/HermesAgency
+bash bootstrap.sh            # same flags as the curl-pipe version
 ```
-
-### The supervisory commands
-
-```bash
-agency status                # HermesAgency health (loop integrity, audit, Hermes detection)
-agency next                  # actionable next-steps for your specific state
-agency audit                 # framework self-audit + skill audits
-agency hermes-patches apply  # (re)wire the integration patches
-agency capture "..."         # capture a correction (the learning loop's first link)
-agency panel                 # read-only diagnostic UI at localhost:9118
-```
-
-### Diagnostic chat (NOT the daily-use surface)
-
-If `hermes chat` isn't behaving as expected and you want to test the prompt
-composer / rule injection in isolation:
-
-```bash
-agency chat                  # diagnostic REPL — talks to your provider directly,
-                             # bypassing Hermes. Prints a banner reminding you to
-                             # use `hermes chat` for normal use.
-```
-
-This is for debugging. Once `agency hermes-patches apply` has wired the
-integration, `hermes chat` is the surface — it picks up your SOUL, standards,
-and learning rules automatically.
 
 ### Tier choices
 
-`agency init` defaults to **Tier 1** (5-10 min, sensible defaults). To pick:
+`agency init` (called by bootstrap.sh) defaults to **Tier 1** (5-10 min, sensible defaults). To pick a deeper tier:
 
 ```bash
-agency init --tier 2         # T2 (15-30 min): OAuth + ingress + ingest sources
-agency init --tier 3         # T3 (45-60 min): deep interview, exemplar capture
-```
-
-### If you skipped Hermes earlier
-
-```bash
-agency init --hermes-only    # just Branch A/B; doesn't touch your manifest
+agency init --tier 2 --force   # T2 (15-30 min): OAuth + ingress + ingest sources
+agency init --tier 3 --force   # T3 (45-60 min): deep interview, exemplar capture
 ```
 
 ### Starting over
 
 ```bash
 agency reset                       # wipe ~/.agency (confirm with 'wipe')
-agency reset --include-hermes      # also wipe ~/.hermes
 agency reset --include-venv -y     # also wipe ~/.agency-venv, skip prompt
 ```
 
-### Manual install (if you don't want to pipe curl into bash)
+Note: `agency reset` does NOT touch your Hermes install. To reset Hermes,
+use Hermes' own tooling (`hermes update`, etc.).
 
-```bash
-git clone https://github.com/ajcrabill/hermes-agency ~/HermesAgency
-cd ~/HermesAgency
-bash bootstrap.sh            # same flags as the curl-pipe version
-```
-
-See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for full setup.
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for full setup details.
 
 ---
 
