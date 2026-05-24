@@ -35,7 +35,7 @@ Small business owners wear every hat. HermesAgency runs a team of agents that qu
 
 ### Plan your next quarter
 
-The agency operates with your declared goals and values always part of its background context. Update `Goals.md`, and the work shifts to track. HermesAgency uses a **three-layer strategic-planning model** (Outcomes → Interim Goals → Initiatives, all SMART) so the work the agency does this week is structurally traceable back to the outcomes you've declared. See [`docs/StrategicPlanning.md`](./docs/StrategicPlanning.md) for the framework.
+The agency operates with your declared goals and values always part of its background context. Update `Goals.md`, and the work shifts to track. HermesAgency uses a **three-layer strategic-planning model** (Goals → Interim Goals → Initiatives, all SMART) so the work the agency does this week is structurally traceable back to the outcomes you've declared. See [`docs/StrategicPlanning.md`](./docs/StrategicPlanning.md) for the framework.
 
 - **Coach you toward SMART goals you'll actually measure** — interactive Q&A that turns vague intentions into Outcomes, Interim Goals, and Initiatives with metrics attached at each layer
 - **Compare your calendar to your stated goals** — see where your time is leaking and where the gap is between what you say matters and how you spent the week
