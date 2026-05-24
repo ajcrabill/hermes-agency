@@ -161,7 +161,7 @@ def _cmd_next() -> str:
 def _cmd_systems() -> str:
     """The 7-system inventory — same as `agency hermes-patches systems`
     but rendered for the slash command."""
-    from _framework.hermes_patches import system_inventory
+    from .system_inventory import system_inventory
 
     lines = ["HermesAgency — 7 reliability systems"]
     wired = 0

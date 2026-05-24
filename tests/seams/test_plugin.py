@@ -27,7 +27,7 @@ def test_register_function_signature():
 
 
 def test_register_wires_expected_hooks():
-    """register(ctx) calls ctx.register_hook for each of the 5 lifecycle hooks."""
+    """register(ctx) calls ctx.register_hook for each of the 6 lifecycle hooks."""
     from hermes_agency_plugin import register
 
     class FakeCtx:
@@ -45,10 +45,83 @@ def test_register_wires_expected_hooks():
     assert "pre_llm_call" in hook_names
     assert "pre_tool_call" in hook_names
     assert "post_tool_call" in hook_names
+    assert "transform_tool_result" in hook_names    # v0.18
     assert "on_session_start" in hook_names
     assert "on_session_end" in hook_names
 
     assert any(name == "agency" for name, _ in ctx.commands_registered)
+
+
+def test_transform_tool_result_passes_write_when_file_exists(tmp_path, monkeypatch):
+    """write_file → file exists → no rewrite (returns None)."""
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("AGENCY_HOME", str(tmp_path / ".agency"))
+    for mod in [m for m in list(__import__("sys").modules) if "hermes_agency_plugin" in m]:
+        del __import__("sys").modules[mod]
+    from hermes_agency_plugin.hooks import on_transform_tool_result
+
+    target = tmp_path / "output.txt"
+    target.write_text("hello")
+    result = on_transform_tool_result(
+        tool_name="write_file",
+        args={"path": str(target)},
+        result='{"ok": true, "bytes": 5}',
+    )
+    assert result is None   # No rewrite — file exists, verifier passes
+
+
+def test_transform_tool_result_rewrites_when_file_missing(tmp_path, monkeypatch):
+    """write_file → file doesn't exist → rewrite with verifier error."""
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("AGENCY_HOME", str(tmp_path / ".agency"))
+    for mod in [m for m in list(__import__("sys").modules) if "hermes_agency_plugin" in m]:
+        del __import__("sys").modules[mod]
+    from hermes_agency_plugin.hooks import on_transform_tool_result
+
+    missing = tmp_path / "does-not-exist.txt"
+    result = on_transform_tool_result(
+        tool_name="write_file",
+        args={"path": str(missing)},
+        result='{"ok": true}',
+    )
+    assert result is not None
+    assert "verifier" in result.lower()
+    assert "file_exists" in result.lower()
+
+
+def test_transform_tool_result_patch_checks_contains(tmp_path, monkeypatch):
+    """patch → file exists but doesn't contain expected content → rewrite."""
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("AGENCY_HOME", str(tmp_path / ".agency"))
+    for mod in [m for m in list(__import__("sys").modules) if "hermes_agency_plugin" in m]:
+        del __import__("sys").modules[mod]
+    from hermes_agency_plugin.hooks import on_transform_tool_result
+
+    target = tmp_path / "code.py"
+    target.write_text("def foo(): pass\n")   # doesn't contain the new content
+
+    result = on_transform_tool_result(
+        tool_name="patch",
+        args={"path": str(target), "new_string": "def bar(): pass"},
+        result='{"ok": true}',
+    )
+    assert result is not None
+    assert "verifier" in result.lower()
+    assert "file_contains" in result.lower()
+
+
+def test_transform_tool_result_passthrough_for_read_tools(tmp_path, monkeypatch):
+    """Read-only tools (read_file, search, etc.) get no enforcement."""
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("AGENCY_HOME", str(tmp_path / ".agency"))
+    for mod in [m for m in list(__import__("sys").modules) if "hermes_agency_plugin" in m]:
+        del __import__("sys").modules[mod]
+    from hermes_agency_plugin.hooks import on_transform_tool_result
+
+    # No matter the args or result, read tools pass through
+    assert on_transform_tool_result(tool_name="read_file", args={"path": "/whatever"}, result="anything") is None
+    assert on_transform_tool_result(tool_name="search", args={"query": "x"}, result="matches") is None
+    assert on_transform_tool_result(tool_name="terminal", args={"command": "ls"}, result="files") is None
 
 
 def test_pre_llm_call_returns_none_when_no_deployment(tmp_path, monkeypatch):

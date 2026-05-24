@@ -238,58 +238,9 @@ def test_session_revocation(tmp_agency):
 # ── Auto-reapply ────────────────────────────────────────────────────────
 
 
-@pytest.mark.seam
-def test_auto_reapply_needs_when_no_lock(tmp_agency):
-    from _framework.hermes_patches.auto_reapply import needs_reapply
-    needs, reason = needs_reapply()
-    assert needs is True
-    assert "no prior apply" in reason
-
-
-@pytest.mark.seam
-def test_auto_reapply_detects_no_change(tmp_agency, monkeypatch):
-    from _framework.hermes_patches.auto_reapply import (
-        write_lock, fingerprint_targets, needs_reapply,
-    )
-
-    # Stub Hermes install with one target file
-    hermes_home = tmp_agency.parent / ".hermes-reapply-test"
-    hermes_agent = hermes_home / "hermes-agent" / "agent"
-    hermes_agent.mkdir(parents=True)
-    target = hermes_agent / "skill_commands.py"
-    target.write_text(
-        "def _inject_skill_config(loaded_skill, parts):\n    pass\n"
-    )
-    monkeypatch.setenv("HERMES_HOME", str(hermes_home))
-
-    # Compute fingerprint + write lock
-    write_lock(["skill_load_injection"])
-    needs, reason = needs_reapply()
-    assert needs is False
-    assert "match" in reason
-
-
-@pytest.mark.seam
-@pytest.mark.skip(
-    reason="auto_reapply detected Hermes refactor-drift in the text-anchor "
-           "patch system, retired in v0.17. The Hermes plugin API doesn't "
-           "have the drift problem — Hermes maintains the hook contract. "
-           "Test deleted alongside the module in v0.18."
-)
-def test_auto_reapply_detects_change(tmp_agency, monkeypatch):
-    from _framework.hermes_patches.auto_reapply import (
-        write_lock, needs_reapply,
-    )
-    hermes_home = tmp_agency.parent / ".hermes-changed"
-    hermes_agent = hermes_home / "hermes-agent" / "agent"
-    hermes_agent.mkdir(parents=True)
-    target = hermes_agent / "skill_commands.py"
-    target.write_text("def _inject_skill_config(loaded_skill, parts):\n    pass\n")
-    monkeypatch.setenv("HERMES_HOME", str(hermes_home))
-
-    write_lock(["skill_load_injection"])
-    # Simulate Hermes upgrade — rewrite the target
-    target.write_text("def _inject_skill_config(loaded_skill, parts):\n    return 'changed'\n")
-    needs, reason = needs_reapply()
-    assert needs is True
-    assert "fingerprint changed" in reason
+# v0.18 NOTE: Three `test_auto_reapply_*` tests lived here through
+# v0.17 — they validated the auto-reapply machinery for the text-
+# anchor patch system. v0.17 pivoted to Hermes' plugin API which
+# doesn't have the drift problem auto_reapply was solving (Hermes
+# maintains the hook contract). The module + tests are deleted
+# in v0.18.

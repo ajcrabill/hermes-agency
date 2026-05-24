@@ -209,7 +209,7 @@ def _send_guard_check(profile: str, args: Dict[str, Any]) -> Optional[str]:
         return None
 
 
-# ── post_tool_call: verifier + observation ─────────────────────────────
+# ── post_tool_call: observation (verifier enforcement runs in transform_tool_result) ──
 
 
 def on_post_tool_call(
@@ -251,6 +251,115 @@ def on_post_tool_call(
         )
     except Exception as e:
         logger.debug("hermes-agency post_tool_call hook skipped: %s", e)
+
+
+# ── transform_tool_result: verifier enforcement ────────────────────────
+
+
+# Tools that produce a verifiable filesystem artifact. The verifier
+# constructs an ad-hoc criterion for each — `file_exists` for writes,
+# `file_contains` for patches — and rewrites the tool result with an
+# actionable error message if the criterion fails.
+#
+# v0.18 ships generic tool-output verification. v0.21 will add per-
+# skill context awareness once Hermes' agentskills.io integration
+# exposes "which skill is currently running" to plugin hooks.
+_VERIFIABLE_WRITE_TOOLS = frozenset({"write_file", "patch", "edit_file"})
+
+
+def on_transform_tool_result(
+    tool_name: str = "",
+    args: Optional[Dict[str, Any]] = None,
+    result: Any = None,
+    task_id: str = "",
+    session_id: str = "",
+    tool_call_id: str = "",
+    duration_ms: int = 0,
+    **_: Any,
+) -> Optional[str]:
+    """Run verifier criteria against the tool result. Returns a
+    rewritten result string (Hermes uses the first valid-string return)
+    OR None to leave the result unchanged.
+
+    Wires reliability system #3 (Verifier) as load-bearing: a tool that
+    claims success but produces no actual filesystem artifact (or
+    produces a malformed one) gets its result rewritten into an
+    actionable error the LLM can see and act on.
+    """
+    try:
+        if tool_name not in _VERIFIABLE_WRITE_TOOLS:
+            return None
+        if not isinstance(args, dict):
+            return None
+
+        criteria = _criteria_for_tool(tool_name, args)
+        if not criteria:
+            return None
+
+        from _framework.verifier import check
+        v_result = check(criteria)
+        if v_result.passed:
+            return None
+
+        # Rewrite the result with a clear error the LLM can act on.
+        failures = []
+        for f in v_result.failures:
+            failures.append(f"  - {f.type}: {f.message}")
+        failures_str = "\n".join(failures) if failures else "  (no detailed failures recorded)"
+
+        rewritten = (
+            f"[HermesAgency verifier — TOOL OUTPUT FAILED VERIFICATION]\n\n"
+            f"Tool '{tool_name}' returned success, but the verifier "
+            f"caught {len(v_result.failures)} criterion failure(s):\n\n"
+            f"{failures_str}\n\n"
+            f"Original tool result (for debugging):\n"
+            f"{_truncate(str(result), 400)}\n\n"
+            f"Either fix the issue and re-run the tool, or explain in your "
+            f"response why this failure is acceptable for the task."
+        )
+        return rewritten
+    except Exception as e:
+        logger.debug("hermes-agency transform_tool_result hook skipped: %s", e)
+        return None
+
+
+def _criteria_for_tool(tool_name: str, args: Dict[str, Any]) -> list[dict]:
+    """Construct ad-hoc verifier criteria for a tool call based on its
+    args. v0.18 generic criteria; v0.21 will replace with per-skill
+    criteria pulled from the active skill's frontmatter."""
+    path = args.get("path") or args.get("file_path") or args.get("target")
+    if not path or not isinstance(path, str):
+        return []
+
+    if tool_name == "write_file":
+        return [{"type": "file_exists", "args": {"path": path}}]
+
+    if tool_name in ("patch", "edit_file"):
+        # If the args carry a `content` or `new_string`, verify that
+        # text now appears in the target. Otherwise just verify the
+        # file still exists (the patch didn't delete it).
+        new_content = (
+            args.get("new_string")
+            or args.get("content")
+            or args.get("replacement")
+        )
+        if isinstance(new_content, str) and new_content.strip():
+            # Only the first 80 chars of the expected content — a
+            # reasonable substring check that doesn't fail on whitespace
+            # normalization.
+            needle = new_content.strip()[:80]
+            return [
+                {"type": "file_exists", "args": {"path": path}},
+                {"type": "file_contains", "args": {"path": path, "needle": needle}},
+            ]
+        return [{"type": "file_exists", "args": {"path": path}}]
+
+    return []
+
+
+def _truncate(s: str, n: int) -> str:
+    s = str(s)
+    return s if len(s) <= n else s[:n] + "..."
 
 
 # ── on_session_start / on_session_end: Sentinel observation ────────────
@@ -300,6 +409,7 @@ __all__ = [
     "on_pre_llm_call",
     "on_pre_tool_call",
     "on_post_tool_call",
+    "on_transform_tool_result",
     "on_session_start",
     "on_session_end",
 ]

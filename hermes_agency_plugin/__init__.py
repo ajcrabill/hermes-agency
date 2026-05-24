@@ -37,15 +37,17 @@ def register(ctx) -> None:
         on_pre_llm_call,
         on_pre_tool_call,
         on_post_tool_call,
+        on_transform_tool_result,
         on_session_start,
         on_session_end,
     )
 
-    ctx.register_hook("pre_llm_call",      on_pre_llm_call)
-    ctx.register_hook("pre_tool_call",     on_pre_tool_call)
-    ctx.register_hook("post_tool_call",    on_post_tool_call)
-    ctx.register_hook("on_session_start",  on_session_start)
-    ctx.register_hook("on_session_end",    on_session_end)
+    ctx.register_hook("pre_llm_call",          on_pre_llm_call)
+    ctx.register_hook("pre_tool_call",         on_pre_tool_call)
+    ctx.register_hook("post_tool_call",        on_post_tool_call)
+    ctx.register_hook("transform_tool_result", on_transform_tool_result)
+    ctx.register_hook("on_session_start",      on_session_start)
+    ctx.register_hook("on_session_end",        on_session_end)
 
     # Slash command surface — `/agency <subcommand>` inside Hermes
     from .commands import handle_agency_command

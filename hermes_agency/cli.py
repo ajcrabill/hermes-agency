@@ -828,24 +828,19 @@ def cmd_upgrade(_args: argparse.Namespace) -> int:
 
 
 def cmd_hermes_patches(args: argparse.Namespace) -> int:
-    """Apply / status / list / systems for Hermes integration patches.
+    """The honesty surface for HermesAgency's reliability-system
+    integration with Hermes.
 
-    `agency hermes-patches systems` is the honest answer to "is
-    HermesAgency actually a Hermes plugin?" — it prints the 7
-    reliability systems and which ones are wired into Hermes vs.
-    still parallel infrastructure.
+    `agency hermes-patches systems` prints the 7 reliability systems
+    and which are wired into Hermes today. As of v0.18 all 7 are
+    Hermes-extending via plugin lifecycle hooks (no source-patches).
+
+    The historical `apply` / `status` / `list` subcommands operated on
+    the text-anchor patch system retired in v0.17 (deprecated module
+    deleted in v0.18). They now report that history rather than
+    performing a no-op write.
     """
-    from _framework.hermes_patches import (
-        apply_all, check_status, list_patches, system_inventory,
-    )
-    from _framework.hermes_engine import is_installed as _hermes_present
-
-    # The patches modify a running Hermes install — refuse if there isn't one.
-    if args.action in ("apply", "status") and not _hermes_present():
-        print("✗ Hermes engine not detected — `agency hermes-patches` has nothing to patch.")
-        print("  Install Hermes first:")
-        print("    agency init --hermes-only")
-        return 1
+    from hermes_agency_plugin.system_inventory import system_inventory
 
     if args.action == "systems":
         # The honest 7-system view
@@ -855,47 +850,43 @@ def cmd_hermes_patches(args: argparse.Namespace) -> int:
         for s in system_inventory():
             status = s["applied_status"]
             if status == "applied":
-                marker, label = "✓", "wired into Hermes (patch applied)"
+                marker, label = "✓", "wired (plugin hook into Hermes)"
                 wired += 1
-            elif status == "unapplied":
-                marker, label = "—", "patch exists but NOT applied — run `agency hermes-patches apply`"
-            elif status == "n/a":
-                marker, label = "✓", "wired (Hermes-native shape — no patch needed)"
-                wired += 1
-            elif status == "anchor-missing":
-                marker, label = "⚠", "patch's anchor not found in Hermes — file may have changed"
-            elif status == "target-missing":
-                marker, label = "?", "patch target file not present"
             elif status == "not-built":
-                marker, label = "✗", "PATCH NOT YET BUILT — system is parallel, not Hermes-extending"
+                marker, label = "✗", "NOT WIRED YET — design specified, integration pending"
             else:
                 marker, label = "·", status
             print(f"  {marker} {s['name']}")
-            print(f"      patch: {s['patch_id']}")
+            print(f"      via:   {s['patch_id']}")
             print(f"      state: {label}")
             print(f"      note:  {s['note']}")
             print()
         total = len(system_inventory())
-        print(f"  {wired} / {total} systems are actually Hermes-extending.")
+        print(f"  {wired} / {total} systems are Hermes-extending.")
         if wired < total:
-            print(f"  See CHANGELOG / DEVELOPMENT_PLAYBOOK for the roadmap on the missing patches.")
+            print("  See CHANGELOG / docs/HERMES_AGENCY_SPEC.md §13.7 for the closure plan.")
         return 0 if wired == total else 1
 
-    if args.action == "list":
-        for p in list_patches():
-            print(f"  {p.id}: {p.description}")
+    # The legacy apply / status / list actions — retired in v0.18.
+    if args.action in ("apply", "status", "list"):
+        print("`agency hermes-patches " + args.action + "` is retired.")
+        print()
+        print("Through v0.16, HermesAgency wired reliability systems via")
+        print("text-anchor patches into Hermes' source code (the `apply` /")
+        print("`status` / `list` subcommands managed those). v0.17 pivoted")
+        print("to Hermes' documented plugin API; v0.18 deleted the")
+        print("deprecated patches module entirely.")
+        print()
+        print("Use `agency hermes-patches systems` (or `/agency systems`")
+        print("inside Hermes) for the 7-system integration inventory.")
+        print()
+        print("Plugin discovery is automatic: Hermes finds")
+        print("`~/.hermes/plugins/hermes-agency/` on next launch. The")
+        print("bootstrap.sh symlink registers it.")
         return 0
-    if args.action == "apply":
-        statuses = apply_all(dry_run=args.dry_run)
-    else:
-        statuses = check_status()
-    for s in statuses:
-        marker = {
-            "applied": "✓", "unapplied": "—",
-            "anchor-missing": "⚠", "target-missing": "?",
-        }.get(s.status, "·")
-        print(f"  {marker} {s.id:30s} [{s.status}]  {s.target_path or '(no target)'}")
-    return 0 if all(s.status in ("applied", "target-missing") for s in statuses) else 1
+
+    print(f"unknown action: {args.action}", file=sys.stderr)
+    return 2
 
 
 def cmd_cron(args: argparse.Namespace) -> int:

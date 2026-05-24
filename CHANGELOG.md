@@ -9,6 +9,81 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.18.0] — 2026-05-24
+
+Verifier enforcement + deprecated-patches removal (v0.05 of the 9th
+effort — see spec §0.5 for lineage).
+
+### Added — `transform_tool_result` hook (verifier enforcement)
+
+The plugin's `post_tool_call` hook recorded observations through
+v0.17. v0.18 adds `transform_tool_result` — Hermes' documented hook
+for plugins that want to rewrite a tool's result before it goes back
+to the LLM.
+
+For tools that produce a verifiable filesystem artifact
+(`write_file`, `patch`, `edit_file`), the hook constructs ad-hoc
+verifier criteria from the tool args:
+
+- `write_file(path=X)` → `file_exists` criterion on X
+- `patch(path=X, new_string=Y)` → `file_exists` + `file_contains`
+  (verifying Y is now in X)
+- `edit_file(path=X, content=Y)` → same as patch
+
+Failed criteria get rewritten into actionable LLM errors:
+
+```
+[HermesAgency verifier — TOOL OUTPUT FAILED VERIFICATION]
+
+Tool 'write_file' returned success, but the verifier caught
+1 criterion failure(s):
+
+  - file_exists: /tmp/output.txt not found
+
+Original tool result (for debugging):
+{"ok": true}
+
+Either fix the issue and re-run the tool, or explain in your
+response why this failure is acceptable for the task.
+```
+
+This is v0.18 generic enforcement; v0.21 will add per-skill
+criteria pulled from the active skill's frontmatter once Hermes'
+agentskills.io integration exposes skill-execution context to
+plugin hooks.
+
+### Removed — `_framework/hermes_patches/` module
+
+Deprecated in v0.17 (REGISTRY was already empty); deleted entirely
+in v0.18. The text-anchor patch approach used through v0.16 is fully
+retired.
+
+- Module deleted: `_framework/hermes_patches/` (5 files)
+- Test file deleted: `tests/seams/test_hermes_patches.py`
+- 3 auto-reapply tests deleted from `tests/seams/test_quality_and_cost.py`
+- `SYSTEM_INVENTORY` moved to `hermes_agency_plugin/system_inventory.py`
+  (where it logically belongs as part of the plugin's honesty surface)
+
+### Changed — `agency hermes-patches` subcommand
+
+The `systems` action keeps working (it's the public honesty
+surface) and now reads from the plugin's inventory. The
+`apply` / `status` / `list` subcommands print a retirement
+notice explaining the v0.17 plugin pivot — kept for graceful
+deprecation rather than removed entirely.
+
+### Tests
+
+- 226 passing (was 224 with 4 skipped). The 4 skipped patches-
+  tests are now actually deleted, hence 4 removed + 2 retained
+  v0.17 patches tests cut entirely. Net: same coverage on the
+  live path, no skipped dead-code tests.
+- 4 new tests in `tests/seams/test_plugin.py` cover the new
+  `transform_tool_result` hook: write_file passing, write_file
+  rewriting on missing file, patch with content-mismatch rewriting,
+  read-only tools passing through.
+- `agency audit --self`: clean.
+
 ## [0.17.0] — 2026-05-24
 
 **Architectural pivot: HermesAgency is now a real Hermes plugin.**
