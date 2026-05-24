@@ -10,6 +10,42 @@ HermesAgency is a multi-agent framework built as a plugin to [NousResearch's](ht
 
 > By [AJ Crabill](https://ajcrabill.com) — AI Developer for [Good Ancestor](https://www.GoodAncestor.com). HermesAgency is the 9th version of a personal AI chief-of-staff project that's been running, breaking, and getting rewritten on and off for years — see spec §0.5 for the full lineage (VPS + OpenClaw → Claude Cowork → dCoS → Hermes-rebased → DeepSeek → multi-agent → standalone fork → proper plugin). The current architecture is hard-won simplicity.
 
+## What HermesAgency does for you
+
+A small-business owner wears every hat. HermesAgency runs a team of agents that quietly takes the most repetitive, easily-lost, and easily-dropped work off your plate — without you having to surrender your data, your relationships, or your judgment. Here's a sample of what your agency can do:
+
+### Win new business
+
+- **Spot referral opportunities you'd otherwise miss** — surfaces the warm handoffs your existing clients casually mention in email and turns them into drafts ready for your review
+- **Find new prospects who look like your best clients** — analyzes the businesses you already serve to identify common traits, industries, and geographies worth targeting
+- **Nurture your "someday" pipeline on autopilot** — keeps the slow-burn leads warm with timely nudges so you stop losing deals to silence
+- **Scan your industry for moments worth your voice** — newsworthy stories, viral threads, conferences — surfaced as opportunities to jump in with thought leadership
+
+### Stay on top of communications
+
+- **Draft email and writing in your voice** — learns from samples of your prior writing; subsequent drafts sound like *you*, not like a chatbot
+- **Triage your inbox** — separates what actually needs your attention from what doesn't, with a daily summary instead of constant interruption
+- **Turn voice memos into written drafts** — record a voice note while driving; get back a polished blog post, client email, or memo ready to edit
+- **Publish a weekly industry newsletter** — pulls from the sources you read anyway and assembles a newsletter you can ship in minutes
+- **Catch embarrassing send-mistakes before they leave** — every outbound message passes a guard that flags the wrong-recipient, wrong-attachment, wrong-tone errors that cost you credibility
+
+### Run your operations
+
+- **Manage your calendar end-to-end** — finds time, batches similar meetings, avoids double-booking, and flags conflicts before they bite
+- **Keep tasks moving across your team** — kanban with explicit dependencies; you see what's blocked, what's late, and what's actually shipping
+- **Surface emails that still need a reply** — nothing falls off the bottom of the inbox because it scrolled out of view
+- **Keep your operational documentation current** — when something changes, the agents update the relevant docs so you stop running into stale process notes
+- **Notify you only when a human is actually needed** — push alerts are rare and meaningful, not constant noise
+
+### Plan your next quarter
+
+- **Coach you toward SMART goals you'll actually measure** — interactive Q&A that turns vague intentions into goals with metrics attached
+- **Compare your calendar to your stated goals** — see where your time is leaking and where the gap is between what you say matters and how you spent the week
+- **Three concrete actions every week** — weekly brainstorm proposing specific moves based on what's happening in your business *right now*, not generic advice
+- **Track progress against goals with real observations** — not vanity metrics; the agency logs what actually moved and what didn't
+
+---
+
 ## Why this exists
 
 Every large platform is rolling out the same feature set: AI assistants, multi-agent workflows, persistent memory, learning from corrections, integrated calendaring and email. The capability gap that used to favor enterprises is collapsing — fast. **A small business without these tools is at a real disadvantage against competitors that have them.**
