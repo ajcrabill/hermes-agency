@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.15.0 (2026-05-24)
+**Version:** v0.17.1 (2026-05-24)
 **Status:** Living spec — tracks shipped releases
 **Author:** Drafted with AJ
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -10,39 +10,55 @@
 ## 0. Document purpose
 
 This is the build + design specification for **HermesAgency** — a
-Hermes plugin that adds 7 reliability systems on top of NousResearch's
-Hermes engine, designed for small-agency owners and operators.
+continuously-learning, multi-agent plugin for [NousResearch's Hermes
+Agent](https://github.com/NousResearch/hermes-agent), built for
+small-business owners who don't want to re-teach their AI ten times.
 
-The spec was written *before* code so the architecture could be reviewed,
+The spec was written before code so the architecture could be reviewed,
 revised, and locked before any building. AJ is the first customer; his
 v7 system is migrating to HermesAgency via the v7-migration tool
 (`agency migrate v7`).
 
 This document is the source of truth for the framework's design.
-Sections §0–§15 describe the architecture and roadmap as locked at
-v0.1; §16 (change log) tracks every formal revision since, including
-all release-level versions. New features land through the release
-cycle and accrete in the change log; sections above are revised
-when the underlying architecture changes.
+Sections §0–§15 describe the architecture; §16 (change log) tracks
+every formal revision since v0.1, including all release-level
+versions. New features land through the release cycle and accrete
+in the change log; sections above are revised when the underlying
+architecture changes.
 
-**Architectural reset at v0.15 (2026-05-24):** Through v0.1–v0.14, the
-implementation drifted from "Hermes plugin" toward "parallel framework
-with its own state, chat, panel, and runtime." The spec's first
-sentence — *layered on Hermes* — was the design intent throughout,
-but most subsystems got built as `_framework/<x>/` modules with their
-own state under `~/.agency/_state/<x>.db`, called by the agency's own
-code paths rather than by Hermes during skill execution. v0.15.0
-corrects the *narrative* (new §1.4 "Plugin discipline" + the
-`agency hermes-patches systems` honesty-surface). v0.16–v0.19
-correct the *implementation* by building the missing patches and
-collapsing parallel state. See §13 for the closure roadmap.
+### Architectural arc (read this first if you're new)
+
+1. **v0.1–v0.14** — implementation grew as a "parallel framework that
+   layered on Hermes" via text-anchor patches into Hermes' source.
+   That approach proved fragile against Hermes refactors and meant
+   HermesAgency had its own CLI, state directory, panel, runtime —
+   competing with Hermes rather than extending it.
+2. **v0.15** — narrative reset: §1.4 "Plugin discipline" added
+   `agency hermes-patches systems` as the honesty surface for what
+   was actually wired vs. parallel.
+3. **v0.16** — install simplified to 4 steps; bootstrap stopped
+   installing Hermes for the user; migration extended to take a
+   v7-home directory.
+4. **v0.17** — **architectural pivot**: Hermes' documented plugin API
+   was discovered. All 7 reliability systems re-wired as Hermes
+   lifecycle hooks (`pre_llm_call`, `pre_tool_call`, `post_tool_call`,
+   `on_session_start`, `on_session_end`). Text-anchor patches retired.
+   `/agency` slash command inside Hermes is the supervisory surface.
+5. **v0.18–v0.22** (this spec revision) — structural cleanup to bring
+   the codebase fully in line with "plugin-from-the-start" design:
+   flatten `_framework/<x>/` → `hermes_agency_plugin/<x>/`, move state
+   from `~/.agency/` to `~/.hermes/agency-state/`, register profiles
+   and skills with Hermes' native registries, demote standalone
+   `agency` CLI to a thin shim, replace bash wizard with an in-Hermes
+   setup interview. See §13.6 for the explicit closure plan.
 
 ---
 
-## 1. The promise — what this framework is for
+## 1. The promise — what this plugin is for
 
-**HermesAgency is a multi-agent framework for small-agency owners who
-refuse to re-teach their AI ten times.**
+**HermesAgency is a continuously-learning, multi-agent plugin for
+Hermes Agent, built for small-business owners who refuse to re-teach
+their AI ten times.**
 
 Every correction the owner gives is captured, tagged, propagated to every
 relevant agent across the agency, and applied without the owner repeating
@@ -208,6 +224,62 @@ slash command (`/agency setup`).
 ---
 
 ## 2. Architecture overview
+
+### 2.0 Plugin shape — the foundation everything else rests on
+
+HermesAgency is a **Hermes plugin**, discovered via Hermes'
+`PluginManager` at the standard plugin path:
+
+```
+~/.hermes/plugins/hermes-agency/   →  symlinked to the installed
+                                       hermes_agency_plugin/ package
+                                       (or pip-installed via entry point
+                                       once on PyPI)
+```
+
+The package's `__init__.py` exposes a single function — `register(ctx)` —
+which wires every reliability system into Hermes' documented lifecycle
+hooks:
+
+```python
+def register(ctx) -> None:
+    ctx.register_hook("pre_llm_call",     on_pre_llm_call)      # learning rule injection
+    ctx.register_hook("pre_tool_call",    on_pre_tool_call)     # autonomy gate + send-guard
+    ctx.register_hook("post_tool_call",   on_post_tool_call)    # verifier observation
+    ctx.register_hook("on_session_start", on_session_start)     # Sentinel open
+    ctx.register_hook("on_session_end",   on_session_end)       # Sentinel close
+    ctx.register_command("agency", handler=handle_agency_command, description=...)
+```
+
+**Direct consequences of being a plugin (not a parallel framework):**
+
+1. **Hermes is the runtime.** Always. `hermes` is THE binary. `/agency
+   <subcommand>` is THE supervisory interface inside Hermes. There is
+   no `agency chat`, no parallel runtime, no parallel CLI surface for
+   daily use. A standalone shell-side `agency` command exists only as
+   a thin shim for non-interactive contexts (cron jobs, CI scripts).
+2. **State lives next to Hermes' state.** `~/.hermes/agency-state/*.db`
+   — alongside Hermes' own `state.db` / `kanban.db` / `scheduler.db`.
+   No separate `~/.agency/` world. (Currently in transition; the
+   v0.20 release completes the move.)
+3. **Profiles are Hermes agents.** The six+ agent roles (CoS, KB,
+   Sentinel, AnalystJudge, BD, Writing, Finance) are registered into
+   Hermes' agent registry via `ctx.register_agent(...)` on plugin
+   load. Hermes already knows how to load + chat with multiple agent
+   identities; we contribute identities rather than building our own.
+   (Currently in transition; v0.20 completes the registration move.)
+4. **Skills are agentskills.io-compatible.** Each `.md` skill file
+   the plugin ships is registered via `ctx.register_skill(...)` on
+   plugin load. Hermes runs them; we just contribute the catalog.
+   (v0.21 brings the skill files into conformance with the
+   agentskills.io open standard the Hermes README points at.)
+5. **No `agency init` wizard.** First-run setup is a Hermes skill
+   (`/agency setup`) that CoS runs when she sees the deployment is
+   not yet configured. The bash wizard is a v0.1–v0.17 vestige
+   removed in v0.19.
+
+These are the design principles. The rest of §2 describes what gets
+built on top of them.
 
 ### 2.1 The six agents
 
@@ -1043,73 +1115,87 @@ via deployment.yaml — but the default ships single-mailbox.
 
 ## 8. Framework structure
 
-### 8.1 Repo layout (the public framework)
+### 8.1 Repo layout — target (v0.20+) and current (v0.17)
+
+**Target layout** (v0.20 completes the flattening of `_framework/` into
+the plugin package):
 
 ```
-hermes-agency/                          (github, MIT)
-├── README.md                           (public-facing pitch + quickstart)
+hermes-agency/                          (github.com/ajcrabill/hermes-agency, MIT)
+├── README.md                           (public-facing pitch + 4-step install)
 ├── LICENSE                             (MIT)
-├── DEVELOPMENT_PLAYBOOK.md             (the playbook, generic v2.0.0)
-├── HERMES_AGENCY_SPEC.md               (this document, post-build)
 ├── CHANGELOG.md
+├── pyproject.toml                      (declares hermes-agency-plugin entry point)
+├── bootstrap.sh                        (curl-pipe installer; thin wrapper over pip)
 ├── docs/
-│   ├── ARCHITECTURE.md                 (the diagram in §2.2)
-│   ├── ROLES.md                        (the 6 roles in §7)
-│   ├── DEPLOYMENT.md                   (how to install + agency init)
-│   ├── LEARNING_LOOP.md                (§1.1 + §3, the central promise)
-│   ├── AUTONOMY.md                     (§4 ladder)
+│   ├── HERMES_AGENCY_SPEC.md           (this document)
+│   ├── ARCHITECTURE.md                 (diagrams; cross-references §2)
+│   ├── ROLES.md                        (the 6+ roles in §7)
+│   ├── DEPLOYMENT.md                   (the 4-step install elaborated)
+│   ├── LEARNING_LOOP.md                (§1.1 + §3 in conversational form)
+│   ├── AUTONOMY.md                     (§4 ladder elaborated)
 │   ├── SENTINEL.md                     (§5)
-│   ├── PATCHES_TO_HERMES.md            (the reapply hook list)
+│   ├── INTEGRATIONS.md                 (Gmail / Signal / Slack / etc.)
 │   └── examples/
 │       └── minimal-deployment/         (smoke-test reference deployment)
-├── _framework/
+├── hermes_agency_plugin/               THE plugin (= the whole codebase)
+│   ├── plugin.yaml                     (Hermes plugin manifest)
+│   ├── __init__.py                     (register(ctx))
+│   ├── hooks.py                        (5 lifecycle-hook handlers)
+│   ├── commands.py                     (/agency slash-command dispatch)
+│   ├── context.py                      (profile + role resolver)
 │   ├── constants.py                    (path constants, brand-agnostic)
 │   ├── invariants.yaml                 (ALWAYS_BLOCK, tenants, action classes, providers)
 │   ├── manifest.py                     (deployment.yaml schema + validator)
 │   ├── learning/                       (§3 — the spine)
-│   │   ├── learning_db.py
-│   │   ├── rule_injection.py
-│   │   ├── firings.py
-│   │   ├── recapture_detector.py
-│   │   ├── tag_resolver.py
-│   │   ├── correction_capture.py
-│   │   └── compliance_report.py
 │   ├── autonomy/                       (§4)
-│   │   ├── autonomy_db.py
-│   │   ├── autonomy_gate.sh
-│   │   ├── autonomy_engine.py
-│   │   └── graduation_audit_gate.py
 │   ├── verifier/                       (§6.1)
-│   │   ├── verifier.py
-│   │   └── criterion_types/
-│   ├── sentinel/                       (§5 — Sentinel is framework code, not deployment)
-│   │   ├── events_db.py
-│   │   ├── learning_monitor.py
-│   │   ├── drift_monitor.py
-│   │   ├── heartbeat_watch.py
-│   │   └── event_rollup.py
-│   ├── kanban_patches/                 (§6.3 — two link types)
+│   ├── sentinel/                       (§5)
 │   ├── send_guard/                     (§6.4)
-│   ├── scaffolds/                      (scaffold-skill / scaffold-script / scaffold-profile / scaffold-deployment)
-│   ├── audit/                          (audit-alignment.py + per-rule history)
-│   ├── lifecycle/                      (T1/T2/T3 flow + flip-live.py)
-│   └── skills/                         (cross-agent shared skills — development-playbook, prompt-injection-defense)
-├── templates/
-│   ├── deployment.yaml.template
-│   ├── persona.md.template             (SOUL.md with placeholders)
-│   └── profiles/                       (per-role profile templates — each ships TWO identity docs per §2.5)
-│       ├── chief-of-staff/             (SOUL.md.template + standards.md.template + skills/)
-│       ├── knowledge-base/             (SOUL.md.template + standards.md.template + skills/)
-│       ├── system-sentinel/            (SOUL.md.template + standards.md.template + skills/) — Sentinel's standards.md references master plan + playbook
-│       ├── analyst-judge/              (SOUL.md.template + standards.md.template + skills/)
-│       ├── business-development/       (SOUL.md.template + standards.md.template + skills/)
-│       └── writing-support/            (SOUL.md.template + standards.md.template + skills/)
-├── install.sh                          (the `agency init` wizard)
+│   ├── kanban/                         (§6.3 — the tracks-link shim into Hermes' kanban.db)
+│   ├── audit/                          (audit-alignment + scheduled scripts)
+│   ├── migration/                      (v7 → HermesAgency import)
+│   ├── scaffolds/                      (scaffold-skill / scaffold-script / scaffold-profile)
+│   ├── skills/                         (bundled skill catalog — registered with Hermes
+│   │                                     via ctx.register_skill() on plugin load)
+│   │   ├── _shared/                    (cross-role: development-playbook, prompt-injection-defense)
+│   │   ├── chief-of-staff/             (CoS skills)
+│   │   ├── knowledge-base/
+│   │   ├── system-sentinel/
+│   │   ├── analyst-judge/
+│   │   ├── business-development/
+│   │   ├── writing-support/
+│   │   └── finance/
+│   └── profiles/                       (bundled agent-identity templates — registered with
+│                                         Hermes' agent registry via ctx.register_agent())
+│       ├── chief-of-staff/             (SOUL.md.template + standards.md.template)
+│       ├── knowledge-base/
+│       ├── system-sentinel/
+│       ├── analyst-judge/
+│       ├── business-development/
+│       ├── writing-support/
+│       └── finance/
 └── tests/
     ├── seams/                          (system seam tests)
     ├── audit/                          (audit-rule tests)
     └── e2e/                            (end-to-end smoke tests)
 ```
+
+**Current layout (v0.17)** — mid-transition; same shape but with two
+legacy paths preserved during the cleanup window:
+
+- `_framework/<x>/` still holds the subsystems (learning, autonomy,
+  verifier, sentinel, send_guard, kanban, audit, migration, scaffolds).
+  v0.20 flattens this into `hermes_agency_plugin/<x>/`.
+- `templates/profiles/<role>/` and `templates/scripts/` still hold
+  profile + script templates as filesystem artifacts. v0.20 moves them
+  into the plugin package and exposes them via Hermes' registries.
+- `hermes_agency/cli.py` still implements the standalone `agency`
+  command. v0.20 demotes this to a thin shim that invokes the plugin's
+  slash-command handler for non-interactive use, and deletes the
+  parallel-surface commands (`chat`, `panel`, etc. already gone in v0.15).
+- `_framework/hermes_patches/` deprecated in v0.17; module deleted in
+  v0.18.
 
 ### 8.2 Deployment layout (the customer's directory)
 
@@ -1133,45 +1219,86 @@ hermes-agency/                          (github, MIT)
 │   │   ├── logs/
 │   │   └── context/<profile>/          (vault — customer's content)
 │   └── ...
-├── _state/                             (shared, cross-profile)
+├── _state/                             (shared, cross-profile — DEPRECATED, moves to ~/.hermes/agency-state/ in v0.20)
 │   ├── kanban.db
 │   ├── learning.db
 │   ├── autonomy.db
 │   ├── events.db
 │   ├── heartbeats.db
 │   └── drift_scores.json
-└── _health/
+└── _health/                            (DEPRECATED, moves to ~/.hermes/agency-state/_health/ in v0.20)
     ├── audits/                         (audit reports + scoreboard)
     ├── operator-actions.jsonl
     └── recapture-history.jsonl
 ```
 
+**Target deployment layout (v0.20+)** — all agency state lives next
+to Hermes' own state under `~/.hermes/`, no separate `~/.agency/`
+world:
+
+```
+~/.hermes/                              (the engine's home, owned by Hermes)
+├── ... Hermes' own state .db files ...
+├── plugins/
+│   └── hermes-agency/                  → symlink to installed plugin package
+└── agency-state/                       (NEW in v0.20 — all HermesAgency state)
+    ├── learning.db
+    ├── autonomy.db
+    ├── events.db
+    ├── heartbeats.db
+    ├── drift_scores.json
+    ├── deployment.yaml                 (much slimmer — see §9)
+    ├── framework-vault/                (deployment-specific copies of master plan + playbook)
+    ├── vaults/                         (per-profile vaults — Goals.md / Values.md / etc.)
+    │   ├── <profile_id>/
+    │   │   ├── Goals.md
+    │   │   ├── Values.md
+    │   │   ├── Personal.md
+    │   │   ├── Work.md
+    │   │   ├── Client.md
+    │   │   └── Soul.md                 (the *operator-edited* persona; bundled
+    │   │                                 templates live inside the plugin package)
+    │   └── ...
+    ├── per-subject-state/              (per-author, per-coach, per-prospect scratchpads)
+    └── _health/
+        ├── audits/
+        ├── operator-actions.jsonl
+        └── recapture-history.jsonl
+```
+
+(Profiles themselves — identity templates, skill catalogs — live
+inside the plugin package and get registered with Hermes' own agent
+and skill registries on plugin load. The vault under
+`agency-state/vaults/<id>/` holds the *operator-edited* content for
+that profile.)
+
 ### 8.3 Brand-agnostic paths
 
-Every path that exists in a v7-style deployment as `~/.<owner>/...` becomes `~/.agency/...` under HermesAgency.
-The owner's chosen agent names (e.g., "Loriah" for CoS, "Lynda" for
-Analyst) live ONLY in the identities/ persona files and in `profile.id`
-in deployment.yaml — never in paths, never in plist labels, never in
-env var names.
+Every path in the framework derives from constants in
+`hermes_agency_plugin/constants.py`. The owner's chosen agent names
+(e.g., "Loriah" for CoS, "Lynda" for Analyst) live ONLY in
+deployment-edited files — never in plugin paths, never in plist
+labels, never in env var names.
 
-Plist labels: `com.hermes-agency.cron.<profile-id>.plist`. The `profile-id`
-is the deployment's chosen name; the rest is framework-fixed.
+Plist labels: `com.hermes-agency.cron.<profile-id>.plist`. The
+`profile-id` is the deployment's chosen name; the rest is plugin-fixed.
 
 ### 8.4 Two-tier file ownership rule
 
-Every file in `_framework/` carries a header:
+Every file in `hermes_agency_plugin/` (or its `_framework/` predecessor
+during the v0.17–v0.19 transition) carries a header:
 ```python
-# FRAMEWORK — owned by HermesAgency. Do not modify in a deployment;
-# customizations belong in ~/.agency/profiles/<P>/ or deployment.yaml.
+# PLUGIN — owned by HermesAgency. Do not modify in a deployment;
+# customizations belong in ~/.hermes/agency-state/ (data) or
+# in deployment.yaml (configuration).
 ```
 
-Every file in a deployment's `profiles/` carries:
-```python
-# OWNER — deployment-specific. Framework upgrades will not touch this.
-```
+Every file in a deployment's vault (`~/.hermes/agency-state/vaults/<id>/`)
+is owner-edited; plugin upgrades will not touch operator content. The
+plugin treats operator content as input, never as something to rewrite.
 
-The audit (§10) checks that framework files don't contain literal owner
-names, mail addresses, or contact references — pure framework code,
+The audit (§10) checks that plugin files don't contain literal owner
+names, mail addresses, or contact references — pure plugin code,
 content-empty.
 
 ---
@@ -1410,20 +1537,53 @@ Same plugin shape as v7 — kanban + control-panel plugins ship in
 `hermes-agency/dashboard-plugins/` (separate from upstream Hermes;
 installed into the engine post-clone via post-install hook).
 
-### 11.3 CLI
+### 11.3 In-Hermes slash command — the primary surface
+
+The supervisory surface lives inside `hermes` as the `/agency`
+slash command, registered by the plugin via
+`ctx.register_command("agency", ...)`:
 
 ```
-agency status              # quick health summary
-agency init                # the wizard
-agency upgrade             # framework version bump
-agency audit               # run audit-alignment.py
-agency capture "..."       # interactive correction capture
+/agency status                  # deployment health + Hermes detection
+/agency next                    # actionable next-steps
+/agency systems                 # 7-system integration inventory
+/agency capture "<correction>"  # capture a learning correction
+/agency learn list [N]          # list recent learning rules
+/agency audit                   # run the alignment audit
+/agency setup                   # migration-or-clean-install interview (v0.19+)
+/agency help                    # subcommand listing
+```
+
+Operators don't leave Hermes to run agency operations. The owner-
+agency interface model (§2.3) holds: one face for the owner, one
+face for the world, both inside `hermes`.
+
+### 11.4 Shell-side `agency` command — thin shim for non-interactive use
+
+A standalone shell-side `agency` command exists for contexts where
+a slash command isn't available — cron-fired scripts, CI pipelines,
+non-interactive automation:
+
+```
+agency status              # mirror of /agency status
+agency capture "..."       # mirror of /agency capture
+agency audit               # mirror of /agency audit
+agency migrate v7 ...      # the v7-import operation
 agency promote <skill>     # force-promote (with audit gate)
 agency demote <skill>      # force-demote
-agency events --tail       # live events feed
-agency learn list          # list learning rules
-agency learn show <id>     # show rule + firings
 ```
+
+This shim must not contain operator-facing UX that competes with
+`hermes` (no `agency chat`, no `agency panel` as a primary surface,
+no `agency init` wizard). The v0.15 plugin-discipline rule (§1.4)
+holds: `hermes` is the runtime, always.
+
+### 11.5 Control panel — read-only diagnostic UI
+
+The plugin's optional control panel (at `localhost:9118/control-panel`)
+remains a read-only diagnostic surface — not the operator's daily UI.
+Use it for at-a-glance learning loop health, sentinel feed inspection,
+and audit summaries. Daily work happens in `hermes`.
 
 ---
 
@@ -1512,83 +1672,144 @@ Phased, post-v0.1. v7 stays authoritative throughout. Timeline:
 
 ### 13.6 Cutover (month 6)
 
-- Final delta sync (any v7 state not yet in .agency)
+- Final delta sync (any v7 state not yet in agency-state)
 - AJ flips authoritative bit
 - v7 archived (frozen, read-only) for 6 months as a fallback
-- After 6 months stable on .agency, v7 deleted
+- After 6 months stable on the new install, v7 deleted
 
-### 13.6 Plugin-integration closure plan (v0.16 → v0.19)
+### 13.7 Plugin-integration closure plan (v0.18 → v0.22)
 
-After v0.15.0 corrected the narrative (the framework is a Hermes
-plugin, not a parallel runtime), three patches and one cleanup
-release close the implementation gap. Each is a release-sized
-chunk of real engineering.
+v0.17.0 corrected the architectural shape — HermesAgency is now a
+real Hermes plugin with all 7 reliability systems wired via the
+documented plugin API. The remaining work is structural cleanup
+to bring the codebase fully in line with "plugin-from-the-start"
+design. Each release below is a release-sized chunk of real work.
 
-**v0.16.0 — `autonomy-gate` patch**
+**v0.18.0 — Verifier enforcement + deprecated-module removal**
 
-Patch into Hermes' skill executor (the function that decides
-whether to execute a proposed action vs. require operator
-approval). Before any L2+ action fires, the patch consults
-`_framework.autonomy.allowed(skill_id, profile, action_class)`.
-Refused actions become drafts in the kanban with the autonomy
-verdict attached. The autonomy ladder (§4) becomes load-bearing
-instead of advisory.
-
-Acceptance: a skill at L1 (`draft-only`) that tries to emit a
-`structural-change` action gets caught by Hermes itself, not by
-agency-side bookkeeping. `agency hermes-patches systems` reports
-"Autonomy ladder (L1–L5)" as wired.
-
-**v0.17.0 — `post-completion-verifier` patch**
-
-Patch into Hermes' skill-exit hook. After a skill completes, the
-patch runs the skill's `verifier:` block from its frontmatter
-(§6.1) against the output. Failures cause Hermes to refuse the
-skill's completion (back to draft state) until the verifier
-passes. The verifier registry from `_framework.verifier`
-gets wired in as the gate.
+- The post_tool_call hook in the plugin currently records tool
+  completions to events.db (observation). v0.18 adds the
+  `transform_tool_result` hook: for skill-bound tool calls, run
+  the skill's `verifier:` block (§6.1) against the result; on
+  failure, rewrite the result into an actionable error string so
+  the LLM sees a clear "this output failed verifier X — fix Y"
+  message rather than a silent pass.
+- Delete `_framework/hermes_patches/` (deprecated in v0.17;
+  REGISTRY already empty; one-release grace window expires).
+- Delete the 4 `@pytest.mark.skip`-ed text-patch tests.
 
 Acceptance: a skill whose verifier asserts `file_contains` on a
-generated draft fails immediately if the draft is missing the
-required content. The skill doesn't claim "done" until the
-verifier passes. `agency hermes-patches systems` reports
-"Verifier (per-skill criteria)" as wired.
+generated draft sees the failure surfaced as a tool-result error
+to the LLM, not a silent completion. The verifier gate is
+load-bearing inside Hermes' execution.
 
-**v0.18.0 — `outbound-mail-guard` patch**
+**v0.19.0 — `/agency setup` interactive interview (in-Hermes)**
 
-Patch into Hermes' email-send path (whatever Hermes uses to
-hand off to the configured mailer). Before any outbound message
-leaves, the patch consults `_framework.send_guard.check(...)`.
-The send-guard's first-message hard-rules + per-recipient
-cooling periods become load-bearing instead of advisory.
+The v0.17 `/agency setup` stub becomes a real conversational
+flow. On fresh deployments (no `~/.hermes/agency-state/.configured`
+marker), CoS opens with:
 
-Acceptance: an attempted outbound mail to a recipient who's
-under a "first-touch hard rule wait" gets refused at Hermes'
-send path. The kanban gets a card explaining the refusal.
-`agency hermes-patches systems` reports "Send-guard (outbound
-mail gate)" as wired.
+> "Is this a fresh install or are you migrating from a prior
+> deployment? If migrating, where is your v7 home directory? If
+> fresh, I have ~10 minutes of setup questions to learn who you
+> are and what you're working on."
 
-**v0.19.0 — Parallel-state collapse**
+The migration path invokes `migrate_v7_full(<path>)` and reports
+what landed. The clean-install path conducts an interview that
+writes Goals.md, Values.md, Personal.md, Work.md, Clients.md,
+and (per-profile) SOUL refinements. Either path ends by writing
+the `.configured` marker so the prompt doesn't re-fire.
 
-The remaining `_framework/<x>/_state/*.db` databases (learning,
-events, autonomy, quality, cost, goals, finance, crm, coaching,
-prototypes, per_subject_state) get migrated to sidecar tables
-under `~/.hermes/agency-state/<x>.db` (the convention being:
-"state HermesAgency owns, but stored next to Hermes' own DBs
-so anything reading Hermes state can find it"). Read paths
-update to look there first, fall back to `~/.agency/_state/`
-during a one-release migration window, then become
-authoritative.
+The bash `agency init` wizard is deleted (was only a v0.1–v0.18
+vestige; bootstrap.sh creates the minimum skeleton needed for
+Hermes to load the plugin, then `hermes` + `/agency setup`
+handles everything else).
 
-Acceptance: a fresh Hermes install with HermesAgency layered
-on top has a single `~/.hermes/` state directory. The agency
-framework owns no separate state world. `agency status` reports
-"state location" as `~/.hermes/agency-state/` with zero rows
-in any `~/.agency/_state/` paths.
+Acceptance: a fresh install on a clean machine, after the 2-step
+curl-pipe install of Hermes + HermesAgency, is fully configured
+through a `hermes` conversation alone. No second bash wizard, no
+yaml editing, no operator-side file fiddling.
 
-After v0.19.0, the framework is what the spec said it would be:
-a Hermes plugin with seven Hermes-extending hooks, sharing
-state with Hermes, never running as a parallel surface.
+**v0.20.0 — Structural rename + parallel-state collapse**
+
+- `_framework/<x>/` → `hermes_agency_plugin/<x>/` (subsystems
+  move inside the plugin package; the `_framework` prefix retires).
+- `~/.agency/_state/*.db` → `~/.hermes/agency-state/<x>.db`
+  (state lives next to Hermes' own DBs; no separate `~/.agency/`
+  world).
+- `~/.agency/profiles/` → registered via `ctx.register_agent(...)`
+  on plugin load (profiles become first-class Hermes agents).
+- `~/.agency/_health/` → `~/.hermes/agency-state/_health/`.
+- Deployment.yaml shrinks to a minimum (just operator identity +
+  profile activation overrides + integration credential refs).
+  Most of what used to live there moves to Hermes' own config
+  (provider, model, etc.).
+- Standalone `agency` CLI demoted to a thin shim that invokes
+  the plugin's `/agency` handler for non-interactive contexts.
+  Any operator-facing UX-rich CLI commands (`chat`, `panel`)
+  removed entirely.
+- Migration helper: v0.20 ships a one-shot
+  `agency migrate-to-v020` command that moves `~/.agency/`
+  contents into `~/.hermes/agency-state/` and registers profiles
+  with Hermes. Idempotent. After this lands, all subsequent
+  installs are "plugin from the start."
+
+Acceptance: a fresh Hermes install with HermesAgency v0.20+ has
+zero files outside `~/.hermes/`. `agency status` reports state
+location as `~/.hermes/agency-state/`. The plugin discipline rule
+(§1.4) is structurally enforceable: any new code adding
+`~/.agency/` paths fails the audit.
+
+**v0.21.0 — agentskills.io conformance pass**
+
+The plugin's bundled skill catalog (`hermes_agency_plugin/skills/`)
+is reviewed against the [agentskills.io](https://agentskills.io)
+open standard the Hermes README points at. Schema differences
+get reconciled; conformance becomes a CI check. Skills become
+portable to any agent runtime that supports the standard.
+
+Acceptance: a skill picked from `hermes_agency_plugin/skills/`
+loads cleanly under both Hermes and any other agentskills.io-
+compatible runtime, without modification.
+
+**v0.22.0 — PyPI publication + entry-point install**
+
+HermesAgency publishes to PyPI as `hermes-agency`. The package
+declares a Hermes plugin entry point in `pyproject.toml`:
+
+```toml
+[project.entry-points."hermes.plugins"]
+hermes-agency = "hermes_agency_plugin:register"
+```
+
+Hermes' `PluginManager` discovers pip-installed plugins via this
+group. bootstrap.sh becomes a 5-line wrapper:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+command -v hermes >/dev/null || { echo "install Hermes first"; exit 1; }
+pip install hermes-agency
+echo "✓ HermesAgency installed; run: hermes"
+```
+
+Acceptance: a user can install everything with two commands:
+
+```bash
+curl -fsSL https://.../hermes-install.sh | bash
+pip install hermes-agency
+```
+
+And then `hermes` works with the plugin auto-discovered.
+
+After v0.22.0, HermesAgency is fully what the spec said it would
+be: a Hermes plugin (not a parallel framework), pip-installable
+(not git-clone-bootstrap), discovered via entry points (not
+filesystem convention), with all state living in `~/.hermes/`
+(not a separate `~/.agency/`), conversational setup inside
+`hermes` (not a bash wizard), and skills conformant to an open
+standard (not framework-proprietary). The structural drift from
+v0.1 → v0.16 is fully repaid.
 
 ---
 
@@ -2207,3 +2428,49 @@ shape.
   Closure plan now narrower and faster: v0.18 = verifier enforcement
   + deprecated-module removal; v0.19 = `/agency setup` migration-or-
   clean-install in-Hermes interview; v0.20 = parallel-state collapse.
+
+- **v0.17.1-spec (2026-05-24)** — *Spec-revision pass; no code change.*
+  AJ asked: "if you were designing HermesAgency from scratch knowing
+  what we know now about Hermes' plugin API, what would it look like?"
+  This revision rewrites the spec to reflect that from-scratch design
+  and treats v0.18–v0.22 as the cleanup path from current state to the
+  ideal.
+
+  Specifically:
+  - **Tagline (§1)** — "*continuously-learning, multi-agent plugin for
+    Hermes Agent, built for small-business owners*" (was: "multi-agent
+    framework for small-agency owners"). Sharper plugin framing; small-
+    business broadens beyond small-agency; "continuously-learning"
+    captures the supervised-correction loop without invoking the
+    technical ML term "deep learning."
+  - **§0 Document purpose** — adds an explicit architectural arc
+    summarizing v0.1 → v0.22 so a new reader understands where the
+    project came from and where it's going.
+  - **New §2.0 "Plugin shape"** — establishes plugin-from-the-start as
+    the foundation everything else rests on. Five direct consequences
+    spelled out (Hermes is the runtime, state next to Hermes', profiles
+    are Hermes agents, skills are agentskills.io-compatible, no agency
+    init wizard).
+  - **§8.1 Repo layout rewritten** — shows the target v0.20+ layout
+    (`hermes_agency_plugin/` is the whole codebase; `_framework/`
+    retired) and notes the current v0.17 mid-transition shape.
+  - **§8.2 Deployment layout rewritten** — adds the target post-v0.20
+    layout where all state lives at `~/.hermes/agency-state/` (no
+    separate `~/.agency/` world).
+  - **§8.4 Two-tier file ownership rule** updated for plugin shape
+    (header changes "FRAMEWORK" → "PLUGIN"; deployment-edited content
+    lives in `~/.hermes/agency-state/vaults/<id>/`).
+  - **§11 Operator surface rewritten** — `/agency` slash command (in-
+    Hermes) is the primary surface; standalone shell `agency` command
+    is a thin shim for non-interactive contexts only; control panel
+    is read-only diagnostic.
+  - **§13.7 Closure plan rewritten** — replaces the v0.16–v0.19 patch
+    plan (which v0.17 made obsolete by pivoting to the plugin API)
+    with the v0.18–v0.22 structural cleanup: verifier enforcement,
+    `/agency setup` interactive interview, structural rename + state
+    collapse, agentskills.io conformance, PyPI publication. Each
+    release acceptance-tested.
+  - **Spec version** rolled to v0.17.1.
+
+  No code changes in this revision — it's documentation alignment.
+  Codebase work continues on the v0.18–v0.22 plan above.

@@ -1,6 +1,6 @@
 # HermesAgency
 
-**A Hermes plugin that adds 7 reliability systems for small-agency owners who refuse to re-teach their AI ten times.**
+**A continuously-learning, multi-agent plugin for [Hermes Agent](https://github.com/NousResearch/hermes-agent), built for small-business owners who refuse to re-teach their AI ten times.**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)

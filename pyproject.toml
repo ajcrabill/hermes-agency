@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hermes-agency"
 version = "0.17.0"
-description = "A multi-agent framework for small-agency owners — a learning loop you can earn autonomy on."
+description = "A continuously-learning, multi-agent plugin for Hermes Agent, built for small-business owners — a learning loop you can earn autonomy on."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
