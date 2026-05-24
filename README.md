@@ -39,12 +39,12 @@ A small-business owner wears every hat. HermesAgency runs a team of agents that 
 
 ### Plan your next quarter
 
-The agency operates with your declared goals and values always part of its background context. Update `Goals.md`, and the work shifts to track.
+The agency operates with your declared goals and values always part of its background context. Update `Goals.md`, and the work shifts to track. HermesAgency uses a **three-layer strategic-planning model** (Outcomes → Interim Goals → Initiatives, all SMART) so the work the agency does this week is structurally traceable back to the outcomes you've declared. See [`docs/StrategicPlanning.md`](./docs/StrategicPlanning.md) for the framework.
 
-- **Coach you toward SMART goals you'll actually measure** — interactive Q&A that turns vague intentions into goals with metrics attached, then writes them to `Goals.md`
+- **Coach you toward SMART goals you'll actually measure** — interactive Q&A that turns vague intentions into Outcomes, Interim Goals, and Initiatives with metrics attached at each layer
 - **Compare your calendar to your stated goals** — see where your time is leaking and where the gap is between what you say matters and how you spent the week
 - **Three concrete actions every week** — weekly brainstorm proposing specific moves based on what's happening in your business *right now*, not generic advice
-- **Track progress with real observations** — not vanity metrics; the agency logs what actually moved and what didn't, tied back to the goals you've declared
+- **Ask the testability question** — every week the agency asks: *are these inputs (Initiatives) moving the outputs (Interim Goals), and are the outputs moving the outcomes (Goals)?* The answer is measurable, not a vibes check
 
 ---
 

@@ -9,6 +9,116 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.2-spec] — 2026-05-24
+
+**Spec revision: three-layer strategic-planning model.** Adds
+`docs/StrategicPlanning.md` (~4,000 words) — a framework document
+translating AJ's public-sector strategic-planning practice
+(Outcomes → Interim Goals → Initiatives, all SMART, alignment
+math not opinion) into HermesAgency's language. Updates the
+agency-level templates and the spec to make the three-layer
+structure load-bearing across the framework. Pure docs/templates;
+no code change yet — implementation lands in v0.23.
+
+### Added — `docs/StrategicPlanning.md`
+
+The companion framework doc to the spec. Defines:
+
+- **Three-layer model**: 1-3 Outcomes (lag, 1-3yr), 1-3 Interim
+  Goals per Outcome (mid-cycle, 6-12mo), 1-5 Initiatives per
+  Interim Goal (input layer, owned by profiles).
+- **Guardrails** as the parallel non-negotiable structure with
+  matching Interim Guardrails + Guardrail-aligned Initiatives.
+- **Initiative definition** (six tests: SMART, one owner, ≥4hr/wk,
+  resources, current→future state, ~80% owner authority).
+- **Alignment is math, not opinion** — ≥0.6 correlation between
+  Interim Goal and Outcome; ≥0.5 between Initiative and Interim
+  Goal. Expect ~95% of candidate Initiatives won't align — that's
+  normal; the job is to find and resource the few that do.
+- **The Playbook page** — per-Initiative tracking artifact, all
+  fields specified (Outcome ref, Interim Goal ref, problem,
+  solution, owner, FTE, budget, output metrics, input metrics,
+  Blue/Green/Yellow/Red/Gray status).
+- **A worked small-business example** (coaching consulting
+  practice — not the school-system example from the source doc).
+- **Common questions** covering update cadence, plan adoption,
+  initiative-or-just-a-hope tests, alignment math, and the
+  owner-as-decider + agency-as-proposer collaboration model.
+
+The doc explicitly skips the governance-vs-management distinction
+from the public-sector source — not relevant in a one-owner
+business. The core alignment discipline and SMART-at-every-layer
+requirement are preserved.
+
+### Changed — `templates/agency-vault/Goals.md.template`
+
+Restructured from a flat "annual goals + active projects" list
+into the three-layer structure:
+
+```
+Outcome 1 (SMART, 1-3yr)
+  Interim Goal 1.1 (SMART, 6-12mo)
+    Initiative 1.1.a → Initiatives/init-1-1-a.md
+    Initiative 1.1.b → Initiatives/init-1-1-b.md
+  Interim Goal 1.2
+    Initiative 1.2.a
+Outcome 2 ...
+```
+
+Cross-references `docs/StrategicPlanning.md` and the parallel
+`Guardrails.md`.
+
+### Added — `templates/agency-vault/Guardrails.md.template`
+
+New template for the parallel non-negotiables structure. Distinct
+from `Values.md` (which is philosophy): `Guardrails.md` is the
+**SMART, structural consequence** — the lines that don't get
+crossed, expressed in a form the agency can enforce. Same
+three-layer structure (Guardrail → Interim Guardrails → Initiative
+refs).
+
+### Changed — spec §1.1 (the seven-step learning loop)
+
+The "always-loaded context" paragraph expanded to name
+`Guardrails.md` alongside `Goals.md`, and to spell out the
+three-layer structure that the strategic-planning doc defines.
+The 7 steps themselves are unchanged.
+
+### Changed — spec §13.7 v0.23.0 entry
+
+Expanded from "always-loaded agency-context audit" alone to two
+threads:
+
+- *Thread A* — the always-loaded context audit (unchanged from
+  the v0.22.1-spec scope).
+- *Thread B* (new) — the three-layer strategic-planning structure:
+  Goals.md / Guardrails.md template wiring, new `Initiatives/`
+  vault subdirectory, restructured `/agency setup` interview that
+  walks the owner through all three layers, five new audit rules
+  for strategic alignment, and a weekly strategic-plan health
+  check skill.
+
+### Changed — README
+
+"Plan your next quarter" section adds a one-paragraph mention of
+the three-layer strategic-planning model with a link to
+`docs/StrategicPlanning.md`. The fourth bullet rewrites from
+"Track progress with real observations" to "**Ask the testability
+question** — every week the agency asks: *are these inputs
+(Initiatives) moving the outputs (Interim Goals), and are the
+outputs moving the outcomes (Goals)?* The answer is measurable,
+not a vibes check."
+
+### Spec header
+
+Bumped from v0.22.1-spec to v0.22.2-spec. Companion-doc reference
+added pointing to `StrategicPlanning.md`.
+
+### Tests
+
+- No code changed; no test churn (242 still passing).
+- `agency audit --self`: clean.
+
 ## [0.22.1-spec] — 2026-05-24
 
 **Spec revision: Goals.md (and the other agency-level context docs)

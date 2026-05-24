@@ -1,6 +1,7 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.1-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.2-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
 **Home:** `github.com/ajcrabill/hermes-agency` (MIT)
@@ -232,16 +233,33 @@ Break any link and the owner is back to re-teaching. Every architectural
 choice in §2-§12 serves the integrity of this chain.
 
 **The learning loop never operates in a vacuum.** The owner's
-agency-level context documents — `Goals.md` (the SMART goals
-the small business owner has declared), `Values.md`, `Personal.md`,
-`Work.md`, `Clients.md`, and per-profile `SOUL.md` — are always
-part of the operating background. Skills see them every turn,
-alongside the injected rules. The learning loop refines *how the
-agency operates*; the context docs declare *what the agency is
-operating in service of*. Goals.md specifically holds the
-owner's currently-pursued objectives, so it's never absent from
-the context the agency reasons in — even when a particular
-correction is purely stylistic.
+agency-level context documents — `Goals.md`, `Guardrails.md`,
+`Values.md`, `Personal.md`, `Work.md`, `Clients.md`, and per-profile
+`SOUL.md` — are always part of the operating background. Skills see
+them every turn, alongside the injected rules. The learning loop
+refines *how the agency operates*; the context docs declare *what
+the agency is operating in service of*.
+
+`Goals.md` and `Guardrails.md` together carry the **three-layer
+strategic plan** (see [`docs/StrategicPlanning.md`](./StrategicPlanning.md)
+for the full framework):
+
+- **Layer 1 — Outcomes / Guardrails** — what success looks like
+  (1-3 SMART outcomes) and the non-negotiable prohibitions (1-3
+  Guardrails).
+- **Layer 2 — Interim Goals / Interim Guardrails** — the
+  mid-cycle SMART indicators that predict outcome accomplishment
+  or signal Guardrail honoring.
+- **Layer 3 — Initiatives** — the actual sets of skills + scripts
+  (owned by profiles or by the owner) that produce the outputs.
+  Each Initiative has a Playbook page in `Initiatives/<slug>.md`.
+
+This is what "Goals.md is part of the operating background" means
+operationally: every turn, the agency reasons inside a structured
+hierarchy of what the owner is trying to accomplish (Outcomes), what
+the agency must not do while accomplishing it (Guardrails), what
+mid-cycle signals say it's working (Interim Goals / Interim
+Guardrails), and what specific Initiatives are running.
 
 #### 1.1.1 Implementation state (context-injection)
 
@@ -2083,27 +2101,70 @@ filesystem convention), with all state living in `~/.hermes/`
 is the remaining alignment work. The structural drift from
 v0.1 → v0.16 is fully repaid.
 
-**v0.23.0 — Always-loaded agency-context audit**
+**v0.23.0 — Strategic-planning structure + agency-context audit**
 
-§1.1 names the agency-level context docs (Goals.md, Values.md,
-Personal.md, Work.md, Clients.md) as always present in the operating
-background. v0.23 confirms this in code:
+Operationalizes the three-layer strategic-planning model from
+[`docs/StrategicPlanning.md`](./StrategicPlanning.md), and confirms
+in code that the agency-level context docs really are always in the
+operating background.
+
+Two threads:
+
+*A. Always-loaded agency-context audit* — confirms §1.1's claim:
 
 - Audit rule (`agency-context-injection`) walks every active profile
-  and verifies the agency-level docs are reachable from the
-  skill-load context. Missing or unreadable docs surface as audit
-  findings.
-- `/agency capture` gains an optional `--goal <key>` repeatable
-  flag for owners who want to attach a specific goal to a
-  correction. Not required — most corrections are stylistic — but
-  available when the link matters.
+  and verifies the agency-level docs (Goals.md, Guardrails.md,
+  Values.md, Personal.md, Work.md, Clients.md) are reachable from
+  the skill-load context. Missing or unreadable docs surface as
+  audit findings.
 - A small change to the prompt-injection block format ensures the
-  "current context" docs render consistently across skills, so the
-  agent always reasons in the same context background.
+  "current context" docs render consistently across skills.
+- `/agency capture` gains an optional `--goal <key>` repeatable
+  flag for owners who want to attach a specific Outcome / Interim
+  Goal / Initiative to a correction. Not required — most
+  corrections are stylistic — but available when the link matters.
 
-Acceptance: `agency audit` flags any profile whose agency-context
-docs aren't reachable; the §1.1 claim ("Goals.md is always part of
-the operating background") is testable, not aspirational.
+*B. Three-layer strategic-planning structure* — gives the agency the
+load-bearing scaffolding the strategic-planning doc describes:
+
+- `Goals.md.template` and the new `Guardrails.md.template` carry
+  the three-layer structure (Outcomes / Interim Goals / Initiative
+  refs, and the parallel Guardrail structure).
+- New vault subdirectory `Initiatives/` holds one Playbook page
+  per Initiative (template covers all fields from
+  StrategicPlanning.md §4).
+- The `/agency setup` clean-install interview restructures the
+  GOALS step into three sub-prompts that walk the owner through
+  Outcomes first, then Interim Goals under each, then proposed
+  Initiative mappings to existing skills/scripts. The CoS proposes
+  drafts at each layer; the owner accepts/edits.
+- Audit rules (new):
+  - `unaligned-skills` — skills that fire but don't declare an
+    Initiative they serve.
+  - `unaligned-initiatives` — Initiatives without a clear Interim
+    Goal parent.
+  - `unaligned-interim-goals` — Interim Goals whose alignment
+    argument to an Outcome is missing or weak.
+  - `stale-playbook` — Initiatives whose Playbook page hasn't been
+    updated in too long.
+  - `abandoned-outcome` — Outcomes that no Initiatives are serving.
+- Weekly CoS skill: strategic-plan health check (per
+  StrategicPlanning.md §5.4) surfaces drift at any layer and
+  proposes pivots.
+
+Acceptance:
+
+1. `agency audit` flags profiles whose agency-context docs aren't
+   reachable; the §1.1 claim is testable.
+2. A fresh `/agency setup clean` walks the owner through the
+   three-layer interview and produces a structured Goals.md +
+   Guardrails.md + 1-2 starter Playbook pages.
+3. The audit's strategic-alignment rules produce non-zero findings
+   on a deployment with active skills and an incomplete plan
+   (this is the *normal* state — the audit's job is to show the
+   gap so the owner can close it).
+4. The weekly strategic-plan health check fires and produces a
+   short pivot-proposal summary.
 
 ---
 

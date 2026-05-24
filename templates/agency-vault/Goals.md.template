@@ -1,11 +1,13 @@
 # Goals — {{ORG_NAME}}
 
-_The single most important document the agency reads. Every agent
-loads it; every prioritization decision routes back here._
+_Strategic plan, layer 1 (Outcomes) + layer 2 (Interim Goals).
+Layer 3 (Initiatives) live as Playbook pages in `Initiatives/`.
+See [`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md)
+for the framework._
 
 _Derived from a deep interview with {{OWNER_NAME}} on
-{{INTERVIEW_DATE}}. Edit freely. Re-run `agency init --tier 3
---refresh-goals` to regenerate from a fresh interview._
+{{INTERVIEW_DATE}}. Edit freely. Both `Goals.md` and `Guardrails.md`
+are always part of HermesAgency's operating background context._
 
 ---
 
@@ -13,59 +15,94 @@ _Derived from a deep interview with {{OWNER_NAME}} on
 
 {{MISSION_STATEMENT}}
 
-_(One paragraph. Why does this agency exist? What outcome is the
-work in service of?)_
+_(One paragraph. Why does this business exist? What outcome is
+the work in service of?)_
 
-## The current year's goals
+---
 
-{{ANNUAL_GOALS}}
+## Outcomes (layer 1) — what success looks like
 
-_(3-7 specific outcomes the agency is working toward in the next
-12 months. Each one names a measurable end state, not a process.)_
+_1-3 SMART statements. 1-3 year horizon. Knowable at the end of
+the cycle. Format: **"X will increase/decrease from W on date Y
+to Z by date W."** Each Outcome challenges the business and
+requires real behavior change._
 
-## Active strategic projects
+### Outcome 1 — {{OUTCOME_1_TITLE}}
 
-{{ACTIVE_PROJECTS}}
+{{OUTCOME_1_STATEMENT}}
 
-_(The 2-5 named initiatives that are getting most of the agency's
-attention right now. Each has a brief description, the current
-phase, and the agent who owns it day-to-day.)_
+#### Interim Goals (layer 2) — leading indicators for Outcome 1
+
+_1-3 SMART statements. 6-12 month horizon. Each correlates ≥0.6
+with the Outcome (or makes a defensible leading-indicator
+argument). Initiatives that serve each Interim Goal are listed
+underneath._
+
+**Interim Goal 1.1 — {{INTERIM_1_1_TITLE}}**
+
+{{INTERIM_1_1_STATEMENT}}
+
+Initiatives serving Interim Goal 1.1:
+- {{INITIATIVE_1_1_A}} → see `Initiatives/{{INIT_1_1_A_SLUG}}.md`
+- {{INITIATIVE_1_1_B}} → see `Initiatives/{{INIT_1_1_B_SLUG}}.md`
+
+**Interim Goal 1.2 — {{INTERIM_1_2_TITLE}}**
+
+{{INTERIM_1_2_STATEMENT}}
+
+Initiatives serving Interim Goal 1.2:
+- {{INITIATIVE_1_2_A}} → see `Initiatives/{{INIT_1_2_A_SLUG}}.md`
+
+### Outcome 2 — {{OUTCOME_2_TITLE}}
+
+{{OUTCOME_2_STATEMENT}}
+
+#### Interim Goals (layer 2) — leading indicators for Outcome 2
+
+**Interim Goal 2.1 — {{INTERIM_2_1_TITLE}}**
+
+{{INTERIM_2_1_STATEMENT}}
+
+Initiatives serving Interim Goal 2.1:
+- {{INITIATIVE_2_1_A}} → see `Initiatives/{{INIT_2_1_A_SLUG}}.md`
+
+---
 
 ## What we're NOT working on
 
 {{EXPLICIT_NON_GOALS}}
 
-_(Just as important as the goals. The things the principal has
-explicitly decided are not the agency's job — even when they look
-like they could be. This list protects focus.)_
-
-## How we measure progress
-
-{{PROGRESS_METRICS}}
-
-_(For each annual goal, the leading indicators that say it's on
-track. Lagging outcomes are nice but late; leading indicators are
-what we actually watch.)_
-
-## Decision principles when goals conflict
-
-{{DECISION_PRINCIPLES}}
-
-_(When goal A and goal B both want the next hour, how does
-{{OWNER_NAME}} decide? Document the actual rules of thumb so the
-agents can apply them consistently.)_
-
-## Goal review cadence
-
-- **Weekly:** `weekly-review` skill surfaces progress against active
-  projects and annual goals.
-- **Monthly:** {{OWNER_NAME}} reviews the goals doc itself —
-  reprioritize, retire, add.
-- **Quarterly:** strategic review — are the annual goals still the
-  right ones?
+_(Just as important as the Outcomes. The things {{OWNER_NAME}} has
+explicitly decided are not the business's job — even when they
+look like they could be. This list protects focus.)_
 
 ---
 
-_When agents are unsure whether a request belongs to the agency's
-work, the answer is here. When it isn't here, it doesn't get done
-without explicit {{OWNER_NAME}} input._
+## Decision principles when Outcomes conflict
+
+{{DECISION_PRINCIPLES}}
+
+_(When Outcome 1 and Outcome 2 both want the next hour, how does
+{{OWNER_NAME}} decide? Document the actual rules of thumb so the
+agency can apply them consistently. Per the strategic-planning
+doc, Outcomes are not all equal — usually one Outcome is the
+highest-priority claim on resources.)_
+
+---
+
+## Review cadence
+
+- **Weekly:** CoS runs the strategic-plan health check (see
+  `docs/StrategicPlanning.md` §5.4). Surfaces drift at any layer.
+- **Monthly:** {{OWNER_NAME}} reviews `Goals.md` itself —
+  reprioritize Interim Goals, churn Initiatives.
+- **Quarterly:** Strategic review — are the Outcomes still the
+  right ones? Are the Interim Goals proving predictive?
+
+---
+
+_When an agent isn't sure whether a request belongs to the
+business's work, the answer is here — either it traces up to an
+Outcome, or it doesn't and needs {{OWNER_NAME}}'s explicit
+direction. `Guardrails.md` answers the parallel question: even
+if it traces to an Outcome, does pursuing it cross a line?_
