@@ -9,6 +9,90 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.3.0] — 2026-05-24
+
+Coverage release — "better to have skills available that aren't
+needed than skills needed that aren't available." All 36 starter
+skills declared in `deployment.yaml.template` now ship as real
+reference SKILL.md files. New substrate modules (CRM, per-subject
+state, Google Calendar integration) support them. Cron script
+templates cover the v7 operational shape.
+
+### Added — Starter skills (35 new reference files)
+
+- **Chief of Staff (9 total)**: + owner-channels-ingress,
+  send-orchestrator, kanban-orchestrator, calendar-manager,
+  morning-briefing, weekly-review, delegate-via-kanban,
+  pipeline-watchdog
+- **KnowledgeBase (7 total)**: + ip-curator,
+  methodology-application-check, prior-decision-search,
+  meeting-evaluator, quality-auditor, kanban-verdict-publisher
+- **SystemSentinel (7 total)**: + learning-monitor, drift-monitor,
+  heartbeat-watch, playbook-audit, event-rollup, compliance-report
+- **AnalystJudge (7 total)**: + dossier-builder, research,
+  prompt-injection-defense, learning-curation,
+  verifier-criteria-author, graduation-check
+- **BusinessDevelopment (6 total)**: + opportunistic-outreach,
+  journalist-relationship, podcast-host-relationship, crm-sync,
+  weekly-opportunity-scan
+- **WritingSupport (5 total)**: + manuscript-review,
+  workbook-drafting, newsletter-drafting, multi-author-state
+
+Each skill carries real frontmatter (autonomy block, action classes,
+voice tags), supervised-learning wire, typed verifier criteria, and
+self-check. They're starting points an operator copies + customizes,
+not stubs that say TODO.
+
+### Added — Substrate modules
+
+- **`_framework/crm/`** — Generic CRM (contacts, leads, sent_threads,
+  reply_log) with the 4-priority reply matcher from v7
+  (thread_id → email → domain → unmatched). Domain-specific fields
+  (NCES ids etc.) live in JSON `metadata` columns, keeping the
+  schema reusable across very different agencies.
+- **`_framework/per_subject_state/`** — One pattern for per-author
+  state (Writing), per-coach state (KB), per-journalist /
+  per-podcast state (BD), per-subject dossier state (Analyst).
+  Filesystem-namespaced with hard guards against cross-subject leak.
+- **`_framework/integrations/google_calendar.py`** — Same pattern as
+  `google_drive`: lazy-imported client, profile-local credentials,
+  list/create/update/delete + `find_conflicts()`.
+
+### Added — Script templates (10 new starters)
+
+- `pipeline-watchdog` — CoS pipeline observability
+- `triage-batch` — render queued items into batched summaries
+- `archive-enforcer` — hard archive-rule enforcement from corpus
+- `classification-enforcer` — hard classification-rule enforcement
+- `find-candidates` — BD signal-driven prospect identification
+- `outreach-tracker` — verify delivery + schedule follow-ups
+- `follow-up-generator` — draft follow-ups for stalled leads
+- `poll-inbox` — fetch new mail + route through reply-matcher
+- `system-health` — platform sanity check (DB integrity, disk, dirs)
+- `hardware-watch` — local hardware vitals
+
+Each follows the playbook (shebang + try/except + event emission +
+heartbeat) and is audit-clean by construction.
+
+### Tests
+
+96 passing (85 from v0.2 + 11 new CRM/state):
+- 8 CRM tests (lead/contact/alternate-emails, 4-priority reply
+  matcher across all priorities, log_reply)
+- 3 per-subject-state tests (namespace guard, lifecycle, isolation)
+
+### Decisions logged
+
+- Generic CRM schema deliberately keeps domain-specific fields in
+  JSON `metadata` columns rather than typed schema. Trade-off:
+  weaker typing, far more reusable across agency types.
+- `per_subject_state` uses filesystem (markdown + JSON) rather than
+  a DB. Trade-off: less queryable, more git-friendly + human-readable
+  + per-subject grep-able.
+- Script templates ship a `TRANSPORT BLOCK` comment marker for
+  mail-backend wiring rather than picking a default (Himalaya vs
+  Gmail OAuth vs IMAP) — operator chooses.
+
 ## [0.2.0] — 2026-05-24
 
 Closes the gap between "framework skeleton" and "framework that

@@ -15,5 +15,6 @@ and an action surface that other code calls.
 """
 
 from . import google_drive
+from . import google_calendar
 
-__all__ = ["google_drive"]
+__all__ = ["google_drive", "google_calendar"]

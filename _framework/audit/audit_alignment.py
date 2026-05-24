@@ -737,6 +737,8 @@ _DEPRECATED_PATH_SKIP_FILES = {
     "invariants.yaml",
     # Docs that historically reference v7 paths as migration context:
     "CHANGELOG.md",
+    "DEVELOPMENT_PLAYBOOK.md",  # references ~/.loriah as the path it warns about
+    "INTEGRATIONS.md",
 }
 
 
