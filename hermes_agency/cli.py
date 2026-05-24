@@ -103,16 +103,123 @@ def cmd_audit(_args: argparse.Namespace) -> int:
     return 0
 
 
-def cmd_capture(_args: argparse.Namespace) -> int:
-    """Capture a correction interactively (Week 2 build target)."""
-    print("agency capture: not yet implemented (Week 2 of v0.1 build).")
+def cmd_capture(args: argparse.Namespace) -> int:
+    """Capture a learning correction into the corpus."""
+    from _framework.learning import capture_correction
+    text = args.text
+    if not text:
+        print("Reading correction from stdin (Ctrl-D to finish):")
+        text = sys.stdin.read().strip()
+    if not text:
+        print("error: no correction text provided", file=sys.stderr)
+        return 1
+
+    skill_tags = args.skill or ["general"]
+    role_tags = args.role or []
+    voice_tags = args.voice or []
+    source = args.source or "cli:agency-capture"
+
+    try:
+        result = capture_correction(
+            correction=text,
+            source=source,
+            skill_tags=skill_tags,
+            role_tags=role_tags,
+            voice_tags=voice_tags,
+            is_hard=args.hard,
+        )
+    except ValueError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+
+    print(f"Captured rule {result.rule_id}")
+    print(f"  skill_tags: {', '.join(result.skill_tags)}")
+    if result.role_tags:
+        print(f"  role_tags:  {', '.join(result.role_tags)}")
+    if result.voice_tags:
+        print(f"  voice_tags: {', '.join(result.voice_tags)}")
+    if result.is_hard:
+        print(f"  is_hard:    true")
+    if result.tag_issues:
+        print("  tag warnings:")
+        for issue in result.tag_issues:
+            print(f"    - {issue}")
+    if result.recapture:
+        print()
+        print(f"⚠ RECAPTURE DETECTED")
+        print(f"  similar to: {result.recapture.similar_to}")
+        print(f"  similarity: {result.recapture.similarity:.3f}")
+        print(f"  This is a system-failure flag — the loop broke somewhere upstream.")
     return 0
 
 
 def cmd_learn(args: argparse.Namespace) -> int:
-    """Learning subsystem queries (Week 2 build target)."""
-    print(f"agency learn {args.action}: not yet implemented (Week 2 of v0.1 build).")
-    return 0
+    """Learning subsystem queries: list / show."""
+    from _framework.learning.learning_db import get_db, decode_json_col, row_to_rule
+
+    if args.action == "list":
+        db = get_db()
+        try:
+            limit = args.limit if args.limit else 50
+            rows = db.execute(
+                "SELECT * FROM learning_rules WHERE status='active' "
+                "ORDER BY created_at DESC LIMIT ?",
+                (limit,),
+            ).fetchall()
+        finally:
+            db.close()
+        if not rows:
+            print("No active learning rules yet. Capture one with `agency capture \"...\"`")
+            return 0
+        for r in rows:
+            d = row_to_rule(r)
+            tags = ", ".join(d["skill_tags"])
+            hard = " (HARD)" if d.get("is_hard") else ""
+            print(f"{d['id']}{hard}  {d['correction'][:80]}")
+            print(f"          skills: {tags}")
+            if d.get("role_tags"):
+                print(f"          roles:  {', '.join(d['role_tags'])}")
+        return 0
+
+    if args.action == "show":
+        if not args.rule_id:
+            print("error: agency learn show <rule_id>", file=sys.stderr)
+            return 1
+        db = get_db()
+        try:
+            row = db.execute("SELECT * FROM learning_rules WHERE id=?", (args.rule_id,)).fetchone()
+            if not row:
+                print(f"No rule with id {args.rule_id}", file=sys.stderr)
+                return 1
+            d = row_to_rule(row)
+            fire_rows = db.execute(
+                "SELECT * FROM firings WHERE rule_id=? ORDER BY created_at DESC LIMIT 20",
+                (args.rule_id,),
+            ).fetchall()
+        finally:
+            db.close()
+
+        print(f"rule {d['id']}")
+        print(f"  correction:  {d['correction']}")
+        print(f"  source:      {d['source']}")
+        print(f"  skill_tags:  {', '.join(d['skill_tags'])}")
+        if d.get("role_tags"):
+            print(f"  role_tags:   {', '.join(d['role_tags'])}")
+        if d.get("voice_tags"):
+            print(f"  voice_tags:  {', '.join(d['voice_tags'])}")
+        print(f"  is_hard:     {bool(d.get('is_hard'))}")
+        print(f"  status:      {d['status']}")
+        print(f"  created_at:  {d['created_at']}")
+        if d.get("notes"):
+            print(f"  notes:       {d['notes']}")
+        print(f"  firings ({len(fire_rows)} most recent):")
+        for f in fire_rows:
+            override = " (override-attempt)" if f["was_overridden"] else ""
+            print(f"    {f['created_at']}  {f['profile']}:{f['skill_tag']}{override}")
+        return 0
+
+    print(f"unknown action: {args.action}", file=sys.stderr)
+    return 1
 
 
 def cmd_promote(_args: argparse.Namespace) -> int:
@@ -170,13 +277,19 @@ def build_parser() -> argparse.ArgumentParser:
 
     # capture
     p_capture = sub.add_parser("capture", help="Capture a learning correction")
-    p_capture.add_argument("text", nargs="?", help="The correction text")
+    p_capture.add_argument("text", nargs="?", help="The correction text (stdin if omitted)")
+    p_capture.add_argument("--skill", action="append", help="Skill tag (repeatable; defaults to 'general')")
+    p_capture.add_argument("--role", action="append", help="Role tag (repeatable)")
+    p_capture.add_argument("--voice", action="append", help="Voice tag (repeatable)")
+    p_capture.add_argument("--source", help="Where this correction came from (default: cli:agency-capture)")
+    p_capture.add_argument("--hard", action="store_true", help="Mark as a hard rule (deterministically checkable)")
     p_capture.set_defaults(func=cmd_capture)
 
     # learn (subcommands)
     p_learn = sub.add_parser("learn", help="Learning subsystem queries")
     p_learn.add_argument("action", choices=["list", "show"])
     p_learn.add_argument("rule_id", nargs="?")
+    p_learn.add_argument("--limit", type=int, default=50)
     p_learn.set_defaults(func=cmd_learn)
 
     # promote / demote
