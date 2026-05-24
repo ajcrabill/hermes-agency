@@ -1,17 +1,5 @@
 # Strategic Planning in HermesAgency
 
-**Version:** 1.0 (2026-05-24)
-**Companion to:** [`HERMES_AGENCY_SPEC.md`](./HERMES_AGENCY_SPEC.md) §1.1
-**Author:** AJ Crabill — AI Developer for [Good Ancestor](https://www.GoodAncestor.com)
-
-> *Adapted from a public-sector strategic-planning framework AJ has
-> taught in school-systems work, with the governance-vs-management
-> distinctions stripped out (not relevant in a one-owner business).
-> The core three-layer alignment model — and the discipline of
-> requiring every layer to be SMART — is preserved.*
-
----
-
 ## 0. Why this exists
 
 A small business has limited resources. Intentional accomplishment
@@ -1253,3 +1241,17 @@ sits in the layered structure. That discipline — structural,
 testable at three cadences, never absent from the operating
 context — is what makes HermesAgency a strategic operations layer
 rather than just another AI assistant.
+
+---
+
+## About this document
+
+**Version:** 1.0 (2026-05-24)
+**Companion to:** [`HERMES_AGENCY_SPEC.md`](./HERMES_AGENCY_SPEC.md) §1.1
+**Author:** AJ Crabill — AI Developer for [Good Ancestor](https://www.GoodAncestor.com)
+
+> *Adapted from a public-sector strategic-planning framework AJ has
+> taught in school-systems work, with the governance-vs-management
+> distinctions stripped out (not relevant in a one-owner business).
+> The core three-layer alignment model — and the discipline of
+> requiring every layer to be SMART — is preserved.*
