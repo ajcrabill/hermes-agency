@@ -9,6 +9,118 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.4-spec] — 2026-05-24
+
+**Spec revision: Goals are aim, Guardrails are brake.** Sharpens
+the architectural distinction between the two strategic-plan
+documents. `Goals.md` is part of the always-loaded background
+context (the agency is always *aimed*); `Guardrails.md` is loaded
+only by the enforcement layer — Sentinel, AnalystJudge (audit),
+and send-guard — so the agency is **aimed by Goals and checked
+by Guardrails**, not constrained by Guardrails on every turn.
+
+Putting Guardrails into the always-loaded prompt would bias the
+agency toward defensive thinking on every turn (*"how could this
+go wrong?"*). A good strategic operator generates work aimed at
+the Outcomes, then checks the work against the Guardrails — two
+loops, two cadences, two architecturally distinct concerns.
+
+Also: **Values.md → Guardrails.md rename** (design contract;
+file/code rename ships in v0.23). The values-as-character-traits
+framing wasn't structurally enforceable; values expressed as
+Guardrails (prohibitions + SMART Interim Guardrails) are. Each
+core value (e.g., "honesty") becomes a Guardrail (e.g., "the
+business will not publish content that misrepresents what the
+owner knows or believes") with SMART Interim Guardrails (e.g.,
+"100% of outbound communications pass a documented honesty
+self-check").
+
+Spec-only revision; does not advance the 9th-version milestone
+counter.
+
+### Changed — `templates/agency-vault/Guardrails.md.template`
+
+Restructured to absorb the values content. Each core value now
+captured as a Guardrail with 1-3 Interim Guardrails underneath.
+Explicit "Where Guardrails are loaded" section names Sentinel +
+AnalystJudge + send-guard as the loading points; explicit "Where
+Guardrails are NOT loaded" notes the always-on context exclusion
+and why (avoiding defensive bias on every turn).
+
+### Kept transitionally — `templates/agency-vault/Values.md.template`
+
+Annotated with a transitional banner pointing at `Guardrails.md`
+and the v0.23 code-rename schedule. The actual deletion ships in
+v0.23 alongside the code rename (constants, setup interview's
+VALUES step, v7 migration, skill SKILL.md refs). Until then, both
+templates coexist — v0.22 deployments still write Values.md from
+the Tier 3 interview; v0.23 will migrate that content into
+Guardrails.md and remove Values.md.template.
+
+### Changed — `docs/StrategicPlanning.md`
+
+- §2 (Guardrails section) — added §2.1 "Where Guardrails are
+  loaded — *not* always-on context" with the aim/brake table
+  (Goals.md → continuous via pre_llm_call; Guardrails.md →
+  enforcement-time via Sentinel/AnalystJudge/send-guard) and the
+  architectural reasoning (avoiding defensive bias).
+- §6.2 (always-loaded context) — renamed to "Always-loaded context
+  — Goals only, not Guardrails"; explicit that Guardrails.md is
+  deliberately excluded from the always-loaded background.
+- Notes the v0.22-spec Values.md → Guardrails.md rename and why.
+
+### Changed — spec §1.1
+
+The always-loaded context list now reads: Goals.md, Personal.md,
+Work.md, Clients.md, per-profile SOUL.md. **Guardrails.md is
+explicitly NOT in this list.** New paragraph after the loop
+explains where Guardrails.md is loaded instead (Sentinel,
+AnalystJudge, send-guard) and the pattern: *"the agency
+generates work in service of Goals.md; the watchdog layer checks
+that work against Guardrails.md."*
+
+### Changed — spec §1.7 systems table
+
+- Row 1 (learning loop): aim-docs list updated; explicit note
+  that Guardrails.md is NOT in the always-loaded set.
+- Row 4 (Sentinel): notes Sentinel reads Guardrails.md to know
+  what to flag. Sentinel is the architectural watchdog; the doc
+  is the content, Sentinel is the mechanism.
+- Row 6 (send-guard): notes send-guard reads Guardrails.md at
+  outbound-mail `pre_tool_call` time.
+- Row 7 (audit): re-tagged as "AnalystJudge profile"; notes the
+  audit reads Guardrails.md to surface drift.
+
+### Changed — spec §13.7 v0.23.0 plan
+
+Thread A (always-loaded context audit) extended with the
+Values.md → Guardrails.md rename and the enforcement-layer wiring
+(Sentinel + AnalystJudge + send-guard each reading Guardrails.md).
+Migration is additive — existing deployments get Guardrails.md
+populated from their Values.md content.
+
+### Changed — README
+
+Intro paragraph: "The owner's declared goals (in `Goals.md` and
+the other operational context docs) are always part of the
+background... The owner's declared values (in `Guardrails.md`)
+are loaded into the enforcement layer — Sentinel, the audit, and
+the send-guard — so the agency is **aimed by Goals and checked
+by Guardrails**, not constrained by Guardrails on every turn."
+
+System-1 description: same aim/brake framing.
+
+### Spec header
+
+Bumped v0.22.3-spec → v0.22.4-spec.
+
+### Tests
+
+- No code changed; no test churn (242 still passing). The
+  Values.md → Guardrails.md *code* rename ships in v0.23 with its
+  own test churn.
+- `agency audit --self`: clean.
+
 ## [0.22.3-spec] — 2026-05-24
 
 **Spec revision: three nested testability layers.** Makes explicit

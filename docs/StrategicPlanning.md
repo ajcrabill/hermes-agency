@@ -197,15 +197,16 @@ aligned.
 ## 2. Guardrails — the parallel structure for non-negotiables
 
 Outcomes describe **what to accomplish**. Guardrails describe
-**what not to do while accomplishing it.** They're the values made
-operationally enforceable — the lines the owner refuses to cross
-even in pursuit of the Outcomes.
+**what not to do while accomplishing it.** They're the owner's
+values made structurally enforceable — the lines the owner
+refuses to cross even in pursuit of the Outcomes.
 
 A well-formed Guardrail in HermesAgency:
 
-- Is a **prohibition statement** about how the work gets done.
-  ("I will not pursue clients whose work I'd be embarrassed to
-  publish under my own name.")
+- Is a **prohibition statement** about how the work gets done,
+  capturing one of the owner's core values. ("Honesty" → "The
+  business will not publish, send, or sign content that
+  misrepresents what the owner knows or believes.")
 - Lasts as long as the Outcomes.
 - Has **1-3 Interim Guardrails per Guardrail**, each SMART, each a
   leading indicator that the Guardrail is being honored.
@@ -218,14 +219,51 @@ question "what stops me from winning the wrong way?" Without them,
 a strategically focused business can become a focused machine for
 producing outcomes that violate the owner's actual values.
 
-Guardrails live in `Guardrails.md` (parallel to `Goals.md`). Both
-are part of HermesAgency's always-loaded background context.
+Guardrails live in `Guardrails.md` (parallel to `Goals.md`). As
+of v0.22-spec, `Guardrails.md` replaces the older `Values.md` —
+the values-as-character-traits framing wasn't structurally
+enforceable; values expressed as Guardrails (prohibition
+statements + SMART Interim Guardrails) are.
 
-> *Note: HermesAgency's existing `Values.md` is closely related but
-> distinct. `Values.md` is a philosophy doc — what the owner cares
-> about and why. `Guardrails.md` is the SMART, structural
-> consequence — the lines that don't get crossed. Values inspire;
-> Guardrails enforce.*
+### 2.1 Where Guardrails are loaded — *not* always-on context
+
+This is an important architectural distinction. **`Goals.md` is
+part of the always-loaded background context. `Guardrails.md` is
+not.** They have different roles in the framework:
+
+| Doc | Role | Where it loads | Cadence |
+|---|---|---|---|
+| `Goals.md` | **Aim** — what to accomplish | `pre_llm_call` hook (every skill, every turn) | Continuous |
+| `Guardrails.md` | **Brake** — what not to do | Sentinel + AnalystJudge + send-guard | Enforcement-time only |
+
+Why the distinction matters: putting `Guardrails.md` in the
+always-loaded prompt would bias the agency toward defensive
+thinking on every turn (*"how could this go wrong? what
+prohibition might this violate?"*). That's not how a good
+strategic operator works. A good operator generates work *aimed*
+at the Outcomes, then checks the work against the Guardrails. So
+HermesAgency:
+
+- Loads **`Goals.md`** at every `pre_llm_call` — the agency
+  always knows what it's aiming at.
+- Loads **`Guardrails.md`** into the **enforcement layer**:
+  - **Sentinel** (spec §5) reads it at `on_session_start` /
+    `on_session_end` to know what to flag in its watchdog role.
+  - **AnalystJudge** (the audit, spec §7) reads it weekly to
+    surface drift — Initiatives crossing lines, Interim
+    Guardrails not being honored.
+  - **Send-guard** (spec §6.4) reads it at outbound-mail
+    `pre_tool_call` time to flag prohibited content before it
+    leaves the agency.
+
+In short: **the agency generates work in service of `Goals.md`;
+the watchdog layer checks that work against `Guardrails.md`.**
+Two different loops, two different cadences, two architecturally
+distinct concerns.
+
+Note also: **Sentinel itself is a guardrail in the architectural
+sense** — it's the read-only watchdog that catches drift. The
+doc is the content; Sentinel is the mechanism.
 
 ---
 
@@ -438,17 +476,27 @@ When it doesn't, that's a signal: either the work is misaligned,
 or the strategic plan is missing the layer that would make the
 work make sense.
 
-### 6.2 Always-loaded context
+### 6.2 Always-loaded context — Goals only, not Guardrails
 
-Per spec §1.1, HermesAgency's agency-level docs — including
-`Goals.md` and `Guardrails.md` — are **always part of the
-operating background** at every skill load. The agency never
-reasons in a vacuum about *what* to do; the layered structure of
-the strategic plan is part of the context every turn.
+Per spec §1.1, **`Goals.md` is part of the always-loaded
+background** at every skill load, alongside `Personal.md`,
+`Work.md`, `Clients.md`, and per-profile `SOUL.md`. The agency
+never reasons in a vacuum about *what* to aim at; the layered
+strategic structure (Outcomes → Interim Goals → Initiative refs)
+is part of the context every turn.
+
+**`Guardrails.md` is deliberately not in the always-loaded
+context.** See §2.1 for the architectural reasoning. The short
+version: aim belongs in the generation context; brake belongs in
+the enforcement layer. The agency generates work aimed at the
+Outcomes; Sentinel, AnalystJudge, and the send-guard check that
+work against the Guardrails.
 
 This is what makes the strategic plan operationally relevant: it's
-not a document the owner writes once and forgets. It's a live
-context the agency operates inside, every minute.
+not a document the owner writes once and forgets. The aim is a
+live context the agency operates inside every minute; the brake is
+a live check the watchdog layer runs at session boundaries and at
+every outbound send.
 
 ### 6.3 Skills and scripts as the input layer
 

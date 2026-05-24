@@ -1,52 +1,71 @@
 # Guardrails — {{ORG_NAME}}
 
-_Strategic plan parallel structure: the non-negotiables. What
-the business will NOT do, even in pursuit of the Outcomes in
-[`Goals.md`](./Goals.md). See
+_The lines {{OWNER_NAME}} refuses to cross — values made
+structurally enforceable. **Not part of the always-loaded
+background context.** Loaded by Sentinel (read-only watchdog),
+AnalystJudge (audit), and send-guard. See
 [`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md) §2
 for the framework._
 
 _Derived from a deep interview with {{OWNER_NAME}} on
-{{INTERVIEW_DATE}}. Always part of HermesAgency's operating
-background context, alongside `Goals.md`._
+{{INTERVIEW_DATE}}. Edit freely. This doc replaces the older
+`Values.md` — the values-as-character-traits framing wasn't
+structurally enforceable; values expressed as Guardrails
+(prohibition statements + SMART Interim Guardrails) are._
 
 ---
 
 ## What Guardrails are for
 
-`Values.md` is the philosophy doc — what {{OWNER_NAME}} cares
-about and why. `Guardrails.md` is the **SMART, structural
-consequence** — the lines that don't get crossed, expressed in a
-form the agency can enforce.
-
-Values inspire. Guardrails enforce.
-
 A Guardrail is a **prohibition statement**: "the business will
-not do X." Each Guardrail has 1-3 SMART Interim Guardrails (the
-leading indicators that the Guardrail is being honored) and 1-5
-Guardrail-aligned Initiatives (the actual sets of skills/scripts
-that produce the honoring behavior).
+not do X." Each Guardrail captures one of {{OWNER_NAME}}'s core
+values, expressed as a line the business won't cross — even in
+pursuit of the Outcomes in `Goals.md`.
+
+Each Guardrail has 1-3 SMART Interim Guardrails — leading
+indicators that the Guardrail is being honored in practice — and
+1-5 Guardrail-aligned Initiatives that produce the honoring
+behavior.
+
+**Where Guardrails are loaded:**
+
+- **Sentinel** (spec §5) — the read-only watchdog. Reads
+  Guardrails.md at session boundaries to know what to flag.
+- **AnalystJudge / Audit** (spec §7) — the weekly audit reads
+  Guardrails.md to surface drift (Initiatives that are crossing
+  lines, Interim Guardrails that aren't being honored).
+- **Send-guard** (spec §6.4) — outbound mail gate reads
+  Guardrails.md to flag messages that violate prohibitions.
+
+**Where Guardrails are NOT loaded:**
+
+- Skill prompts at `pre_llm_call` — the agency generates work in
+  service of `Goals.md` (aim, always present). Guardrails are
+  checked *after* the work is generated, not woven into every
+  turn's prompt. Putting Guardrails in the always-loaded context
+  would bias the agency toward defensive thinking instead of
+  aimed work.
 
 ---
 
 ## Guardrails (layer 1) — the non-negotiables
 
 _1-3 prohibition statements. Same horizon as the Outcomes (1-3
-years). Each is something {{OWNER_NAME}} refuses to do even if it
-would advance an Outcome._
+years). Each captures one of {{OWNER_NAME}}'s core values
+expressed as a line the business won't cross._
 
 ### Guardrail 1 — {{GUARDRAIL_1_TITLE}}
 
 {{GUARDRAIL_1_STATEMENT}}
 
+_(Example: "Honesty" becomes: "The business will not publish,
+send, or sign content that misrepresents what {{OWNER_NAME}}
+knows or believes.")_
+
 #### Interim Guardrails (layer 2) — leading indicators for Guardrail 1
 
-_1-3 SMART statements. Each measures whether Guardrail 1 is being
-honored in practice. The board-vs-staff distinction in the
-school-systems version doesn't apply here: {{OWNER_NAME}} writes
-both the Guardrail and its Interim Guardrails, but the
-Reasonableness Standard still applies — the Interim Guardrail
-needs to be a defensible interpretation of the Guardrail._
+_1-3 SMART statements. Each measures whether Guardrail 1 is
+being honored in practice._
 
 **Interim Guardrail 1.1 — {{INTERIM_GR_1_1_TITLE}}**
 
@@ -68,28 +87,55 @@ Initiatives serving Interim Guardrail 1.1:
 Initiatives serving Interim Guardrail 2.1:
 - {{GR_INITIATIVE_2_1_A}} → see `Initiatives/{{GR_INIT_2_1_A_SLUG}}.md`
 
+### Guardrail 3 — {{GUARDRAIL_3_TITLE}}
+
+{{GUARDRAIL_3_STATEMENT}}
+
+#### Interim Guardrails (layer 2) — leading indicators for Guardrail 3
+
+**Interim Guardrail 3.1 — {{INTERIM_GR_3_1_TITLE}}**
+
+{{INTERIM_GR_3_1_STATEMENT}}
+
+Initiatives serving Interim Guardrail 3.1:
+- {{GR_INITIATIVE_3_1_A}} → see `Initiatives/{{GR_INIT_3_1_A_SLUG}}.md`
+
 ---
 
-## Priority relative to Outcomes
+## Hard ceilings (legacy v0.1–v0.22 framing — to be re-expressed as Guardrails)
 
-**Outcomes get the first claim on resources. Guardrails get the
+{{NON_NEGOTIABLES}}
+
+_(Explicit anti-list. Things {{OWNER_NAME}} won't engage with no
+matter how attractive the upside. In v0.22+, these get
+re-expressed as proper Guardrails with Interim Guardrails — the
+plain-anti-list form is a transitional shape. Agents enforce
+these as hard ceilings; they don't get overridden by autonomy
+level.)_
+
+---
+
+## Priority relative to Goals.md
+
+**Goals get the first claim on resources. Guardrails get the
 veto.** {{OWNER_NAME}} needs to see evidence that the Guardrails
-are being honored, but a Guardrail won't out-prioritize an
-Outcome for resource allocation. A Guardrail will, however, stop
-an Outcome from being pursued in a way that violates it.
+are being honored, but a Guardrail won't out-prioritize a Goal
+for resource allocation. A Guardrail will, however, stop a Goal
+from being pursued in a way that violates it.
 
-If an Outcome cannot be pursued without crossing a Guardrail,
-that's a signal: either the Outcome needs to be re-scoped, or
-the Guardrail needs to be re-examined for whether it's still
-load-bearing.
+If a Goal cannot be pursued without crossing a Guardrail, that's
+a signal: either the Goal needs to be re-scoped, or the Guardrail
+needs to be re-examined for whether it's still load-bearing.
 
 ---
 
 ## Review cadence
 
-- **Weekly:** CoS surfaces any Guardrail violations or
-  Interim Guardrail drift in the strategic-plan health check.
-- **Monthly:** {{OWNER_NAME}} reviews `Guardrails.md` —
+- **Weekly:** Sentinel and the audit (AnalystJudge) surface any
+  Guardrail violations or Interim Guardrail drift from the past
+  week. CoS includes any flags in the strategic-plan health
+  check.
+- **Monthly:** {{OWNER_NAME}} reviews `Guardrails.md` directly —
   reprioritize Interim Guardrails, churn Initiatives.
 - **Quarterly:** Are the Guardrails still the right lines? Is
   there a Guardrail that's never come up — and is it dormant
@@ -98,6 +144,6 @@ load-bearing.
 
 ---
 
-_The Guardrails are non-negotiable, but their Interim Guardrails
-and Initiatives can churn freely as the business learns what
-"honoring this line in practice" actually requires._
+_Guardrails are non-negotiable, but their Interim Guardrails and
+Initiatives churn freely as the business learns what "honoring
+this line in practice" actually requires._

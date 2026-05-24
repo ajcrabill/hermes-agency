@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.3-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.4-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — AI Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -245,33 +245,52 @@ Break any link and the owner is back to re-teaching. Every architectural
 choice in §2-§12 serves the integrity of this chain.
 
 **The learning loop never operates in a vacuum.** The owner's
-agency-level context documents — `Goals.md`, `Guardrails.md`,
-`Values.md`, `Personal.md`, `Work.md`, `Clients.md`, and per-profile
-`SOUL.md` — are always part of the operating background. Skills see
-them every turn, alongside the injected rules. The learning loop
-refines *how the agency operates*; the context docs declare *what
-the agency is operating in service of*.
+agency-level context documents — `Goals.md`, `Personal.md`,
+`Work.md`, `Clients.md`, and per-profile `SOUL.md` — are always
+part of the operating background. Skills see them every turn,
+alongside the injected rules. The learning loop refines *how the
+agency operates*; the always-loaded context docs declare *what
+the agency is aiming at*.
 
-`Goals.md` and `Guardrails.md` together carry the **three-layer
-strategic plan** (see [`docs/StrategicPlanning.md`](./StrategicPlanning.md)
-for the full framework):
+`Goals.md` carries the three-layer strategic plan (see
+[`docs/StrategicPlanning.md`](./StrategicPlanning.md) for the full
+framework):
 
-- **Layer 1 — Outcomes / Guardrails** — what success looks like
-  (1-3 SMART outcomes) and the non-negotiable prohibitions (1-3
-  Guardrails).
-- **Layer 2 — Interim Goals / Interim Guardrails** — the
-  mid-cycle SMART indicators that predict outcome accomplishment
-  or signal Guardrail honoring.
+- **Layer 1 — Outcomes** — what success looks like (1-3 SMART
+  outcomes, 1-3 year horizon).
+- **Layer 2 — Interim Goals** — mid-cycle SMART indicators that
+  predict outcome accomplishment.
 - **Layer 3 — Initiatives** — the actual sets of skills + scripts
   (owned by profiles or by the owner) that produce the outputs.
   Each Initiative has a Playbook page in `Initiatives/<slug>.md`.
 
 This is what "Goals.md is part of the operating background" means
 operationally: every turn, the agency reasons inside a structured
-hierarchy of what the owner is trying to accomplish (Outcomes), what
-the agency must not do while accomplishing it (Guardrails), what
-mid-cycle signals say it's working (Interim Goals / Interim
-Guardrails), and what specific Initiatives are running.
+hierarchy of what the owner is trying to accomplish, and what
+specific Initiatives are running in service of that.
+
+**`Guardrails.md` is intentionally NOT in the always-loaded
+context.** It holds the parallel structure for non-negotiables
+(prohibitions + Interim Guardrails + Guardrail-aligned
+Initiatives — see `StrategicPlanning.md` §2). The owner's values
+are expressed there as enforceable Guardrails. But Guardrails are
+*brake*, not *aim* — putting them into every skill's prompt
+would bias the agency toward defensive thinking. Instead,
+`Guardrails.md` is loaded by the enforcement layer:
+
+- **Sentinel** (§5) reads it at session boundaries and acts as
+  the architectural watchdog.
+- **AnalystJudge / audit** (§7) reads it weekly to surface drift.
+- **Send-guard** (§6.4) reads it at outbound-mail
+  `pre_tool_call` time.
+
+The pattern: *the agency generates work in service of `Goals.md`;
+the watchdog layer checks that work against `Guardrails.md`*.
+
+(As of v0.22-spec, `Guardrails.md` replaces the older `Values.md`.
+The values-as-character-traits framing wasn't structurally
+enforceable; values expressed as Guardrails are. The actual
+file-name + interview rename lands in v0.23.)
 
 #### 1.1.1 Implementation state (context-injection)
 
@@ -501,13 +520,13 @@ The exhaustive list of what HermesAgency adds to Hermes:
 
 | # | System | Hook into Hermes |
 |---|---|---|
-| 1 | Supervised learning loop (input-layer testability) | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the agency-level context docs (Goals.md, Guardrails.md, Values.md, Personal.md, Work.md, Clients.md) are part of the always-loaded background. This is the continuous-cadence test in the three-layer testability model (StrategicPlanning.md §5) |
+| 1 | Supervised learning loop (input-layer testability) | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the **aim docs** (Goals.md, Personal.md, Work.md, Clients.md, per-profile SOUL.md) are part of the always-loaded background. **Guardrails.md is NOT** — it's loaded by the enforcement layer (rows 4, 6, 7). This is the continuous-cadence test in the three-layer testability model (StrategicPlanning.md §5) |
 | 2 | Autonomy ladder (L1–L5) | Plugin's `pre_tool_call` hook consults `_framework.autonomy` and blocks tool calls the skill lacks authority for |
 | 3 | Verifier (per-skill criteria) | Plugin's `post_tool_call` hook records completions; v0.18 adds `transform_tool_result` to enforce verifier criteria |
-| 4 | System Sentinel (read-only) | Plugin's `on_session_start` / `on_session_end` hooks record session events; Sentinel reads from there + Hermes' own state |
+| 4 | System Sentinel (read-only watchdog) | Plugin's `on_session_start` / `on_session_end` hooks record session events; Sentinel reads from there + Hermes' own state. **Reads Guardrails.md** to know what to flag. Sentinel is the architectural watchdog — the doc is the content, Sentinel is the mechanism |
 | 5 | Kanban tracks-link type | Shim writes `tracks` rows into Hermes' own `kanban.db` |
-| 6 | Send-guard (outbound mail gate) | Plugin's `pre_tool_call` hook filters for outbound-mail tools and runs `_framework.send_guard.evaluate` |
-| 7 | Audit (weekly alignment) | Scheduled script reading Hermes state + agency state; produces findings, not actions |
+| 6 | Send-guard (outbound mail gate) | Plugin's `pre_tool_call` hook filters for outbound-mail tools and runs `_framework.send_guard.evaluate`. **Reads Guardrails.md** to flag prohibited content before send |
+| 7 | Audit (weekly alignment — AnalystJudge profile) | Scheduled script reading Hermes state + agency state; produces findings, not actions. **Reads Guardrails.md** to surface Guardrail / Interim Guardrail drift |
 
 **As of v0.17.0, all 7 systems are Hermes-extending** via the documented
 Hermes plugin API. Earlier versions (v0.2–v0.16) used text-anchor patches
@@ -2146,19 +2165,32 @@ operating background.
 
 Two threads:
 
-*A. Always-loaded agency-context audit* — confirms §1.1's claim:
+*A. Always-loaded agency-context audit + Values→Guardrails rename* —
+confirms §1.1's claim and ships the file-name change:
 
 - Audit rule (`agency-context-injection`) walks every active profile
-  and verifies the agency-level docs (Goals.md, Guardrails.md,
-  Values.md, Personal.md, Work.md, Clients.md) are reachable from
-  the skill-load context. Missing or unreadable docs surface as
-  audit findings.
+  and verifies the **aim docs** (Goals.md, Personal.md, Work.md,
+  Clients.md, per-profile SOUL.md) are reachable from the
+  skill-load context. Missing or unreadable docs surface as audit
+  findings.
 - A small change to the prompt-injection block format ensures the
   "current context" docs render consistently across skills.
 - `/agency capture` gains an optional `--goal <key>` repeatable
   flag for owners who want to attach a specific Outcome / Interim
   Goal / Initiative to a correction. Not required — most
   corrections are stylistic — but available when the link matters.
+- **Values.md → Guardrails.md rename** (the code work matching the
+  v0.22.4-spec design contract). Renames the file, updates
+  `_framework/constants.py`, the setup interview's VALUES step
+  (becomes GUARDRAILS), the migration tool (v7 → v0.23+ moves
+  Values.md content to Guardrails.md), and all skill SKILL.md
+  references. Migration is one-shot, additive — existing
+  deployments get a `Guardrails.md` whose content is the old
+  `Values.md` body, plus a starter "express these as Guardrails"
+  pass.
+- **Sentinel + AnalystJudge + send-guard wired to read
+  Guardrails.md**. Up through v0.22, the enforcement-layer hooks
+  existed but didn't read a Guardrails doc. v0.23 connects them.
 
 *B. Three-layer strategic-planning structure* — gives the agency the
 load-bearing scaffolding the strategic-planning doc describes:

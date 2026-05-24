@@ -1,5 +1,15 @@
 # Values — {{ORG_NAME}}
 
+_**TRANSITIONAL (v0.22.4-spec → v0.23 code rename).** As of the
+v0.22.4-spec design contract, Values.md is superseded by
+`Guardrails.md` — values expressed as enforceable Guardrails
+(prohibitions + SMART Interim Guardrails). The file rename and
+content migration ship in v0.23. Until then, both files coexist:
+Values.md is still written by the Tier 3 interview and read by
+legacy skills; new deployments should expect Guardrails.md to
+replace it. See [`docs/StrategicPlanning.md`](../../docs/StrategicPlanning.md)
+§2.1 and spec §1.1 for the architecture._
+
 _What {{OWNER_NAME}} won't trade off, even under pressure. Agents
 read these to know which judgment calls are calls (open) and which
 aren't (closed)._
