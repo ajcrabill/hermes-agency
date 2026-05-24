@@ -9,6 +9,102 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.12.0] — 2026-05-24
+
+Polish-for-git release. Spec moves into the repo. Five new
+opportunity-hunting skills land across KB, Writing, and BD.
+
+### Added — Spec in repo (`docs/HERMES_AGENCY_SPEC.md`)
+
+- The HermesAgency design spec, previously living in AJ's v7 vault,
+  is now versioned in the repo alongside `docs/ARCHITECTURE.md` +
+  `docs/AUTONOMY.md` + the rest. The spec is the living source of
+  truth for *design*; this CHANGELOG remains the user-facing
+  *release* log.
+- §16 change-log section rolled forward with all eleven
+  release-level revisions (v0.1.0 → v0.11.0) plus a
+  `v0.11-spec.0` entry marking the move into the repo.
+- Title rolled from "v0.1 Specification" to "Specification" —
+  the spec is no longer a one-version artifact.
+- Generic path reference `~/.<owner>/...` replaces a v7-specific
+  literal in §8.3 (keeps the audit clean).
+
+### Added — KB weekly-industry-newsletter skill
+
+`templates/profiles/knowledge-base/skills/_reference/weekly-
+industry-newsletter.md` — Friday-AM personalized intelligence brief.
+Distills KB's understanding of the principal's industry / goals /
+IP / interests / thought-leadership areas; scours the past seven
+days; clusters survivors into themed sections with
+why-this-matters-to-you framing; drafts in the principal's reading
+voice; hands to CoS lane (KB never sends outbound mail).
+Repetition-avoidance against the last 3 weeks of newsletters;
+diversity check on source mix; hard cap of 12 items / 6 sections.
+
+### Added — Writing thought-leadership-scanner skill
+
+`templates/profiles/writing-support/skills/_reference/thought-
+leadership-scanner.md` — continuously hunts for thought-leadership
+opportunities in the principal's addressable market.
+*Highly curated, not generic.* Two phases: Phase 1 (niche discovery,
+runs quarterly) helps the principal name their niche even if they
+haven't yet; Phase 2 (opportunity hunting, runs daily) scores
+candidates on niche-fit / audience-fit / effort-to-payoff and cuts
+aggressively (target: ≥70% cut rate). Surfaces a weekly Friday
+brief of ≤5 survivors with angles + a pitch draft for the top
+opportunity. Generic-thought-leadership pitches are refused;
+adjacency-trap mitigations enforced.
+
+### Added — BD existing-client-commonality-analyzer skill
+
+`templates/profiles/business-development/skills/_reference/
+existing-client-commonality-analyzer.md` — weekly Monday-AM
+analysis of signed/active clients to surface ICP commonalities
+across organizational shape, industry, trigger, buyer persona,
+engagement style, price point, IP exposure, and relationship
+pathway. Scores patterns on coverage / strength / retention-
+correlation; surfaces strong + emergent + drift signals. Output
+feeds prospect-research and referral-opportunity-scanner via an
+IP-corpus entry KB curates.
+
+### Added — BD referral-opportunity-scanner skill
+
+`templates/profiles/business-development/skills/_reference/
+referral-opportunity-scanner.md` — weekly Tuesday-AM scan of
+existing clients' professional networks for high-fit warm-intro
+opportunities. Uses the ICP hypothesis from the commonality-
+analyzer; scores connection-strength + recency; cuts to ≤3 per
+week; drafts the actual ask message to the connecting client in
+the principal's voice. Hard rule: max 1 ask per client per quarter;
+honors a `do-not-approach.md` list unconditionally.
+
+### Added — BD potential-clients-pipeline skill
+
+`templates/profiles/business-development/skills/_reference/
+potential-clients-pipeline.md` — the agency's patience engine.
+Continuously maintains the potential-clients bench in
+`_state/crm.db` (new `status='potential'` value joins the existing
+enum); daily-AM picks 1–3 prospects warranting an action today
+based on triggering events + open threads + cold-prospect cooling
+periods; drafts the next message with prior-thread context loaded;
+hands to CoS lane. 21-day per-prospect cooling enforced; max 3
+nudges surfaced per day even if more could fire.
+
+### Schema notes
+
+- `_framework/crm/crm_db.py::leads.status` comment now includes
+  `potential` alongside `new | active | doc-provided | no-interest
+  | neutral | converted | dormant`. No migration needed; the
+  column is free-text and new states light up as they're written.
+
+### Tests
+
+- 198 tests passing (no new test files added in this release —
+  the new skills are markdown reference templates; their behavior
+  surfaces through the existing skill-runner test infrastructure
+  once a deployment activates them).
+- `agency audit --self`: clean.
+
 ## [0.11.0] — 2026-05-24
 
 Signal + Slack ingress, PyPI publishing prep, MANIFEST.in for

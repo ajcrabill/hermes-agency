@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS leads (
     name               TEXT NOT NULL,                 -- org / opportunity name
     primary_email      TEXT,
     secondary_email    TEXT,
-    status             TEXT NOT NULL DEFAULT 'new',   -- new | active | doc-provided | no-interest | neutral | converted | dormant
+    status             TEXT NOT NULL DEFAULT 'new',   -- new | potential | active | doc-provided | no-interest | neutral | converted | dormant
     last_touch_primary    TEXT,
     last_touch_secondary  TEXT,
     source             TEXT,                          -- where this lead came from
