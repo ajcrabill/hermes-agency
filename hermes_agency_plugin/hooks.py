@@ -201,7 +201,7 @@ def _send_guard_check(profile: str, args: Dict[str, Any]) -> Optional[str]:
         reason_str = "; ".join(decision.reasons) if decision.reasons else "policy denied"
         return (
             f"[HermesAgency send-guard] Outbound mail refused: {reason_str}. "
-            f"Edit `~/.agency/email-access.md` (access list), wait for the "
+            f"Edit `~/.hermes/agency-state/email-access.md` (access list), wait for the "
             f"cooling period, or override via the operator-approval path."
         )
     except Exception as e:

@@ -9,6 +9,86 @@ Major bumps signal breaking deployment changes (manifest schema, on-disk
 layout). Minor bumps signal new starter skills, new audit rules, or new
 roles. Patch bumps are fixes only.
 
+## [0.22.11-spec] — 2026-05-24
+
+**Spec revision: cleanup pass after the v0.22.1–v0.22.10 sweep.**
+An audit found six internal inconsistencies left behind by the
+rapid spec evolution. This release fixes them. No code changes
+yet — the v0.23 code work begins next.
+
+### Fixed — `Values.md` references that should be `Guardrails.md`
+
+The v0.22.4-spec aim-vs-brake split renamed Values.md →
+Guardrails.md and stopped including Guardrails in the
+always-loaded prompt context, but three sentences in the spec
+still listed Values.md as always-loaded:
+
+- §1 promise (line 217): updated to name Guardrails.md as
+  enforcement-layer-only and Personal/Work/Clients/SOUL as the
+  always-loaded background.
+- §2.2 spine paragraph (line 715-717): explicitly states the
+  aim docs vs Guardrails distinction.
+- §8.2 deployment layout vault description (line 1630): "Goals.md
+  / Values.md" → "Goals.md / Guardrails.md."
+
+### Fixed — broken StrategicPlanning.md section cross-references
+
+The v0.22.2-spec inserted a new §3 ("Quality criteria") in
+StrategicPlanning.md, which renumbered §3-§10 → §4-§11. The
+spec's cross-refs to that doc were not updated then:
+
+- §1.1 + §1.7 row 1 + §1.7 testability paragraph: "StrategicPlanning.md
+  §5" → "§6" (Three nested testability layers is §6, not §5).
+- §13.7 v0.23 plan (line 2291): "StrategicPlanning.md §6.4" →
+  "§7.4" (Weekly testability cadence moved from §6.4 to §7.4).
+
+### Fixed — Owner residues that v0.22.7-spec missed
+
+The v0.22.7-spec standardization sweep left ~6 instances of
+"Owner" in the live spec body:
+
+- §2.3 section title + body: "Owner-agency interface model" →
+  "Principal-agency interface model" (3 spots: title, content,
+  and "Owner-action" subhead)
+- §3.5 capture flow (SystemSentinel example): "Owner corrected
+  the same thing twice" → "Principal corrected the same thing
+  twice"
+- §7.1 ChiefOfStaffAgent role: "Owner's single conversational
+  surface" → "Principal's single conversational surface"
+- §13.1: "Owner content migration" → "Principal content migration"
+
+§16 historical change-log entries still reference these section
+names as they were originally written — preserved verbatim per
+the established historical-record precedent (so e.g. the v0.1.0-spec.1
+entry at line 2547 still reads "§2.3 'Owner-agency interface
+model'" even though §2.3 itself is now renamed in the live spec).
+
+### Added — `operator` term to the §0 standard-terminology table
+
+New row clarifies the distinction between **operator** (the
+human installing / administering the deployment — filesystem
+paths, deployment.yaml, install scripts, `agency` CLI on the
+shell) and **Principal** (the human the agency serves —
+strategic planning, day-to-day work, conversation with CoS).
+In a one-person small business, operator IS Principal; in larger
+deployments they may be different humans.
+
+### Fixed — stale `~/.agency/` path in `hooks.py:204`
+
+The send-guard error message read *"Edit
+`~/.agency/email-access.md`..."* — should be
+`~/.hermes/agency-state/email-access.md` per the v0.20 state-collapse.
+Updated.
+
+### Spec header
+
+Bumped v0.22.10-spec → v0.22.11-spec.
+
+### Tests
+
+- 242 passing.
+- `agency audit --self`: clean.
+
 ## [0.22.10-spec] — 2026-05-24
 
 **Spec revision: drop "AI" terminology — biological vs.

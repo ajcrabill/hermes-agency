@@ -1,6 +1,6 @@
 # HermesAgency — Specification
 
-**Version:** v0.22.10-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
+**Version:** v0.22.11-spec (2026-05-24) — *also: v0.05 of the 9th version (see §0.5)*
 **Companion docs:** [`StrategicPlanning.md`](./StrategicPlanning.md) — the three-layer strategic-planning framework
 **Status:** Living spec — tracks shipped releases
 **Author:** AJ Crabill — Technological Intelligence Developer for Good Ancestor ([www.GoodAncestor.com](https://www.GoodAncestor.com))
@@ -141,6 +141,7 @@ in new prose; v0.23 sweeps any remaining historical drift in code.
 | The full collection of intelligences working in the business | **team members** | Includes both biological and technological intelligences; default referent when the distinction doesn't matter |
 | Humans on the team | **biological intelligences** (or **humans**, when expressly relevant) | The Principal is one; any human collaborators / employees are others |
 | Agents on the team | **technological intelligences** (or **agents**, when expressly relevant) | The CoS, BD, KB, Writing, Finance, AnalystJudge, Sentinel, etc. are all technological intelligences |
+| The human installing / administering the deployment | **operator** (lowercase) | In a one-person small business, the operator IS the Principal; in larger deployments they may be different humans. "Operator" is the systems-administration framing (filesystem paths, deployment.yaml, install scripts, `agency` CLI on the shell); "Principal" is the strategic-planning + day-to-day-work framing (vision, values, conversation with CoS) |
 | ⚠️ **NOT used** | ~~AI~~ / ~~artificial intelligence~~ | We don't use "AI" for the technological intelligences. The phrase "AI assistant," "AI tool," "AI chief-of-staff" etc. has too much consumer-grade baggage and obscures the framework's point that the agents are *team members*, not "AI tools." |
 
 §16 historical change-log entries retain the older terminology
@@ -214,9 +215,13 @@ access to the advantages of companies many times their size and
 revenue — without sacrificing the privacy and ownership of their
 data and intellectual property, and without getting locked into
 big-tech ecosystems. The Principal's declared goals (in `Goals.md`)
-and broader context (`Values.md`, `Personal.md`, `Work.md`,
-`Clients.md`) are always part of the background the agency
-operates in — present every turn, not foreground, but never absent.
+and broader context (`Personal.md`, `Work.md`, `Clients.md`,
+per-profile `SOUL.md`) are always part of the background the
+agency operates in — present every turn, not foreground, but
+never absent. The Principal's declared values (in `Guardrails.md`)
+are loaded by the enforcement layer (Sentinel, AnalystJudge,
+send-guard) instead of the always-on prompt context — aim vs.
+brake (see §1.1).
 
 **The one-line operational promise:** every correction the Principal
 gives is captured, tagged, propagated to every relevant agent across
@@ -238,7 +243,7 @@ Together — with the right learning loop binding them — they can.
 The 7-step learning loop has a precise role in HermesAgency's
 strategic-planning architecture: it's the **input-layer
 testability mechanism** in the three-layer model (see
-[`docs/StrategicPlanning.md`](./StrategicPlanning.md) §5). Every
+[`docs/StrategicPlanning.md`](./StrategicPlanning.md) §6). Every
 correction the Principal gives, every rule the agency injects, every
 firing recorded — together these answer the most-frequent
 testability question: *are we implementing the strategies?* The
@@ -549,7 +554,7 @@ The exhaustive list of what HermesAgency adds to Hermes:
 
 | # | System | Hook into Hermes |
 |---|---|---|
-| 1 | Supervised learning loop (input-layer testability) | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the **aim docs** (Goals.md, Personal.md, Work.md, Clients.md, per-profile SOUL.md) are part of the always-loaded background. **Guardrails.md is NOT** — it's loaded by the enforcement layer (rows 4, 6, 7). This is the continuous-cadence test in the three-layer testability model (StrategicPlanning.md §5) |
+| 1 | Supervised learning loop (input-layer testability) | Plugin's `pre_llm_call` hook injects applicable rules into the user message each turn; the **aim docs** (Goals.md, Personal.md, Work.md, Clients.md, per-profile SOUL.md) are part of the always-loaded background. **Guardrails.md is NOT** — it's loaded by the enforcement layer (rows 4, 6, 7). This is the continuous-cadence test in the three-layer testability model (StrategicPlanning.md §6) |
 | 2 | Autonomy ladder (L1–L5) | Plugin's `pre_tool_call` hook consults `_framework.autonomy` and blocks tool calls the skill lacks authority for |
 | 3 | Verifier (per-skill criteria) | Plugin's `post_tool_call` hook records completions; v0.18 adds `transform_tool_result` to enforce verifier criteria |
 | 4 | System Sentinel (read-only watchdog) | Plugin's `on_session_start` / `on_session_end` hooks record session events; Sentinel reads from there + Hermes' own state. **Reads Guardrails.md** to know what to flag. Sentinel is the architectural watchdog — the doc is the content, Sentinel is the mechanism |
@@ -570,7 +575,7 @@ slash command (`/agency setup`).
 reliability systems above operate at the input layer. Two additional
 mechanisms — neither novel reliability systems, both built on top of
 the same data substrate — round out the three-layer testability
-model from [`StrategicPlanning.md`](./StrategicPlanning.md) §5:
+model from [`StrategicPlanning.md`](./StrategicPlanning.md) §6:
 
 - **Mid-tier (weekly): strategic-plan health check** — a CoS skill
   that tests Initiatives against Interim Goal metrics and surfaces
@@ -709,13 +714,16 @@ composes around it:
 ```
 
 Every agent loads applicable learning rules at skill-load time
-(§3.3), with the agency-level context docs (Goals.md, Values.md,
-Personal.md, Work.md, Clients.md) always present as background.
-Every consequential action passes through the autonomy gate
+(§3.3), with the **aim docs** (Goals.md, Personal.md, Work.md,
+Clients.md, per-profile SOUL.md) always present as background.
+`Guardrails.md` is NOT in the always-loaded set — it's loaded by
+the enforcement layer (Sentinel, send-guard, audit) per the aim
+vs. brake split in §1.1. Every consequential action passes
+through the autonomy gate
 (§4.2). Every completion runs through the verifier (§6.1). Sentinel
 watches the loop's health and fires alerts when it breaks (§5.3).
 
-### 2.3 Owner-agency interface model — one face
+### 2.3 Principal-agency interface model — one face
 
 The agency is **one face to the Principal, and one face to the world**.
 Both faces are ChiefOfStaff.
@@ -784,7 +792,7 @@ without framework changes. The framework supports N agents from Day 1:
   agents uniformly — kanban-processor pattern, autonomy gate, audit
   rules, Sentinel observability. The only role-aware code is the
   scaffold templates (one per role) which are pure data.
-- **Owner-agency interface model still holds.** Adding a FinanceAgent
+- **Principal-agency interface model still holds.** Adding a FinanceAgent
   does NOT add a finance@ mailbox by default. Finance work flows
   through CoS like all other specialist work: Principal asks CoS about
   Q3 burn → CoS delegates to FinanceAgent via kanban
@@ -795,7 +803,7 @@ without framework changes. The framework supports N agents from Day 1:
   (§9.7 of playbook). Adding a role adds keywords; existing skills
   in the wrong place get flagged automatically.
 
-**Owner-action to add a new role to their deployment:**
+**Principal-action to add a new role to their deployment:**
 
 ```bash
 agency add-role finance --persona identities/finance.md \
@@ -1040,7 +1048,7 @@ def check_recapture(new_rule_id: str) -> RecaptureResult | None:
 When `check_recapture` returns a match:
 1. Row appended to `recapture_events`
 2. Event row appended to `events.db` (§5.2)
-3. SystemSentinel files a kanban task: "Owner corrected the same
+3. SystemSentinel files a kanban task: "Principal corrected the same
    thing twice — learning loop broken at skill X, rules Y/Z.
    Investigate the injection chain."
 4. The responsible skill demotes one level (`autonomy.failure` event
@@ -1300,7 +1308,7 @@ them. Deployment-specific content goes in the deployment's profile dir.
 
 ### 7.1 ChiefOfStaffAgent
 
-**Role:** Owner's single conversational surface AND the agency's single
+**Role:** Principal's single conversational surface AND the agency's single
 outbound voice. Coordination, communication, real-time operations.
 Multi-channel ingress (email, chat, Signal, Slack, dashboard chat tab)
 normalizes here.
@@ -1620,7 +1628,7 @@ world:
     ├── drift_scores.json
     ├── deployment.yaml                 (much slimmer — see §9)
     ├── framework-vault/                (deployment-specific copies of master plan + playbook)
-    ├── vaults/                         (per-profile vaults — Goals.md / Values.md / etc.)
+    ├── vaults/                         (per-profile vaults — Goals.md / Guardrails.md / etc.)
     │   ├── <profile_id>/
     │   │   ├── Goals.md
     │   │   ├── Values.md
@@ -1985,7 +1993,7 @@ A fresh, blank machine can:
 
 ### 12.2 Out of scope for v0.1 (deferred to v0.2+)
 
-- Owner content migration (AJ's specific skills, learning rules,
+- Principal content migration (AJ's specific skills, learning rules,
   dossiers — this is the post-v0.1 migration project, not v0.1 itself)
 - Cost / token attribution per skill
 - Multi-machine deployment
@@ -2281,7 +2289,7 @@ load-bearing scaffolding the strategic-planning doc describes,
   - `abandoned-outcome` — Outcomes that no strategic skill/script
     declares an alignment to.
 - Weekly CoS skill: strategic-plan health check (per
-  StrategicPlanning.md §6.4) surfaces drift at any layer and
+  StrategicPlanning.md §7.4) surfaces drift at any layer and
   proposes pivots.
 
 Acceptance:
